@@ -30,5 +30,5 @@ import{t as e}from"./lektionen.C0WzercP.js";var t=document.getElementById(`lesez
             </div>
           </div>
         </div>
-        <a href="/lektionen/${e.slug}" class="btn btn-secondary more-btn">Zur Lektion: ${e.slug}</a>
+        <a href="/it-support-kurs-webapp/lektionen/${e.slug}" class="btn btn-secondary more-btn">Zur Lektion: ${e.slug}</a>
       `}).join(``),document.querySelectorAll(`.bookmark-btn`).forEach(e=>{e.addEventListener(`click`,()=>{let t=e.getAttribute(`data-bookmark`),n=JSON.parse(localStorage.getItem(`kurs-lesezeichen`)||`[]`);n=n.filter(e=>e!==t),localStorage.setItem(`kurs-lesezeichen`,JSON.stringify(n)),window.location.reload()})})}
