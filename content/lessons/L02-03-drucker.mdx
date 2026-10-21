@@ -1,0 +1,154 @@
+---
+title: "Modul 2 – Lektion 3: Drucker (Typen, Treiber, Spooler)"
+level: 1
+module: 2
+slug: "modul-2-hardware-03-drucker"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100)"
+sources:
+  - "https://assets.ctfassets.net/82ripq7fjls2/1oSdlyujpaX3GrM0rir6Ge/91afb2be72785281e8fb4c0d9a70c6f4/CompTIA-A-220-1201-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+---
+
+# Modul 2 – Lektion 3: Drucker (Typen, Treiber, Spooler)
+
+## 1. Lernziele
+- Du kannst Druckertypen (Laser, Inkjet, Thermal, 3D) unterscheiden.
+- Du kannst Druckprobleme systematisch diagnostizieren.
+- Du kannst den Print Spooler verwalten (neu starten, Queue leeren).
+- Du kannst Druckertreiber installieren/aktualisieren.
+
+## 2. Theorie kompakt
+
+**Druckertypen:**
+
+| Typ | Technologie | Vorteile | Nachteile | Einsatz |
+|---|---|---|---|---|
+| **Laserdrucker** | Toner + Trommel + Hitze | Schnell, günstig pro Seite, langlebig | Hohe Anschaffung, Toner teuer | Büro, hohe Volumen |
+| **Tintenstrahl (Inkjet)** | Tintendüsen | Günstig, Farbdruck, Fotos | Tinte trocknet ein, teuer pro Seite | Heim, Fotos |
+| **Thermodrucker** | Hitze auf Thermopapier | Keine Tinte, schnell | Nur Thermopapier, verblasst | Kassenbon, Etiketten |
+| **3D-Drucker** | Schichtweise Materialauftrag | Prototyping | Langsam, speziell | Industrie, Hobby |
+| **Multifunktionsgerät (MFP)** | Drucker + Scanner + Kopierer + Fax | Platzsparend | Komplexer | Büro |
+
+**Druckprozess (Windows):**
+1. Anwendung → Druckbefehl (GDI/PostScript/PCL).
+2. Druckertreiber rendert in Druckersprache.
+3. Spooler (`spoolsv.exe`) speichert Job in Queue (`C:\Windows\System32\spool\PRINTERS`).
+4. Spooler sendet Job an Drucker (via Port: USB, TCP/IP, WSD).
+5. Drucker druckt.
+
+**Druckerschnittstellen:**
+- **USB:** Lokaler Drucker, einfach.
+- **TCP/IP (Port 9100 / RAW):** Netzwerkdrucker, stabil.
+- **WSD (Web Services for Devices):** Automatische Erkennung, aber oft problematisch.
+- **IPP (Internet Printing Protocol):** Moderne, sichere Druck (Port 631).
+- **Shared Printer:** Drucker an einem PC freigegeben (SMB).
+
+**Print Spooler:**
+- Dienst: `spoolsv.exe` (Service Name: `Spooler`).
+- Queue-Ordner: `C:\Windows\System32\spool\PRINTERS`.
+- Befehle: `net stop spooler` / `net start spooler` / `sc query spooler`.
+- Bei hängendem Job: Spooler stoppen → Dateien in PRINTERS löschen → Spooler starten.
+
+**Treiber:**
+- **Universal Print Driver (UPD):** Herstellerübergreifend (z. B. HP UPD).
+- **Class Driver:** Windows-integriert (generisch).
+- **Hersteller-Treiber:** Vollständige Funktion (Duplex, Farbe, Finishing).
+- **V4-Treiber:** Modernes Treibermodell (Windows 8+), isoliert.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Druckerproblem diagnostizieren und Spooler verwalten.
+
+Schritte:
+1. "Drucker & Scanner" öffnen (Einstellungen) → installierte Drucker prüfen.
+2. Geräte-Manager → "Druckwarteschlangen" → Treiber prüfen.
+3. Spooler-Status prüfen: `sc query spooler`.
+4. Spooler neu starten: `net stop spooler` → `net start spooler` (Admin-CMD).
+5. Queue leeren (Simulation): Spooler stoppen → `del C:\Windows\System32\spool\PRINTERS\*.*` → Spooler starten.
+6. Testdruck: "Drucker & Scanner" → Drucker → "Druckwarteschlange öffnen" → Testseite drucken.
+7. Netzwerkdrucker hinzufügen: "Drucker hinzufügen" → "Gesuchter Drucker nicht aufgeführt" → "Drucker über TCP/IP-Adresse hinzufügen" → IP eingeben.
+
+**Erwartetes Ergebnis:** Spooler verwaltet, Testdruck erfolgreich, Netzwerkdrucker (falls vorhanden) hinzugefügt.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Druckauftrag hängt in der Queue"**
+- Symptom: Druckauftrag bleibt "Wird gedruckt" stehen; nichts kommt aus dem Drucker.
+- Ursache: Spooler hängt; Druckertreiber fehlerhaft; Drucker offline.
+- Diagnose: Spooler-Status (`sc query spooler`); Queue-Dateien prüfen.
+- Lösung: Spooler stoppen → Queue-Dateien löschen → Spooler starten; Drucker neu starten; Treiber neu installieren.
+- Prävention: Regelmäßige Spooler-Neustarts (Task Scheduler); Treiber aktualisieren.
+
+**Fehler 2: "Drucker offline (obwohl eingeschaltet)"**
+- Symptom: Windows zeigt Drucker als "Offline".
+- Ursache: Netzwerkproblem (IP geändert, Drucker nicht erreichbar); SNMP-Status fehlerhaft; Treiberproblem.
+- Diagnose: `ping <Drucker-IP>`; Drucker-Webinterface (http://IP) prüfen; Port 9100 testen.
+- Lösung: Drucker-IP prüfen/korrigieren; SNMP deaktivieren (Druckereigenschaften → Ports → SNMP-Status deaktivieren); Treiber neu installieren.
+- Prävention: Statische IP für Drucker; SNMP deaktivieren; DHCP-Reservierung.
+
+**Fehler 3: "Falscher Treiber → fehlerhafter Druck (Gibberish/leere Seiten)"**
+- Symptom: Drucker druckt Hieroglyphen oder leere Seiten.
+- Ursache: Falscher Treiber (PCL vs. PostScript); Treiber beschädigt.
+- Diagnose: Druckereigenschaften → Erweitert → Treiber prüfen.
+- Lösung: Richtigen Treiber installieren (Hersteller); "Druckprozessor" auf "WinPrint" / "RAW" setzen.
+- Prävention: Hersteller-Treiber verwenden; Treiber vor Deployment testen.
+
+**Fehler 4: "WSD-Drucker funktioniert nicht zuverlässig"**
+- Symptom: Drucker wird gefunden, aber Druckaufträge verschwinden oder hängen.
+- Ursache: WSD-Protokoll instabil; Firewall blockiert WSD.
+- Diagnose: Port-Typ prüfen (WSD vs. TCP/IP).
+- Lösung: Drucker auf TCP/IP-Port (Port 9100) umstellen; WSD deaktivieren.
+- Prävention: Netzwerkdrucker immer mit TCP/IP-Port (statische IP) einrichten.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Welcher Dienst verwaltet die Druckwarteschlange?
+   a) spoolsv.exe (Print Spooler) ✓
+   b) printui.exe
+   c) explorer.exe
+   d) svchost.exe
+
+2. Wo liegt die Druckwarteschlange (Dateien)?
+   a) C:\Windows\Temp
+   b) C:\Windows\System32\spool\PRINTERS ✓
+   c) C:\Program Files\Printers
+   d) C:\Users\...\Printers
+
+3. Welcher Port wird für RAW-Druck (TCP/IP) verwendet?
+   a) 80
+   b) 443
+   c) 9100 ✓
+   d) 631
+
+4. Was ist WSD?
+   a) Ein Druckertyp
+   b) Web Services for Devices – automatische Druckererkennung ✓
+   c) Ein Treiber
+   d) Ein Kabeltyp
+
+5. Wie leert man eine hängende Druckwarteschlange?
+   a) Nur neu starten
+   b) Spooler stoppen → Dateien in PRINTERS löschen → Spooler starten ✓
+   c) Drucker ausstecken
+   d) Windows neu installieren
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #3003:** "User: 'Der Drucker im Büro (HP LaserJet) druckt seit gestern nur leere Seiten. Andere User haben das gleiche Problem.'"
+
+**Lösung (aufklappbar):**
+1. Impact: Mehrere User → Impact 2 (Gruppe/Abteilung); Urgency: hoch (Arbeit blockiert) → P2.
+2. Prüfen: Treiber (welcher? PCL/PS?); Druckprozessor (WinPrint/RAW?); Toner (physisch prüfen).
+3. Testdruck von Server/PC direkt (umgeht User-PC).
+4. Wenn Toner leer → Toner ersetzen.
+5. Wenn Treiberproblem → richtigen Treiber installieren (HP UPD oder herstellerspezifisch).
+6. Wenn Spooler → Spooler neu starten, Queue leeren.
+7. Dokumentieren; User informieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100)
+- Quellen: CompTIA A+ V15 Exam Objectives (Core 1) – Hardware/Troubleshooting; Microsoft Learn Windows 11 Overview
+- UNGEPRÜFT: Exakte Drucker-Port-Nummern (9100, 631) – Standard, aber in spezifischer Quelle zu verifizieren
+- UNGEPRÜFT: HP UPD / V4-Treiber Details – herstellerabhängig

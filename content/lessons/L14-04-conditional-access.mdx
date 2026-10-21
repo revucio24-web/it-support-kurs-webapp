@@ -1,0 +1,156 @@
+---
+title: "Modul 14 – Lektion 4: Conditional Access und Zero Trust"
+level: 2
+module: 14
+slug: "modul-14-deployment-intune-04-conditional-access"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100)"
+sources:
+  - "https://www.microsoft.com/en-ca/security/business/identity-access/microsoft-entra-id (Abruf 2026-10-19)"
+  - "https://learn.microsoft.com/en-us/mem/intune/fundamentals/what-is-intune (Abruf 2026-10-19)"
+---
+
+# Modul 14 – Lektion 4: Conditional Access und Zero Trust
+
+## 1. Lernziele
+- Du kannst Conditional Access (CA) erklären.
+- Du kannst CA-Policies erstellen und verwalten.
+- Du kannst Zero-Trust-Prinzipien mit CA und Intune umsetzen.
+- Du kannst CA-Probleme diagnostizieren.
+
+## 2. Theorie kompakt
+
+**Conditional Access (CA):** Zugriff auf Ressourcen basierend auf Bedingungen (Signals) und Aktionen (Controls).
+
+**CA-Komponenten:**
+- **Assignments (Zuweisungen):** Wer (User/Gruppe), Was (Cloud-App/Ressource), Wo (Bedingungen).
+- **Conditions (Bedingungen):** User-Risiko, Sign-in-Risiko, Geräteplattform, Standort, Client-App, Gerätezustand.
+- **Access Controls (Aktionen):**
+  - **Grant:** Zugriff gewähren (mit/ohne MFA, compliant device, hybrid joined, approved app, password change).
+  - **Block:** Zugriff blockieren.
+  - **Session:** App-enforced restrictions (z. B. Download blockieren).
+
+**Typische CA-Policies:**
+1. **MFA für alle User:** Alle User → MFA erforderlich.
+2. **Block Legacy Auth:** Blockiere alte Authentifizierungsprotokolle (Basic Auth).
+3. **Compliant Device erforderlich:** Zugriff nur von compliant Geräten.
+4. **Standort-basiert:** Blockiere Zugriff aus nicht vertrauenswürdigen Ländern.
+5. **Risiko-basiert:** Blockiere bei hohem User/Sign-in-Risiko (P2).
+
+**Zero Trust mit CA + Intune:**
+- **Verify explicitly:** MFA + Device Compliance + Conditional Access.
+- **Least Privilege:** Nur notwendige Apps/Ressourcen; PIM für Admin-Rollen.
+- **Assume Breach:** Segmentierung; Monitoring; Incident Response.
+
+**CA-Troubleshooting:**
+- **Sign-in Logs:** Entra ID → Sign-in Logs → Conditional Access-Tab zeigt, welche Policies angewendet wurden.
+- **What If Tool:** Entra ID → Conditional Access → "What If" → simuliert Policy-Anwendung.
+- **Report-only Mode:** Policy im Report-only-Modus testen (ohne Blockierung).
+
+**CA-Best-Practices:**
+1. **Start mit Report-only:** Neue Policy zuerst im Report-only-Modus.
+2. **Pilot-Gruppe:** Kleine Gruppe zuerst testen.
+3. **Break-Glass-Accounts:** Notfall-Admin-Accounts ohne CA (mit MFA).
+4. **Dokumentation:** Jede Policy dokumentieren (Zweck, Ausnahmen).
+5. **Regelmäßige Review:** Policies quartalsweise überprüfen.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Conditional Access verstehen (Simulation).
+
+Schritte (konzeptionell, mit Test-Tenant):
+1. Entra ID Admin Center → Conditional Access → "New Policy".
+2. Name: "MFA für alle User".
+3. Assignments: Users = All users (außer Break-Glass); Cloud apps = All cloud apps.
+4. Conditions: Keine (oder Standort).
+5. Access Controls: Grant → Require multifactor authentication.
+6. Enable Policy: Report-only (zuerst).
+7. Testen: What If Tool → simulieren.
+8. Wenn OK: Auf "On" setzen.
+
+**Erwartetes Ergebnis:** CA-Policy erstellt; im Report-only-Modus getestet.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "CA-Policy sperrt alle User aus (Lockout)"**
+- Symptom: Kein User kann sich anmelden; "Zugriff blockiert".
+- Ursache: Policy zu breit (z. B. MFA für alle, aber MFA nicht registriert).
+- Diagnose: Sign-in Logs; What If Tool.
+- Lösung: Policy deaktivieren; Break-Glass-Account nutzen; Policy korrigieren.
+- Prävention: Report-only-Modus zuerst; Break-Glass-Accounts; Pilot-Gruppe.
+
+**Fehler 2: "Break-Glass-Account nicht ausgeschlossen"**
+- Symptom: Notfall-Admin kann sich nicht anmelden (CA blockiert).
+- Ursache: Break-Glass-Account nicht in Ausnahmen.
+- Diagnose: Policy-Zuweisungen prüfen.
+- Lösung: Break-Glass-Account zu Ausnahmen hinzufügen.
+- Prävention: Break-Glass-Accounts immer ausschließen; dokumentieren.
+
+**Fehler 3: "Compliant Device Policy blockiert nicht-compliant Geräte"**
+- Symptom: User kann sich nicht anmelden; "Gerät nicht compliant".
+- Ursache: Gerät nicht in Intune enrollt; Compliance Policy nicht angewendet.
+- Diagnose: Intune Admin Center → Gerät → Compliance; Sign-in Logs.
+- Lösung: Gerät enrollen; Compliance prüfen; Policy anpassen.
+- Prävention: Enrollment vor CA-Rollout; Pilot-Gruppe.
+
+**Fehler 4: "Legacy Auth nicht blockiert – Sicherheitslücke"**
+- Symptom: Alte Protokolle (Basic Auth) werden noch verwendet.
+- Ursache: CA-Policy für Legacy Auth nicht erstellt oder nicht aktiv.
+- Diagnose: Sign-in Logs → Client App (Legacy).
+- Lösung: CA-Policy erstellen: Block Legacy Authentication.
+- Prävention: Legacy Auth deaktivieren; Monitoring.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist Conditional Access?
+   a) Eine Firewall
+   b) Zugriff basierend auf Bedingungen (User, Gerät, Ort, App, Risiko) ✓
+   c) Ein Antivirus
+   d) Ein VPN
+
+2. Was ist der Report-only-Modus?
+   a) Policy ist deaktiviert
+   b) Policy wird simuliert (ohne Blockierung) für Test ✓
+   c) Policy blockiert alles
+   d) Policy erlaubt alles
+
+3. Was ist ein Break-Glass-Account?
+   a) Ein normaler User-Account
+   b) Ein Notfall-Admin-Account (ohne CA, mit MFA) ✓
+   c) Ein Gast-Account
+   d) Ein Service-Account
+
+4. Was blockiert die "Block Legacy Auth" Policy?
+   a) Neue Protokolle
+   b) Alte Authentifizierungsprotokolle (Basic Auth) ✓
+   c) MFA
+   d) Conditional Access
+
+5. Was ist der erste Schritt bei CA-Policy-Erstellung?
+   a) Policy aktivieren
+   b) Im Report-only-Modus testen ✓
+   c) Alle User blockieren
+   d) Break-Glass erstellen
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #15004:** "User: 'Ich kann mich nicht bei Microsoft 365 anmelden. Fehlermeldung: Zugriff blockiert. Ihr Gerät erfüllt nicht die Sicherheitsanforderungen.'"
+
+**Lösung (aufklappbar):**
+1. Entra ID → Sign-in Logs → Conditional Access-Tab → welche Policy blockiert?
+2. Intune Admin Center → Gerät → Compliance → Status prüfen.
+3. Wenn nicht compliant: Compliance Policy prüfen (was fehlt? BitLocker? OS-Version?).
+4. Gerät enrollen (falls nicht enrollt).
+5. Compliance korrigieren (z. B. BitLocker aktivieren).
+6. Manuell synchronisieren (Company Portal → "Check access").
+7. Erneut anmelden.
+8. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100)
+- Quellen: Microsoft Security (Entra ID); Microsoft Learn (Intune Fundamentals)
+- UNGEPRÜFT: Conditional Access Details – in Microsoft-Docs verifizieren
+- UNGEPRÜFT: Zero Trust Umsetzung (CA + Intune) – in Microsoft-Docs verifizieren
+- UNGEPRÜFT: What If Tool – in Microsoft-Docs verifizieren
+- UNGEPRÜFT: Report-only Mode – in Microsoft-Docs verifizieren

@@ -1,0 +1,163 @@
+---
+title: "Modul 7 – Lektion 2: Phishing, MFA und Passwort-Sicherheit"
+level: 1
+module: 7
+slug: "modul-7-sicherheit-02-phishing-mfa"
+last_verified: "2026-10-19"
+windows_version: "Allgemein (kein OS-spezifisch)"
+sources:
+  - "https://www.microsoft.com/en-ca/security/business/identity-access/microsoft-entra-id (Abruf 2026-10-19)"
+  - "https://assets.ctfassets.net/82ripq7fjls2/6I8WL66IBa1AUovioDGrnM/f74a7eca336fd4e4c8e723a1f893086d/CompTIA-A-220-1202-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 7 – Lektion 2: Phishing, MFA und Passwort-Sicherheit
+
+## 1. Lernziele
+- Du kannst Phishing-Angriffe erkennen und User schulen.
+- Du kannst MFA-Methoden erklären und empfehlen.
+- Du kennst Passwort-Best-Practices.
+- Du kannst auf einen Phishing-Vorfall reagieren.
+
+## 2. Theorie kompakt
+
+**Phishing:** Betrügerische E-Mails/Nachrichten, die User dazu bringen, Credentials einzugeben oder Malware auszuführen. Varianten:
+- **Phishing:** Massen-E-Mails (z. B. "Ihr Konto wird gesperrt").
+- **Spear Phishing:** Gezielte Angriffe auf bestimmte Personen.
+- **Whaling:** Angriffe auf Führungskräfte (CEO Fraud).
+- **Smishing:** Phishing per SMS.
+- **Vishing:** Phishing per Telefon.
+
+**Phishing erkennen (Red Flags):**
+- Absenderadresse verdächtig (z. B. microsoft-support@gmail.com).
+- Dringlichkeit ("Sofort handeln oder Konto gesperrt!").
+- Rechtschreibfehler/Grammatik.
+- Verdächtige Links (Hover → URL prüfen).
+- Anhänge (ausführbare Dateien, Makros).
+- Aufforderung zu Credentials/Passwörtern.
+
+**MFA (Multi-Faktor-Authentifizierung):**
+- **Faktoren:** Wissen (Passwort), Besitz (Telefon/Token), Biometrie (Fingerabdruck).
+- **Methoden:**
+  - SMS/Anruf: Schwächste (SIM-Swapping-Gefahr).
+  - Authenticator-App (TOTP): Besser (Microsoft Authenticator, Google Authenticator).
+  - Push-Benachrichtigung: Gut, aber MFA-Fatigue-Angriffe.
+  - FIDO2/WebAuthn (Hardware-Key): Stärkste (YubiKey).
+  - Windows Hello: Biometrie/PIN (lokal).
+- **Empfehlung:** Authenticator-App oder FIDO2-Key; SMS nur als Fallback.
+
+**Passwort-Best-Practices:**
+- Länge > Komplexität (min. 12-16 Zeichen).
+- Einzigartig pro Dienst (kein Wiederverwenden).
+- Passwort-Manager nutzen (Bitwarden, 1Password, KeePass).
+- Keine persönlichen Infos (Geburtsdatum, Name).
+- Keine Wörterbuchwörter.
+- Regelmäßige Änderung nur bei Verdacht (nicht alle 30 Tage – führt zu schwachen Passwörtern).
+
+**Phishing-Incident-Response:**
+1. **Erkennen:** User meldet verdächtige E-Mail.
+2. **Isolieren:** E-Mail nicht öffnen/anhängen nicht ausführen; User informieren.
+3. **Analysieren:** Header prüfen (Absender, Routing); Links (ohne zu klicken); Anhang in Sandbox.
+4. **Eindämmen:** Betroffene User identifizieren (wer hat geklickt?); Passwörter zurücksetzen; MFA erzwingen.
+5. **Beseitigen:** Malware entfernen; kompromittierte Konten sichern.
+6. **Wiederherstellen:** Systeme wiederherstellen; Monitoring.
+7. **Lessons Learned:** User schulen; Prozesse verbessern.
+
+**Defender for Office 365 (MDO):**
+- Anti-Phishing-Policies, Safe Links, Safe Attachments.
+- Für M365-Umgebungen (separate Lizenz).
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Phishing-E-Mail analysieren (Simulation).
+
+Schritte:
+1. Erstelle eine "Phishing-E-Mail" (Text) mit typischen Red Flags.
+2. Analysiere: Absender, Links (Hover), Anhang, Dringlichkeit.
+3. Prüfe E-Mail-Header (Outlook → Datei → Eigenschaften → Internetkopfzeilen) → Absender-IP, Routing.
+4. Teste Link (ohne zu klicken): URL in VirusTotal (virustotal.com) prüfen.
+5. Dokumentiere: Red Flags, empfohlene Aktion.
+
+**Erwartetes Ergebnis:** Phishing-E-Mail erkannt; Analyse dokumentiert.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "User klickt auf Phishing-Link und gibt Credentials ein"**
+- Symptom: Konto kompromittiert; verdächtige Aktivitäten.
+- Ursache: User erkennt Phishing nicht.
+- Diagnose: Sign-in Logs (Entra ID) → ungewöhnliche Anmeldungen; MFA-Status.
+- Lösung: Passwort zurücksetzen; MFA erzwingen; Sessions beenden; User schulen.
+- Prävention: Phishing-Schulung; MFA für alle; Defender for Office 365.
+
+**Fehler 2: "MFA-Fatigue (Push-Bombing)"**
+- Symptom: User erhält viele MFA-Push-Benachrichtigungen; genehmigt eine.
+- Ursache: Angreifer hat Passwort; sendet Push-Anfragen.
+- Diagnose: Sign-in Logs → viele MFA-Anfragen.
+- Lösung: Passwort zurücksetzen; MFA-Methode ändern (z. B. FIDO2); User schulen (nicht genehmigen, wenn nicht selbst angemeldet).
+- Prävention: Number Matching (Authenticator); FIDO2-Key; Schulung.
+
+**Fehler 3: "Schwaches Passwort wiederverwendet"**
+- Symptom: Konto kompromittiert, weil gleiches Passwort bei anderem Dienst geleakt.
+- Ursache: Passwort-Wiederverwendung.
+- Diagnose: Have I Been Pwned (haveibeenpwned.com) prüfen.
+- Lösung: Passwort überall ändern; Passwort-Manager nutzen.
+- Prävention: Passwort-Manager; einzigartige Passwörter; MFA.
+
+**Fehler 4: "Phishing-E-Mail nicht gemeldet – andere User betroffen"**
+- Symptom: Mehrere User klicken auf gleiche Phishing-E-Mail.
+- Ursache: Erster User meldet nicht; keine Warnung.
+- Diagnose: Mail-Flow; wie viele haben geklickt?
+- Lösung: Warnung an alle User; E-Mail aus Postfächern entfernen (Purge); Passwörter zurücksetzen.
+- Prävention: "Report Phishing"-Button; Schulung; schnelle Reaktion.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist Spear Phishing?
+   a) Massen-Phishing
+   b) Gezielte Angriffe auf bestimmte Personen ✓
+   c) Phishing per SMS
+   d) Phishing per Telefon
+
+2. Welche MFA-Methode ist am sichersten?
+   a) SMS
+   b) Authenticator-App (TOTP)
+   c) FIDO2/WebAuthn (Hardware-Key) ✓
+   d) E-Mail-Code
+
+3. Was ist ein Red Flag bei Phishing?
+   a) Professionelles Layout
+   b) Dringlichkeit + verdächtiger Absender + Link ✓
+   c) Firmenlogo
+   d) Korrekte Rechtschreibung
+
+4. Wie lang sollte ein Passwort mindestens sein?
+   a) 6 Zeichen
+   b) 8 Zeichen
+   c) 12-16 Zeichen ✓
+   d) 4 Zeichen
+
+5. Was ist die erste Aktion bei einem Phishing-Vorfall?
+   a) Passwort ändern
+   b) E-Mail nicht öffnen/anhängen nicht ausführen; User informieren ✓
+   c) PC neu starten
+   d) Antivirus scannen
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #8002:** "User: 'Ich habe eine E-Mail von Microsoft bekommen, dass mein Konto gesperrt wird. Ich habe auf den Link geklickt und mein Passwort eingegeben. Jetzt kann ich mich nicht mehr anmelden.'"
+
+**Lösung (aufklappbar):**
+1. Sofort: Passwort zurücksetzen (Admin); MFA erzwingen; Sessions beenden.
+2. Prüfen: Sign-in Logs (Entra ID) → verdächtige Aktivitäten?
+3. Wenn kompromittiert: Konto blockieren; Daten sichern; forensische Analyse.
+4. User informieren: Passwort geändert; MFA neu registrieren; Phishing-Schulung.
+5. E-Mail an alle User: Warnung vor dieser Phishing-Kampagne.
+6. E-Mail aus Postfächern entfernen (Purge).
+7. Dokumentieren; Lessons Learned.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Allgemein (kein OS-spezifisch)
+- Quellen: Microsoft Security (Entra ID); CompTIA A+ V15 Exam Objectives (Core 2) – Security
+- UNGEPRÜFT: Phishing-Incident-Response-Schritte – aus allgemeiner Praxis
+- UNGEPRÜFT: MFA-Fatigue/Number Matching Details – in Microsoft-Docs verifizieren
+- UNGEPRÜFT: Have I Been Pwned / VirusTotal – Drittanbieter-Tools, nicht verifiziert

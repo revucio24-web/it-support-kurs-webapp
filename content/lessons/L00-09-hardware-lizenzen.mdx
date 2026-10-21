@@ -1,0 +1,158 @@
+---
+title: "Modul 0 – Lektion 9: Hardwareanforderungen und Lizenzen/Evaluation"
+level: 1
+module: 0
+slug: "modul-0-homelab-09-hardware-lizenzen"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100) – Host"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "research/quellen.md Abschnitt B2"
+---
+
+# Modul 0 – Lektion 9: Hardwareanforderungen und Lizenzen/Evaluation
+
+## 1. Lernziele
+- Du kannst die Hardwareanforderungen für ein Homelab realistisch einschätzen.
+- Du kennst die Evaluationslaufzeiten (Win11 Enterprise 90d, Win Server 180d).
+- Du kannst Verlängerungsoptionen (slmgr /rearm) anwenden.
+- Du verstehst die Lizenzbedingungen (kein Produktionseinsatz von Eval-Versionen).
+
+## 2. Theorie kompakt
+
+**Windows 11 Mindestanforderungen (Microsoft):**
+- CPU: 1 GHz, 2+ Kerne, 64-Bit, kompatibel (Intel 8th Gen+ / AMD Ryzen 2000+)
+- RAM: 4 GB
+- Storage: 64 GB
+- Firmware: UEFI, Secure Boot fähig
+- TPM: 2.0
+- Grafik: DirectX 12, WDDM 2.0
+- Display: 9" HD (720p)
+- Internet: für Setup/Updates
+
+**Homelab-Hardware (realistisch, für VMs):**
+
+| Komponente | Minimum | Empfohlen | Begründung |
+|---|---|---|---|
+| CPU | 4 Kerne (VT-x/AMD-V) | 6-8 Kerne | VMs brauchen vCPUs; VT-x Pflicht |
+| RAM | 16 GB | 32 GB | Host 4-6 GB + VMs (je 4-6 GB) |
+| Storage | 256 GB SSD | 512 GB+ SSD (NVMe) | VM-Disks (60 GB+ pro VM), Snapshots |
+| GPU | integriert ok | dediziert (optional) | 3D in VMs begrenzt; nicht kritisch |
+
+**Evaluationslaufzeiten:**
+
+| Produkt | Laufzeit | Verlängerung | Quelle |
+|---|---|---|---|
+| Windows 11 Enterprise Evaluation | 90 Tage | `slmgr /rearm` (max. 3x → 270 Tage) | UNGEPRÜFT: genaue Anzahl |
+| Windows Server 2022/2025 Evaluation | 180 Tage | `slmgr /rearm` (max. 6x? → UNGEPRÜFT) | UNGEPRÜFT |
+| VMware Workstation Pro | unbegrenzt (kostenlos) | n/a | Broadcom (Nov 2024) |
+| VirtualBox | unbegrenzt (GPL) | n/a | Oracle |
+
+**Lizenzbedingungen:**
+- Evaluation-Versionen sind NUR für Test/Lab/Entwicklung – kein Produktionseinsatz.
+- Nach Ablauf: Wasserzeichen, regelmäßige Neustarts, eingeschränkte Funktion.
+- Für Produktion: Volumenlizenz oder Retail-Key nötig.
+- VMware Workstation Pro: kostenlos für personal, educational, commercial (seit Nov 2024). Kein Support (free tier).
+- VirtualBox Extension Pack: PUEL – kommerzielle Nutzung erfordert Lizenz.
+
+**Verlängerung (slmgr):**
+- `slmgr /xpr` → Ablaufdatum anzeigen.
+- `slmgr /rearm` → Verlängerung (Admin-CMD, Neustart nötig).
+- Max. Anzahl Rearms ist produktabhängig und begrenzt. Danach: Neuinstallation aus Snapshot/Template.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Evaluationsstatus prüfen und dokumentieren.
+
+Schritte:
+1. In VM (Win11 Enterprise oder Server): CMD als Administrator öffnen.
+2. `slmgr /xpr` → Ablaufdatum notieren.
+3. `slmgr /dlv` → detaillierte Lizenzinfo (Edition, Channel, Ablauf).
+4. `winver` → Edition + Build prüfen.
+5. Ablaufdatum in VM-Notizen dokumentieren (z. B. Textdatei auf Desktop "LAB-INFO.txt").
+6. Optional (nur wenn kurz vor Ablauf): `slmgr /rearm` → Neustart → erneut `slmgr /xpr` prüfen.
+7. Host-Hardware prüfen: `systeminfo` → RAM, CPU, OS-Version; `msinfo32` → vollständige Info.
+
+**Erwartetes Ergebnis:** Evaluationsstatus bekannt, Ablaufdatum dokumentiert, Hardware-Inventar erstellt.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "slmgr /rearm schlägt fehl – 'maximale Anzahl erreicht'"**
+- Symptom: Fehler 0xC004D307 oder "rearm count exhausted".
+- Ursache: Maximale Rearms erreicht.
+- Diagnose: `slmgr /dlv` → "Remaining Windows rearm count: 0".
+- Lösung: Neuinstallation aus Snapshot/Template; oder Lizenz erwerben.
+- Prävention: Ablaufdatum dokumentieren; rechtzeitig Snapshot "Clean-State" sichern; Rearms sparsam nutzen.
+
+**Fehler 2: "VM zu langsam – zu wenig RAM/CPU"**
+- Symptom: VM reagiert träge, Swapping.
+- Ursache: Zu wenig RAM/CPU für VM + Host.
+- Diagnose: Task-Manager im Host → RAM-Auslastung; VM Settings prüfen.
+- Lösung: RAM/CPU erhöhen (wenn Host es erlaubt); unnötige VMs ausschalten; Host-Dienste beenden.
+- Prävention: Hardware-Planung vor Lab-Setup; nicht mehr VMs gleichzeitig starten als RAM erlaubt.
+
+**Fehler 3: "Evaluation-Wasserzeichen stört Screenshots/Doku"**
+- Symptom: "Windows 11 Enterprise Evaluation" Wasserzeichen auf Desktop.
+- Ursache: Evaluationsversion.
+- Diagnose: `winver` → "Evaluation".
+- Lösung: Für Doku: Wasserzeichen ignorieren oder VM für finale Screenshots auf lizenzierte Version umstellen (nicht im Lab nötig).
+- Prävention: Keine – ist Feature der Eval-Version; in Doku kennzeichnen.
+
+**Fehler 4: "SSD voll – VMs können nicht mehr starten"**
+- Symptom: "Not enough space" beim VM-Start; Snapshots fehlgeschlagen.
+- Ursache: Host-SSD voll (VM-Disks + Snapshots + ISOs).
+- Diagnose: Explorer → Disk-Frei; VM-Ordner-Größe.
+- Lösung: Alte Snapshots konsolidieren/löschen; ungenutzte VMs/ISOs löschen; VM auf größere Disk verschieben (VM → Manage → Clone oder manuell verschieben + .vmx-Pfad anpassen).
+- Prävention: Speicherplatz-Monitoring; regelmäßig aufräumen; VMs auf separate SSD.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Wie viel RAM empfiehlt sich für ein Homelab mit 2 VMs?
+   a) 4 GB
+   b) 8 GB
+   c) 16 GB (Minimum) / 32 GB (empfohlen) ✓
+   d) 128 GB
+
+2. Welchen Befehl nutzt man, um das Evaluations-Ablaufdatum zu prüfen?
+   a) `winver`
+   b) `slmgr /xpr` ✓
+   c) `systeminfo`
+   d) `ipconfig`
+
+3. Dürfen Evaluation-Versionen in Produktion eingesetzt werden?
+   a) Ja, unbegrenzt
+   b) Nein – nur Test/Lab/Entwicklung ✓
+   c) Ja, mit Einschränkungen
+   d) Nur mit Internet
+
+4. Was passiert nach Ablauf der Evaluation?
+   a) Nichts
+   b) Wasserzeichen + regelmäßige Neustarts + eingeschränkte Funktion ✓
+   c) Sofortige Deinstallation
+   d) Automatische Aktivierung
+
+5. Welche CPU-Anforderung ist für Virtualisierung zwingend?
+   a) 8 Kerne
+   b) VT-x oder AMD-V ✓
+   c) Hyper-Threading
+   d) AVX2
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #1009:** "Ein Azubi meldet: 'Meine VM startet nicht mehr – Fehler: Not enough space on the file system.' Er hat 3 VMs und 5 Snapshots."
+
+**Lösung (aufklappbar):**
+1. Host-Disk prüfen: Explorer → C:\ / D:\ Frei.
+2. VM-Ordner-Größe prüfen: `D:\VMs` → Rechtsklick → Eigenschaften.
+3. Snapshots konsolidieren: VM → Snapshot → Delete All Snapshots (Merge).
+4. Ungenutzte ISOs/VMs löschen oder auf externe Disk verschieben.
+5. Wenn Disk dauerhaft zu klein: VM auf größere Disk verschieben (VM-Ordner kopieren, .vmx anpassen oder "Move" in Workstation).
+6. Prävention: Speicherplatz-Monitoring; monatliche Aufräum-Routine; Snapshots regelmäßig konsolidieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 Home 24H2 (Build 26100) Host
+- Quellen: Microsoft Learn Windows 11 Overview (Anforderungen); research/quellen.md Abschnitt B2
+- UNGEPRÜFT: Exakte Anzahl Rearms für Win11 Enterprise Eval und Windows Server Eval
+- UNGEPRÜFT: Broadcom-Original-Announcement-URL für VMware-Freigabe
+- UNGEPRÜFT: Microsoft Evaluation Center direkte URLs

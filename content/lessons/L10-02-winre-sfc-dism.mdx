@@ -1,0 +1,159 @@
+---
+title: "Modul 10 – Lektion 2: WinRE, SFC und DISM"
+level: 2
+module: 10
+slug: "modul-10-boot-recovery-02-winre-sfc-dism"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100)"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "https://assets.ctfassets.net/82ripq7fjls2/6I8WL66IBa1AUovioDGrnM/f74a7eca336fd4e4c8e723a1f893086d/CompTIA-A-220-1202-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 10 – Lektion 2: WinRE, SFC und DISM
+
+## 1. Lernziele
+- Du kannst Windows Recovery Environment (WinRE) nutzen.
+- Du kannst SFC (System File Checker) anwenden.
+- Du kannst DISM (Deployment Image Servicing and Management) anwenden.
+- Du kannst Systemwiederherstellung und Systemabbild nutzen.
+
+## 2. Theorie kompakt
+
+**Windows Recovery Environment (WinRE):**
+- Wiederherstellungsumgebung (basierend auf Windows PE).
+- Zugriff: Shift + Neustart; oder Boot von Installationsmedium; oder automatisch bei Boot-Fehler (3× fehlgeschlagener Start).
+- **Optionen:**
+  - **Startup Repair:** Automatische Reparatur von Boot-Problemen.
+  - **System Restore:** Wiederherstellungspunkt wiederherstellen.
+  - **System Image Recovery:** Systemabbild wiederherstellen.
+  - **Command Prompt:** CMD für manuelle Reparatur.
+  - **Uninstall Updates:** Letzte Updates entfernen.
+  - **UEFI Firmware Settings:** BIOS/UEFI öffnen.
+  - **Startup Settings:** Safe Mode, Debugging, etc.
+
+**SFC (System File Checker):**
+- Prüft und repariert geschützte Systemdateien.
+- `sfc /scannow` – Scan + Reparatur (online, läuft in Windows).
+- `sfc /verifyonly` – nur prüfen, nicht reparieren.
+- `sfc /scannow /offbootdir=C:\ /offwindir=C:\Windows` – offline (in WinRE).
+- Log: `C:\Windows\Logs\CBS\CBS.log`.
+
+**DISM (Deployment Image Servicing and Management):**
+- Repariert das Windows-Image (Component Store).
+- Online (in Windows):
+  - `DISM /Online /Cleanup-Image /CheckHealth` – prüft, ob Reparatur nötig.
+  - `DISM /Online /Cleanup-Image /ScanHealth` – scannt auf Schäden.
+  - `DISM /Online /Cleanup-Image /RestoreHealth` – repariert.
+- Offline (in WinRE): `DISM /Image:C:\ /Cleanup-Image /RestoreHealth`.
+- Mit Quell-Image: `DISM /Online /Cleanup-Image /RestoreHealth /Source:WIM:X:\sources\install.wim:1`.
+
+**Reihenfolge:** DISM zuerst (repariert Image), dann SFC (repariert Systemdateien aus Image).
+
+**Systemwiederherstellung (System Restore):**
+- Erstellt Snapshots (Wiederherstellungspunkte) des Systemzustands.
+- Wiederherstellungspunkte werden bei: Updates, Treiber-Installation, manuell.
+- `rstrui.exe` → Wiederherstellungspunkt auswählen → Wiederherstellen.
+- Nur Systemdateien/Registry, nicht User-Daten.
+
+**Systemabbild (System Image):**
+- Komplette Kopie der Systempartition.
+- Erstellung: Systemsteuerung → Sichern und Wiederherstellen (Windows 7) → Systemabbild erstellen.
+- Wiederherstellung: WinRE → System Image Recovery.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: SFC und DISM anwenden.
+
+Schritte:
+1. `sfc /scannow` → Ergebnis prüfen ("Keine Integritätsverletzungen" oder "Fehler gefunden und repariert").
+2. `DISM /Online /Cleanup-Image /CheckHealth` → prüfen.
+3. `DISM /Online /Cleanup-Image /ScanHealth` → scannen.
+4. `DISM /Online /Cleanup-Image /RestoreHealth` → reparieren (falls nötig).
+5. `rstrui.exe` → Wiederherstellungspunkte prüfen.
+6. CBS.log prüfen: `notepad C:\Windows\Logs\CBS\CBS.log`.
+
+**Erwartetes Ergebnis:** Systemdateien geprüft; keine kritischen Fehler; Wiederherstellungspunkte vorhanden.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "SFC findet Fehler, kann aber nicht reparieren"**
+- Symptom: "Windows-Ressourcenschutz konnte die angeforderten Dateien nicht reparieren."
+- Ursache: CBS-Store (Component Store) beschädigt.
+- Diagnose: `C:\Windows\Logs\CBS\CBS.log` prüfen.
+- Lösung: DISM `/RestoreHealth` zuerst; dann SFC erneut.
+- Prävention: Regelmäßige DISM/SFC; Windows-Updates.
+
+**Fehler 2: "DISM /RestoreHealth schlägt fehl (Quelle nicht gefunden)"**
+- Symptom: "Die Quelldateien konnten nicht gefunden werden."
+- Ursache: Windows Update nicht erreichbar; keine Internetverbindung.
+- Diagnose: Internetverbindung; Windows Update-Status.
+- Lösung: Mit Installationsmedium als Quelle: `/Source:WIM:X:\sources\install.wim:1` (X = USB-Laufwerk).
+- Prävention: Installationsmedium bereithalten.
+
+**Fehler 3: "Systemwiederherstellung schlägt fehl"**
+- Symptom: "Systemwiederherstellung konnte nicht abgeschlossen werden."
+- Ursache: Beschädigte Wiederherstellungspunkte; Antivirus blockiert.
+- Diagnose: Fehlercode prüfen; Antivirus deaktivieren.
+- Lösung: Anderen Wiederherstellungspunkt versuchen; Antivirus deaktivieren; Systemabbild nutzen.
+- Prävention: Regelmäßige Wiederherstellungspunkte; Antivirus-Ausschlüsse.
+
+**Fehler 4: "WinRE nicht verfügbar"**
+- Symptom: Shift + Neustart zeigt keine WinRE-Optionen.
+- Ursache: WinRE deaktiviert oder Partition beschädigt.
+- Diagnose: `reagentc /info` → WinRE-Status.
+- Lösung: WinRE aktivieren: `reagentc /enable`; oder von Installationsmedium booten.
+- Prävention: WinRE-Status prüfen; Recovery-Partition nicht löschen.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was macht SFC?
+   a) Prüft und repariert Systemdateien ✓
+   b) Prüft Festplatte
+   c) Repariert das Windows-Image
+   d) Erstellt Backups
+
+2. Was macht DISM?
+   a) Prüft Systemdateien
+   b) Repariert das Windows-Image (Component Store) ✓
+   c) Prüft RAM
+   d) Erstellt Wiederherstellungspunkte
+
+3. In welcher Reihenfolge führt man DISM und SFC aus?
+   a) SFC zuerst, dann DISM
+   b) DISM zuerst, dann SFC ✓
+   c) Gleichzeitig
+   d) Egal
+
+4. Was ist WinRE?
+   a) Windows Recovery Environment – Wiederherstellungsumgebung ✓
+   b) Windows Remote Environment
+   c) Windows Registry Editor
+   d) Windows Resource Explorer
+
+5. Was stellt Systemwiederherstellung wieder her?
+   a) User-Daten
+   b) Systemdateien und Registry (Wiederherstellungspunkt) ✓
+   c) Festplatte
+   d) Netzwerk
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #11002:** "User: 'Mein PC startet, aber viele Programme funktionieren nicht mehr. Ich habe kürzlich ein Update installiert.'"
+
+**Lösung (aufklappbar):**
+1. Systemwiederherstellung versuchen: `rstrui.exe` → Wiederherstellungspunkt vor dem Update.
+2. Wenn nicht verfügbar: WinRE → "Uninstall Updates" → letztes Update entfernen.
+3. SFC/DISM: `sfc /scannow` → `DISM /Online /Cleanup-Image /RestoreHealth`.
+4. Event Viewer → System-Log → Fehler seit dem Update.
+5. Wenn nichts hilft: In-Place-Upgrade (Windows 11 neu installieren, Daten behalten).
+6. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100)
+- Quellen: Microsoft Learn Windows 11 Overview; CompTIA A+ V15 Exam Objectives (Core 2)
+- UNGEPRÜFT: SFC/DISM-Syntax und Parameter – in Lab verifizieren
+- UNGEPRÜFT: WinRE-Optionen – in Lab verifizieren
+- UNGEPRÜFT: reagentc-Befehle – in Lab verifizieren
+- UNGEPRÜFT: Systemabbild-Erstellung (Windows 7 Backup) – in Lab verifizieren

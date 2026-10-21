@@ -1,0 +1,170 @@
+---
+title: "Modul 13 – Lektion 1: PowerShell Grundlagen"
+level: 2
+module: 13
+slug: "modul-13-powershell-01-grundlagen"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100) + PowerShell 5.1/7"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "https://assets.ctfassets.net/82ripq7fjls2/6I8WL66IBa1AUovioDGrnM/f74a7eca336fd4e4c8e723a1f893086d/CompTIA-A-220-1202-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 13 – Lektion 1: PowerShell Grundlagen
+
+## 1. Lernziele
+- Du kannst PowerShell starten und navigieren.
+- Du kannst Cmdlets und ihre Syntax erklären.
+- Du kannst die Pipeline nutzen.
+- Du kannst Variablen und einfache Skripte schreiben.
+
+## 2. Theorie kompakt
+
+**PowerShell:** Objektorientierte Shell und Skriptsprache von Microsoft. Arbeitet mit Objekten (nicht nur Text wie CMD).
+
+**PowerShell-Versionen:**
+- **Windows PowerShell 5.1:** Eingebaut in Windows 10/11. .NET Framework.
+- **PowerShell 7 (PowerShell Core):** Cross-Platform (Windows/Linux/macOS). .NET Core. Separat installierbar.
+- Für Support: Windows PowerShell 5.1 reicht meist.
+
+**Cmdlets (Command-lets):**
+- Verb-Noun-Format: `Get-Process`, `Set-Service`, `New-Item`, `Remove-Item`.
+- Verben: Get, Set, New, Remove, Start, Stop, Enable, Disable, Test, etc.
+- Nouns: Process, Service, Item, Content, etc.
+
+**Wichtige Cmdlets:**
+
+| Cmdlet | Funktion |
+|---|---|
+| `Get-Help <Cmdlet>` | Hilfe anzeigen |
+| `Get-Command` | Alle verfügbaren Cmdlets auflisten |
+| `Get-Process` | Laufende Prozesse |
+| `Get-Service` | Dienste |
+| `Get-ChildItem` (ls/dir) | Dateien/Ordner auflisten |
+| `Set-Location` (cd) | Verzeichnis wechseln |
+| `Get-Content` (cat) | Dateiinhalt anzeigen |
+| `Out-File` | Ausgabe in Datei |
+| `Export-Csv` | Als CSV exportieren |
+| `Select-Object` | Eigenschaften auswählen |
+| `Where-Object` | Filtern |
+| `Sort-Object` | Sortieren |
+| `Measure-Object` | Zählen/Summieren |
+
+**Pipeline (`|`):**
+- Ausgabe eines Cmdlets an nächstes übergeben.
+- `Get-Process | Where-Object CPU -gt 100 | Sort-Object CPU -Descending | Select-Object -First 5`
+- Objekte werden übergeben (nicht Text) → Eigenschaften nutzbar.
+
+**Variablen:**
+- `$name = "Wert"` (String).
+- `$zahl = 42` (Int).
+- `$array = @(1, 2, 3)`.
+- `$hash = @{Key = "Value"}`.
+- Umgebungsvariablen: `$env:USERNAME`, `$env:COMPUTERNAME`.
+
+**Ausführungspolicy:**
+- `Get-ExecutionPolicy` → aktuelle Policy.
+- `Set-ExecutionPolicy RemoteSigned` → Skripte ausführen (Admin).
+- Policies: Restricted (keine Skripte), RemoteSigned (lokale Skripte OK, remote signiert), Unrestricted (alle).
+
+**PowerShell ISE / VS Code:**
+- ISE: Eingebaut (Windows PowerShell 5.1).
+- VS Code + PowerShell-Extension: Moderner, für PS 7.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: PowerShell-Grundlagen anwenden.
+
+Schritte:
+1. PowerShell öffnen (als Admin): `Win + X` → "Windows PowerShell (Admin)" oder "Terminal".
+2. `Get-Help Get-Process` → Hilfe anzeigen.
+3. `Get-Process | Sort-Object CPU -Descending | Select-Object -First 5` → Top-5 CPU-Prozesse.
+4. `Get-Service | Where-Object Status -eq 'Stopped'` → gestoppte Dienste.
+5. `Get-ChildItem C:\Windows | Select-Object Name, Length | Sort-Object Length -Descending | Select-Object -First 10` → größte Dateien.
+6. `$name = "TestUser"; Write-Host "Hallo $name"` → Variable nutzen.
+7. `Get-Process | Export-Csv C:\Lab\processes.csv` → Export.
+8. `Get-ExecutionPolicy` → Policy prüfen.
+
+**Erwartetes Ergebnis:** PowerShell-Grundlagen verstanden; Cmdlets angewendet.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Skript kann nicht ausgeführt werden – Execution Policy"**
+- Symptom: "Die Ausführung von Skripts ist auf diesem System deaktiviert."
+- Ursache: Execution Policy auf "Restricted".
+- Diagnose: `Get-ExecutionPolicy`.
+- Lösung: `Set-ExecutionPolicy RemoteSigned -Scope CurrentUser` (als Admin).
+- Prävention: Execution Policy dokumentieren; nicht auf "Unrestricted" setzen (Sicherheit).
+
+**Fehler 2: "Cmdlet nicht gefunden"**
+- Symptom: "Der Begriff 'X' ist kein Cmdlet, keine Funktion..."
+- Ursache: Modul nicht geladen; Tippfehler; Cmdlet nicht in dieser PS-Version.
+- Diagnose: `Get-Command X` → gefunden?; Modul prüfen.
+- Lösung: Modul importieren (`Import-Module`); PS-Version prüfen (`$PSVersionTable`).
+- Prävention: Modul-Verfügbarkeit prüfen; Dokumentation.
+
+**Fehler 3: "Pipeline gibt keine Ergebnisse"**
+- Symptom: Cmdlet gibt nichts aus, obwohl Daten vorhanden.
+- Ursache: Filter zu streng; falscher Eigenschaftsname; Objekttyp.
+- Diagnose: Zwischenschritte prüfen (`Get-Process | Where-Object CPU -gt 0`).
+- Lösung: Filter lockern; Eigenschaftsnamen prüfen (`Get-Process | Get-Member`).
+- Prävention: Schrittweise Pipeline aufbauen; `Get-Member` nutzen.
+
+**Fehler 4: "Skript läuft, aber keine Ausgabe"**
+- Symptom: Skript beendet ohne Fehler, aber keine Ausgabe.
+- Ursache: Ausgabe nicht angezeigt; `Write-Host` fehlt; Variable nicht ausgegeben.
+- Diagnose: Skript prüfen; `Write-Output` oder `Write-Host` hinzufügen.
+- Lösung: Ausgabe explizit machen.
+- Prävention: Skript-Struktur planen; Testen.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist das Format von Cmdlets?
+   a) Noun-Verb
+   b) Verb-Noun (z. B. Get-Process) ✓
+   c) Adjektiv-Noun
+   d) Verb-Verb
+
+2. Was macht die Pipeline (`|`)?
+   a) Text übergeben
+   b) Objekte von einem Cmdlet zum nächsten übergeben ✓
+   c) Dateien kopieren
+   d) Netzwerk verbinden
+
+3. Welche Execution Policy erlaubt lokale Skripte ohne Signatur?
+   a) Restricted
+   b) RemoteSigned ✓
+   c) Unrestricted
+   d) AllSigned
+
+4. Was macht `Get-Member`?
+   a) Listet Cmdlets
+   b) Zeigt Eigenschaften und Methoden eines Objekts ✓
+   c) Zeigt Hilfe
+   d) Zeigt Variablen
+
+5. Wie greift man auf eine Umgebungsvariable zu?
+   a) `$env:USERNAME` ✓
+   b) `%USERNAME%`
+   c) `$USERNAME`
+   d) `env:USERNAME`
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #14001:** "User: 'Ich habe ein PowerShell-Skript von einem Kollegen bekommen, aber es lässt sich nicht ausführen. Fehlermeldung: Ausführung von Skripts deaktiviert.'"
+
+**Lösung (aufklappbar):**
+1. `Get-ExecutionPolicy` → aktuelle Policy prüfen.
+2. Wenn Restricted: `Set-ExecutionPolicy RemoteSigned -Scope CurrentUser` (als Admin).
+3. Skript erneut ausführen.
+4. Wenn immer noch Fehler: Skript-Blockierung prüfen (Rechtsklick → Eigenschaften → "Zulassen").
+5. Sicherheit: Skript-Inhalt prüfen (nicht blind ausführen).
+6. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100) + PowerShell 5.1/7
+- Quellen: Microsoft Learn Windows 11 Overview; CompTIA A+ V15 Exam Objectives (Core 2)
+- UNGEPRÜFT: PowerShell-Cmdlet-Syntax – in Lab verifizieren
+- UNGEPRÜFT: Execution Policy Details – in Microsoft-Docs verifizieren
+- UNGEPRÜFT: PowerShell 7 vs 5.1 Unterschiede – in Microsoft-Docs verifizieren

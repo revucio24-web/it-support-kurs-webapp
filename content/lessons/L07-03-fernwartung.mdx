@@ -1,0 +1,159 @@
+---
+title: "Modul 7 – Lektion 3: Fernwartung und Remote-Support-Tools"
+level: 1
+module: 7
+slug: "modul-7-sicherheit-03-fernwartung"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100)"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "https://assets.ctfassets.net/82ripq7fjls2/6I8WL66IBa1AUovioDGrnM/f74a7eca336fd4e4c8e723a1f893086d/CompTIA-A-220-1202-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 7 – Lektion 3: Fernwartung und Remote-Support-Tools
+
+## 1. Lernziele
+- Du kennst die Remote-Support-Tools (RDP, Quick Assist, TeamViewer, etc.).
+- Du kannst Remote-Support sicher durchführen.
+- Du kannst RDP-Probleme diagnostizieren.
+- Du kennst die Sicherheitsaspekte von Fernwartung.
+
+## 2. Theorie kompakt
+
+**Remote-Support-Tools:**
+
+| Tool | Typ | Vorteile | Nachteile | Einsatz |
+|---|---|---|---|---|
+| **RDP (Remote Desktop)** | Eingebaut (Pro/Enterprise) | Schnell, nativ, verschlüsselt | Nur Pro/Enterprise als Host; Port 3389 (Angriffsziel) | Interner Admin-Zugriff |
+| **Quick Assist** | Eingebaut (Win10/11) | Kostenlos, einfach, keine Installation | Beide Seiten müssen Windows 10/11 haben | Ad-hoc Support |
+| **TeamViewer** | Drittanbieter | Cross-Platform, einfach | Lizenzkosten für kommerziell; Sicherheitsbedenken | Externer Support |
+| **AnyDesk** | Drittanbieter | Schnell, leicht | Lizenzkosten | Externer Support |
+| **Chrome Remote Desktop** | Browser-basiert | Kostenlos, einfach | Google-Konto nötig | Ad-hoc Support |
+| **Intune Remote Help** | M365/Intune | Integriert, sicher, auditierbar | Intune-Lizenz nötig | Enterprise |
+
+**RDP (Remote Desktop Protocol):**
+- Port 3389 (TCP/UDP).
+- Host: Windows Pro/Enterprise/Education (Home nicht).
+- Client: Alle Windows-Editionen (`mstsc.exe`).
+- Einstellungen: Einstellungen → System → Remotedesktop (Pro/Enterprise).
+- Network Level Authentication (NLA): Authentifizierung vor Session (sicherer).
+- RDP-Gateway: Für Zugriff über Internet (VPN oder Gateway).
+
+**Quick Assist:**
+- `Win + Ctrl + Q` oder Suche "Quick Assist".
+- Helfer generiert Code → User gibt Code ein → Verbindung.
+- Beide Seiten müssen Windows 10/11 haben.
+- Keine Installation nötig.
+
+**Sicherheitsaspekte:**
+- RDP nicht direkt ins Internet exponieren (Port 3389 = Angriffsziel).
+- VPN oder RDP-Gateway für Remote-Zugriff.
+- MFA für RDP (über Gateway).
+- Session-Timeout und Disconnect bei Inaktivität.
+- User-Erlaubnis vor Remote-Zugriff.
+
+**RDP-Probleme diagnostizieren:**
+- "Remote Desktop kann keine Verbindung herstellen": Firewall, RDP nicht aktiviert, Netzwerk.
+- "Die Anmeldeinformationen funktionierten nicht": Falsches Passwort, Konto gesperrt.
+- "Remotecomputer erfordert Authentifizierung auf Netzwerkebene": NLA-Problem.
+- Blackscreen: Grafiktreiber, RDP-Grafik.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Remote-Support durchführen (Quick Assist + RDP).
+
+Schritte (Quick Assist):
+1. Helfer: Quick Assist öffnen → "Jemandem helfen" → Code generieren.
+2. User: Quick Assist öffnen → "Code erhalten" → Code eingeben → "Freigeben".
+3. Helfer: "Vollständige Steuerung anfordern" → User akzeptiert.
+4. Test: Helfer öffnet Notepad auf User-PC, schreibt Text.
+5. Beenden: Session beenden.
+
+Schritte (RDP, in VM):
+1. Server-VM (Pro/Enterprise): Remotedesktop aktivieren (Einstellungen → System → Remotedesktop).
+2. Client-VM: `mstsc` → Server-IP → Anmelden.
+3. Test: Anwendung auf Server ausführen.
+
+**Erwartetes Ergebnis:** Quick Assist und RDP funktionieren; Remote-Support durchgeführt.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "RDP-Verbindung fehlschlägt – Firewall blockiert Port 3389"**
+- Symptom: "Remote Desktop kann keine Verbindung herstellen".
+- Ursache: Windows Firewall blockiert Port 3389; RDP nicht aktiviert.
+- Diagnose: `Test-NetConnection <Host> -Port 3389`; Firewall-Regeln prüfen.
+- Lösung: RDP aktivieren (Einstellungen); Firewall-Regel "Remotedesktop" aktivieren.
+- Prävention: RDP nur bei Bedarf aktivieren; Firewall-Dokumentation.
+
+**Fehler 2: "RDP-Host nicht verfügbar (Home-Edition)"**
+- Symptom: "Remotedesktop" in Einstellungen nicht vorhanden.
+- Ursache: Windows Home unterstützt keinen RDP-Host.
+- Diagnose: `winver` → "Home".
+- Lösung: Quick Assist oder Drittanbieter-Tool nutzen; oder auf Pro upgraden.
+- Prävention: Edition vor Remote-Support prüfen.
+
+**Fehler 3: "Quick Assist Code funktioniert nicht"**
+- Symptom: "Code ungültig" oder "Verbindung fehlgeschlagen".
+- Ursache: Code abgelaufen (10 Min); Netzwerkproblem; Quick Assist nicht verfügbar (ältere Windows-Version).
+- Diagnose: Code-Alter prüfen; Netzwerk; Windows-Version.
+- Lösung: Neuen Code generieren; Netzwerk prüfen; Alternative (TeamViewer, AnyDesk).
+- Prävention: Code sofort verwenden; Netzwerk stabil.
+
+**Fehler 4: "RDP-Session friert ein / Blackscreen"**
+- Symptom: RDP-Verbindung steht, aber Bildschirm schwarz oder friert ein.
+- Ursache: Grafiktreiber; Bandbreite; RDP-Grafikeinstellungen.
+- Diagnose: RDP-Einstellungen (Anzeige, Erfahrung); Event Viewer.
+- Lösung: RDP-Grafikeinstellungen reduzieren (Farbtiefe, Auflösung); Treiber aktualisieren; "Visuelle Effekte deaktivieren".
+- Prävention: RDP-Einstellungen optimieren; Bandbreite prüfen.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Auf welchem Port läuft RDP standardmäßig?
+   a) 80
+   b) 443
+   c) 3389 ✓
+   d) 22
+
+2. Welche Windows-Edition unterstützt RDP-Host?
+   a) Home
+   b) Pro/Enterprise/Education ✓
+   c) Alle
+   d) Keine
+
+3. Was ist Quick Assist?
+   a) Ein VPN
+   b) Ein eingebautes Remote-Support-Tool (kostenlos, kein Install) ✓
+   c) Ein Antivirus
+   d) Ein Backup-Tool
+
+4. Warum sollte RDP nicht direkt ins Internet exponiert werden?
+   a) Weil es langsam ist
+   b) Weil Port 3389 ein häufiges Angriffsziel ist ✓
+   c) Weil es teuer ist
+   d) Weil es nicht funktioniert
+
+5. Was ist Network Level Authentication (NLA)?
+   a) Verschlüsselung der Daten
+   b) Authentifizierung vor Session-Aufbau (sicherer) ✓
+   c) Ein VPN
+   d) Ein Firewall-Regel
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #8003:** "User: 'Ich kann mich nicht per Remote Desktop mit meinem Büro-PC verbinden. Ich bin im Homeoffice.'"
+
+**Lösung (aufklappbar):**
+1. Prüfen: Ist der Büro-PC eingeschaltet? RDP aktiviert (Pro/Enterprise)?
+2. Netzwerk: VPN zum Büro aktiv? (RDP über Internet ohne VPN = unsicher/blockiert).
+3. Test: `Test-NetConnection <Büro-PC-IP> -Port 3389` (über VPN).
+4. Wenn Port nicht erreichbar: Firewall, RDP-Gateway, VPN prüfen.
+5. Alternative: Quick Assist oder Intune Remote Help (falls verfügbar).
+6. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100)
+- Quellen: Microsoft Learn Windows 11 Overview; CompTIA A+ V15 Exam Objectives (Core 2) – Security/Remote
+- UNGEPRÜFT: RDP-Ports (3389 TCP/UDP) – Standard, aber in Microsoft-Docs verifizieren
+- UNGEPRÜFT: Quick Assist Verfügbarkeit (Windows 10/11) – aus allgemeinem Wissen
+- UNGEPRÜFT: Intune Remote Help Details – in Microsoft-Docs verifizieren

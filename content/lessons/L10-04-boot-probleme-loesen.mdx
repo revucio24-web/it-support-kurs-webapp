@@ -1,0 +1,156 @@
+---
+title: "Modul 10 – Lektion 4: Boot-Probleme lösen (WinRE, Bootrec, BCD)"
+level: 2
+module: 10
+slug: "modul-10-boot-recovery-04-boot-probleme-loesen"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100)"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "https://assets.ctfassets.net/82ripq7fjls2/6I8WL66IBa1AUovioDGrnM/f74a7eca336fd4e4c8e723a1f893086d/CompTIA-A-220-1202-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 10 – Lektion 4: Boot-Probleme lösen (WinRE, Bootrec, BCD)
+
+## 1. Lernziele
+- Du kannst Boot-Probleme mit WinRE und Bootrec lösen.
+- Du kannst BCD (Boot Configuration Data) reparieren.
+- Du kannst den MBR/GPT reparieren.
+- Du kannst ein In-Place-Upgrade durchführen.
+
+## 2. Theorie kompakt
+
+**Bootrec-Befehle (in WinRE CMD):**
+- `bootrec /fixmbr` – Repariert den Master Boot Record (MBR). (Legacy/MBR-Systeme.)
+- `bootrec /fixboot` – Schreibt einen neuen Boot-Sektor.
+- `bootrec /scanos` – Scannt nach Windows-Installationen.
+- `bootrec /rebuildbcd` – Sucht nach Windows-Installationen und fügt sie zum BCD hinzu.
+
+**BCD-Befehle (bcdedit):**
+- `bcdedit /enum` – Boot-Einträge anzeigen.
+- `bcdedit /set {default} device partition=C:` – Boot-Device setzen.
+- `bcdedit /set {default} osdevice partition=C:` – OS-Device setzen.
+- `bcdedit /set {default} path \Windows\system32\winload.efi` – Boot-Loader-Pfad.
+- `bcdedit /deletevalue {current} safeboot` – Safe Mode deaktivieren.
+- `bcdedit /export C:\BCD_Backup` – BCD exportieren (Backup).
+- `bcdedit /import C:\BCD_Backup` – BCD importieren.
+
+**BCD neu erstellen (bcdboot):**
+- `bcdboot C:\Windows` – Erstellt BCD-Dateien neu (UEFI/BIOS).
+- `bcdboot C:\Windows /s S: /f UEFI` – Auf bestimmter Partition (S:) für UEFI.
+- Nützlich bei: BCD beschädigt, Boot-Partition gelöscht.
+
+**In-Place-Upgrade (Reparatur-Installation):**
+- Windows 11 neu installieren, ohne Daten/Apps zu verlieren.
+- Voraussetzung: Windows startet noch (oder von Installationsmedium booten).
+- Prozess: Installationsmedium (USB/ISO) → "Jetzt installieren" → "Upgrade: Windows und persönliche Dateien behalten".
+- Dauer: 30-60 Min; PC nutzbar während Installation (teilweise).
+
+**Boot-Problem-Diagnose-Workflow:**
+1. **Symptom:** Was genau passiert? (BSOD, Boot Loop, "OS not found", etc.)
+2. **Safe Mode:** Funktioniert Safe Mode? → Wenn ja: Treiber/Software-Problem.
+3. **WinRE:** Startup Repair versuchen.
+4. **Bootrec:** MBR/BCD reparieren.
+5. **SFC/DISM:** Systemdateien reparieren.
+6. **Systemwiederherstellung:** Auf Wiederherstellungspunkt zurück.
+7. **In-Place-Upgrade:** Windows neu installieren (Daten behalten).
+8. **Neuinstallation:** Letzte Option (Daten sichern!).
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Boot-Probleme simulieren und reparieren (in VM).
+
+Schritte (Simulation in VM):
+1. BCD-Backup erstellen: `bcdedit /export C:\Lab\BCD_Backup`.
+2. Safe Mode aktivieren: `bcdedit /set {current} safeboot minimal` → Neustart → Safe Mode.
+3. Safe Mode deaktivieren: `bcdedit /deletevalue {current} safeboot` → Neustart → Normal.
+4. BCD-Einträge prüfen: `bcdedit /enum`.
+5. (Optional) BCD neu erstellen: `bcdboot C:\Windows` (Vorsicht!).
+6. WinRE öffnen: Shift + Neustart → Problembehandlung → Erweiterte Optionen.
+
+**Erwartetes Ergebnis:** Boot-Konfiguration verstanden; BCD verwaltet; Safe Mode funktioniert.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "bootrec /fixboot – Zugriff verweigert"**
+- Symptom: "Zugriff verweigert" bei `bootrec /fixboot`.
+- Ursache: UEFI-System; bootrec funktioniert nur bei MBR/Legacy.
+- Diagnose: BIOS-Modus prüfen (UEFI vs. Legacy).
+- Lösung: Bei UEFI: `bcdboot C:\Windows` nutzen; oder WinRE → Startup Repair.
+- Prävention: Boot-Modus (UEFI/BIOS) dokumentieren.
+
+**Fehler 2: "BCD beschädigt – kein Boot"**
+- Symptom: "BCD fehlt" oder "Boot Configuration Data store could not be opened".
+- Ursache: BCD-Datei beschädigt oder gelöscht.
+- Diagnose: `bcdedit /enum` → Fehler.
+- Lösung: `bcdboot C:\Windows` (neu erstellen); oder WinRE → Startup Repair.
+- Prävention: BCD-Backup (`bcdedit /export`).
+
+**Fehler 3: "In-Place-Upgrade schlägt fehl"**
+- Symptom: Upgrade bricht ab oder "Windows konnte nicht installiert werden".
+- Ursache: Nicht genug Speicherplatz; inkompatible Software; beschädigte Systemdateien.
+- Diagnose: Fehlercode; Speicherplatz; installierte Software.
+- Lösung: Speicherplatz freigeben; inkompatible Software deinstallieren; SFC/DISM vorher.
+- Prävention: Vor Upgrade: Backup, Speicherplatz prüfen, Software-Inventar.
+
+**Fehler 4: "MBR/GPT beschädigt – Disk nicht erkannt"**
+- Symptom: "No bootable device" oder Disk nicht im BIOS.
+- Ursache: MBR/GPT beschädigt; Disk-Verbindung lose; Disk defekt.
+- Diagnose: BIOS → Disk erkannt?; `diskpart` (WinRE) → `list disk`.
+- Lösung: Kabel prüfen; `bootrec /fixmbr`; `diskpart` → `clean` + neu partitionieren (Datenverlust!).
+- Prävention: Disk-Health prüfen; Kabel sichern.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was macht `bootrec /fixmbr`?
+   a) Repariert Systemdateien
+   b) Repariert den Master Boot Record (MBR) ✓
+   c) Repariert den BCD
+   d) Repariert die Registry
+
+2. Was macht `bcdboot C:\Windows`?
+   a) Erstellt BCD-Dateien neu ✓
+   b) Repariert den MBR
+   c) Repariert Systemdateien
+   d) Erstellt ein Backup
+
+3. Was ist ein In-Place-Upgrade?
+   a) Windows neu installieren (Daten löschen)
+   b) Windows neu installieren, Daten/Apps behalten ✓
+   c) Ein Update
+   d) Ein Backup
+
+4. Wann nutzt man `bootrec /rebuildbcd`?
+   a) Bei jedem Boot
+   b) Wenn BCD beschädigt ist und Windows-Installationen gesucht werden sollen ✓
+   c) Bei Virenscan
+   d) Bei Backup
+
+5. Was ist WinRE?
+   a) Windows Recovery Environment – Wiederherstellungsumgebung ✓
+   b) Windows Remote Environment
+   c) Windows Registry Editor
+   d) Windows Resource Explorer
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #11004:** "User: 'Mein PC zeigt beim Start: Operating System not found. Ich habe nichts geändert.'"
+
+**Lösung (aufklappbar):**
+1. BIOS/UEFI öffnen → Boot-Reihenfolge prüfen (Festplatte/SSD an erster Stelle?).
+2. Disk im BIOS erkannt? Wenn nein: Kabel prüfen; Disk defekt?
+3. Wenn Disk erkannt, aber OS not found: WinRE booten (von USB).
+4. WinRE → Command Prompt:
+   a) `bootrec /scanos` → Windows-Installationen suchen.
+   b) `bootrec /rebuildbcd` → BCD neu erstellen.
+   c) `bcdboot C:\Windows` → BCD-Dateien neu erstellen.
+5. Wenn nichts hilft: Startup Repair; oder In-Place-Upgrade.
+6. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100)
+- Quellen: Microsoft Learn Windows 11 Overview; CompTIA A+ V15 Exam Objectives (Core 2)
+- UNGEPRÜFT: bootrec/bcdedit/bcdboot-Syntax – in Lab verifizieren
+- UNGEPRÜFT: In-Place-Upgrade-Prozess – in Microsoft-Docs verifizieren
+- UNGEPRÜFT: BIOS/UEFI-Zugriff (Tasten) – herstellerabhängig

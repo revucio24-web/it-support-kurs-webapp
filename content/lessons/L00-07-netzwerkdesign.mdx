@@ -1,0 +1,170 @@
+---
+title: "Modul 0 – Lektion 7: Netzwerkdesign – NAT, Host-only, Internal Network"
+level: 1
+module: 0
+slug: "modul-0-homelab-07-netzwerkdesign"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100) – Host + VMware Workstation Pro"
+sources:
+  - "https://tech-insider.org/vmware-vs-virtualbox-2026/ (Abruf 2026-10-19)"
+  - "https://www.info2soft.com/blogs/virtualbox-vs-vmware.html (Abruf 2026-10-19)"
+---
+
+# Modul 0 – Lektion 7: Netzwerkdesign – NAT, Host-only, Internal Network
+
+## 1. Lernziele
+- Du kennst die drei VMware-Netzwerkmodi (NAT, Host-only, Bridged) und Internal Network.
+- Du kannst für jedes Lab-Szenario den richtigen Modus wählen.
+- Du kannst den Virtual Network Editor (VMware) nutzen.
+- Du kannst ein isoliertes Lab-Netzwerk (Internal) für AD/DNS/DHCP einrichten.
+- Du verstehst die IP-Planung für Lab-Netze.
+
+## 2. Theorie kompakt
+
+**VMware-Netzwerkmodi:**
+
+| Modus | Beschreibung | Internet? | Host-Zugriff? | VM-zu-VM? | Einsatz |
+|---|---|---|---|---|---|
+| **NAT** (VMnet8) | VMs teilen Host-IP via NAT | Ja | Ja (über Host) | Ja (gleicher VMnet) | Internet für VMs, Updates, Downloads |
+| **Host-only** (VMnet1) | Isoliertes Netz, nur Host+VMs | Nein | Ja | Ja | Isolierte Labs, AD/DNS (kein Internet) |
+| **Bridged** (VMnet0) | VM direkt im physischen Netz | Ja | Ja | Ja (echtes Netz) | Vorsicht: VM im Heimnetz sichtbar |
+| **Internal** (Custom VMnet2+) | VM-zu-VM, kein Host, kein Internet | Nein | Nein | Ja | Isolierte Multi-VM-Labs (z. B. AD-Domain) |
+
+**Virtual Network Editor (VMware):** Edit → Virtual Network Editor (Admin-Rechte nötig). Hier VMnets konfigurieren (Subnetz, DHCP, NAT). Default: VMnet0 (Bridged), VMnet1 (Host-only), VMnet8 (NAT).
+
+**Unser Lab-Design (empfohlen):**
+
+```
+┌─────────────────────────────────────────────────┐
+│  Host (Windows 11 Home)                         │
+│  ┌──────────────┐  ┌──────────────────────┐     │
+│  │ VMnet8 (NAT) │  │ VMnet2 (Internal)    │     │
+│  │ 192.168.x.0  │  │ 192.168.100.0/24     │     │
+│  │ Internet     │  │ AD-Lab (isolated)    │     │
+│  └──────┬───────┘  └──────────┬───────────┘     │
+│         │                     │                 │
+│  ┌──────┴──────┐     ┌────────┴────────┐        │
+│  │ Win11-Client│     │ WinSrv-DC01     │        │
+│  │ (NAT)       │     │ (Internal)      │        │
+│  └─────────────┘     │ Win11-Client2   │        │
+│                      │ (Internal)      │        │
+│                      └─────────────────┘        │
+└─────────────────────────────────────────────────┘
+```
+
+- **NAT (VMnet8):** Win11-Client für Internet-Tasks (Updates, Downloads, M365).
+- **Internal (VMnet2):** AD-Lab (DC + Client) – isoliert, kein Internet, kein Host-Zugriff.
+- **Host-only (VMnet1):** Optional für Management-Zugriff vom Host auf Lab-VMs (SSH/RDP) ohne Internet.
+
+**IP-Planung Lab (Internal, VMnet2):**
+- Subnetz: 192.168.100.0/24
+- Gateway: 192.168.100.1 (optional, für Routing)
+- DC: 192.168.100.10 (statisch)
+- Client1: 192.168.100.20 (DHCP oder statisch)
+- Client2: 192.168.100.21
+- DNS: DC (192.168.100.10)
+
+**Multi-Homed VM (zwei Adapter):** Eine VM kann in zwei Netzwerken sein (z. B. NAT für Internet + Internal für AD-Lab). Nützlich für Client, der Internet braucht UND in Domain ist. Vorsicht: Routing/DNS-Konflikte.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Internal Network (VMnet2) erstellen und DC + Client verbinden.
+
+Schritte:
+1. VMware: "Edit → Virtual Network Editor" (als Admin).
+2. "Change Settings" → UAC → Ja.
+3. "Add Network" → VMnet2 → OK.
+4. VMnet2 auswählen:
+   - Type: Host-only oder Internal? Für rein VM-zu-VM: "Host virtual adapter" deaktivieren → Internal (kein Host). Für Host-Zugriff: aktiviert → Host-only.
+   - Subnet IP: 192.168.100.0, Subnet mask: 255.255.255.0.
+   - DHCP: "Use local DHCP service" deaktivieren (wir nutzen DC-DHCP) ODER aktivieren für einfache IP-Vergabe. Für AD-Lab: DC als DHCP → DHCP hier deaktivieren.
+   - "Apply".
+5. DC-VM Settings → Network Adapter → "Custom: Specific virtual network" → VMnet2. (Oder "LAN Segment" für noch mehr Isolation.)
+6. Client-VM Settings → Network Adapter → VMnet2.
+7. Beide VMs starten → IP prüfen (`ipconfig`): sollten 192.168.100.x bekommen (falls DHCP aktiv) oder manuell setzen.
+8. Konnektivität testen: `ping 192.168.100.10` (DC) vom Client, `ping 192.168.100.20` (Client) vom DC.
+9. DNS testen: `nslookup lab.local` vom Client (nach DC-DNS-Setup).
+
+**Erwartetes Ergebnis:** DC und Client im selben Internal-Netz, gegenseitig pingbar, DNS-Auflösung funktioniert.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "VMs können sich nicht pingen, obwohl gleicher VMnet"**
+- Symptom: `ping` schlägt fehl (Timeout).
+- Ursache: Windows Firewall blockiert ICMP; oder VMs in unterschiedlichen VMnets; oder Adapter nicht verbunden.
+- Diagnose: `ipconfig` auf beiden VMs (gleiches Subnetz?); VM Settings → Network Adapter → "Connected" + "Connect at power on".
+- Lösung: Firewall → "Datei- und Druckerfreigabe (Echoanforderung – ICMPv4)" aktivieren; oder temporär Firewall deaktivieren (nur Lab!); VMs neu starten.
+- Prävention: In Lab-VMs Firewall-Regel für ICMP setzen oder Firewall deaktivieren (nur isoliertes Lab).
+
+**Fehler 2: "Host kann Lab-VM nicht erreichen (Internal Network)"**
+- Symptom: Host-ping zu VM-IP schlägt fehl.
+- Ursache: Internal Network (VMnet ohne Host-Adapter) → kein Host-Zugriff by design.
+- Diagnose: Virtual Network Editor → "Host virtual adapter" für VMnet2?
+- Lösung: Falls Host-Zugriff nötig: VMnet2 auf Host-only umstellen (Host-Adapter aktivieren) → Host bekommt IP im Subnetz. Oder zweiten Adapter (Host-only) zur VM hinzufügen.
+- Prävention: Design vorher festlegen: reines VM-zu-VM (Internal) oder Host-Zugriff (Host-only).
+
+**Fehler 3: "Lab-VM hat Internet, obwohl Internal Network"**
+- Symptom: `ping 8.8.8.8` erfolgreich in Internal-VM.
+- Ursache: VM hat zweiten Adapter (NAT) oder Routing über Host.
+- Diagnose: `ipconfig` → mehrere Adapter? `route print`.
+- Lösung: Zweiten Adapter entfernen oder deaktivieren; oder DNS/Gateway leeren.
+- Prävention: Pro Lab-VM nur einen Adapter; Design dokumentieren.
+
+**Fehler 4: "DHCP vergibt falsche IP / kein IP"**
+- Symptom: VM bekommt 169.254.x.x (APIPA) oder falsches Subnetz.
+- Ursache: VMware-DHCP für VMnet2 aktiv und vergibt IPs, die mit DC-DHCP kollidieren; oder DHCP deaktiviert und keine statische IP.
+- Diagnose: Virtual Network Editor → DHCP-Status für VMnet2; `ipconfig /all`.
+- Lösung: Entweder VMware-DHCP nutzen (dann DC-DHCP deaktivieren) ODER VMware-DHCP deaktivieren und DC-DHCP nutzen (empfohlen für AD-Lab). Statische IPs für DC.
+- Prävention: IP-Planung dokumentieren; DC immer statische IP.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Welcher Netzwerkmodus bietet VMs Internetzugang über den Host?
+   a) Host-only
+   b) Internal
+   c) NAT ✓
+   d) Keiner
+
+2. Wann nutzt man "Internal Network"?
+   a) Für Internetzugang
+   b) Für isolierte VM-zu-VM-Kommunikation ohne Host/Internet ✓
+   c) Für Host-Zugriff auf VMs
+   d) Für Bridged-Netzwerk
+
+3. Was ist die IP 169.254.x.x (APIPA)?
+   a) Eine normale DHCP-IP
+   b) Automatische IP bei DHCP-Ausfall ✓
+   c) Eine statische IP
+   d) Eine Broadcast-Adresse
+
+4. Wo konfiguriert man VMnets in VMware?
+   a) Im BIOS
+   b) Edit → Virtual Network Editor ✓
+   c) In der VM
+   d) In der Registry
+
+5. Warum sollte ein DC-Lab nicht im Bridged-Modus laufen?
+   a) Weil es zu langsam ist
+   b) Weil der DC ins echte Netzwerk eingreifen und DNS-Konflikte verursachen kann ✓
+   c) Weil Bridged kein Internet bietet
+   d) Weil Bridged nur für Linux ist
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #1007:** "Ein Azubi hat einen DC in einer VM eingerichtet (lab.local). Seitdem können die Heimnetz-Geräte (Laptop, Handy) keine Webseiten mehr aufrufen. Der Azubi sagt, er habe 'NAT' gewählt."
+
+**Lösung (aufklappbar):**
+1. Vermutung: VM im Bridged- oder NAT-Modus mit DC-DNS, der Heimnetz-DNS überschreibt (oder DC-DHCP im echten Netz).
+2. Prüfen: VM-Netzwerkmodus (Settings → Network Adapter). Falls Bridged/NAT → sofort auf Host-only/Internal umstellen.
+3. Heimnetz-Geräte: DNS zurücksetzen (DHCP erneuern: `ipconfig /release` + `/renew`), oder Router neu starten.
+4. DC-VM: Netzwerk auf Internal (VMnet2) umstellen → Neustart.
+5. Prüfen: Heimnetz funktioniert wieder? VMs isoliert?
+6. Ursache dokumentieren: Falscher Netzwerkmodus + DC im echten Netz.
+7. Prävention: Lab-Design-Regel: AD-VMs nur Internal/Host-only.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 Home 24H2 (Build 26100) Host + VMware Workstation Pro
+- Quellen: research/quellen.md Abschnitt B1 (Hypervisor)
+- UNGEPRÜFT: VMware Workstation Pro Virtual Network Editor UI-Pfade (können sich ändern)
+- UNGEPRÜFT: Exakte Subnetz-Empfehlungen (192.168.100.0/24) – Lab-intern, keine offizielle Quelle nötig

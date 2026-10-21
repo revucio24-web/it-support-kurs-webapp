@@ -1,0 +1,157 @@
+---
+title: "Modul 5 – Lektion 1: IP-Adressen (IPv4, Subnetz, Gateway)"
+level: 1
+module: 5
+slug: "modul-5-netzwerk-01-ip-adressen"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100)"
+sources:
+  - "https://assets.ctfassets.net/82ripq7fjls2/1oSdlyujpaX3GrM0rir6Ge/91afb2be72785281e8fb4c0d9a70c6f4/CompTIA-A-220-1201-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+---
+
+# Modul 5 – Lektion 1: IP-Adressen (IPv4, Subnetz, Gateway)
+
+## 1. Lernziele
+- Du kannst eine IPv4-Adresse und ihre Komponenten (Netzwerk/Host) erklären.
+- Du kannst Subnetzmasken (CIDR) umrechnen.
+- Du kannst Gateway und DNS-Server zuordnen.
+- Du kannst IP-Konfiguration in Windows prüfen und ändern.
+
+## 2. Theorie kompakt
+
+**IPv4-Adresse:** 32 Bit, dargestellt als 4 Oktette (0-255), z. B. `192.168.1.10`.
+
+**Komponenten:**
+- **Netzwerkanteil:** Identifiziert das Netzwerk (z. B. 192.168.1.0).
+- **Host-Anteil:** Identifiziert den Host im Netzwerk (z. B. .10).
+- **Subnetzmaske:** Trennt Netzwerk- und Host-Anteil (z. B. 255.255.255.0 = /24).
+- **Default Gateway:** Router-IP für Zugriff auf andere Netzwerke (z. B. 192.168.1.1).
+- **DNS-Server:** Übersetzt Domainnamen in IP-Adressen (z. B. 8.8.8.8, 1.1.1.1).
+
+**Private IP-Bereiche (RFC 1918):**
+- 10.0.0.0/8 (10.x.x.x)
+- 172.16.0.0/12 (172.16.x.x – 172.31.x.x)
+- 192.168.0.0/16 (192.168.x.x)
+
+**Spezielle Adressen:**
+- **127.0.0.1 (localhost):** Loopback – eigener PC.
+- **169.254.x.x (APIPA):** Automatische IP bei DHCP-Ausfall.
+- **0.0.0.0:** "Alle Adressen" / "Keine IP".
+- **255.255.255.255:** Broadcast.
+
+**Subnetzmasken (CIDR):**
+
+| CIDR | Subnetzmaske | Hosts (nutzbar) | Typischer Einsatz |
+|---|---|---|---|
+| /8 | 255.0.0.0 | ~16,7 Mio | Sehr große Netzwerke |
+| /16 | 255.255.0.0 | ~65.534 | Mittlere Netzwerke |
+| /24 | 255.255.255.0 | 254 | Heim-/Büronetzwerk |
+| /25 | 255.255.255.128 | 126 | Halbiertes /24 |
+| /26 | 255.255.255.192 | 62 | Viertel /24 |
+| /30 | 255.255.255.252 | 2 | Punkt-zu-Punkt-Link |
+| /32 | 255.255.255.255 | 1 | Einzelhost |
+
+**Formel:** Nutzbare Hosts = 2^(32-CIDR) - 2 (Netzwerk- und Broadcast-Adresse).
+
+**IPv6 (Kurzüberblick):**
+- 128 Bit, hexadezimal, z. B. `2001:db8::1`.
+- Link-Local: `fe80::/10`.
+- Loopback: `::1`.
+- In Windows: `ipconfig` zeigt IPv6-Adressen.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: IP-Konfiguration prüfen und ändern.
+
+Schritte:
+1. `ipconfig /all` → IPv4-Adresse, Subnetzmaske, Gateway, DNS, DHCP-Server, MAC notieren.
+2. `ipconfig` → Kurzübersicht.
+3. Einstellungen → Netzwerk → Adapter → "IP-Einstellungen bearbeiten" → Manuell → IP `192.168.1.50`, Subnetz `255.255.255.0`, Gateway `192.168.1.1`, DNS `8.8.8.8`.
+4. `ipconfig /all` → Änderung prüfen.
+5. Zurück auf DHCP: "Automatisch (DHCP)".
+6. `ipconfig /release` + `/renew` → neue IP vom DHCP.
+
+**Erwartetes Ergebnis:** IP manuell gesetzt und zurück auf DHCP; Konfiguration verstanden.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Falsches Subnetz → kein Netzwerkzugriff"**
+- Symptom: Statische IP gesetzt, aber kein Zugriff auf Gateway/Internet.
+- Ursache: Subnetzmaske falsch (z. B. /16 statt /24) → Host in anderem Subnetz als Gateway.
+- Diagnose: `ipconfig` → IP und Gateway vergleichen (gleiches Subnetz?).
+- Lösung: Subnetzmaske korrigieren (meist /24 für Heimnetz).
+- Prävention: Subnetzmaske mit Gateway vergleichen; DHCP nutzen.
+
+**Fehler 2: "Doppelte IP (IP-Konflikt)"**
+- Symptom: "Windows hat einen IP-Adresskonflikt erkannt"; Netzwerk funktioniert nicht.
+- Ursache: Zwei Geräte mit gleicher IP (statisch gesetzt).
+- Diagnose: `arp -a` → MAC-Adressen prüfen; anderer PC?
+- Lösung: IP eines Geräts ändern (DHCP oder andere statische IP).
+- Prävention: DHCP nutzen; statische IPs dokumentieren; IP-Reservierung im DHCP.
+
+**Fehler 3: "Gateway falsch → kein Internet"**
+- Symptom: Lokales Netzwerk funktioniert (Ping zu anderen PCs), aber kein Internet.
+- Ursache: Default Gateway falsch oder fehlend.
+- Diagnose: `ipconfig` → Gateway prüfen; `ping <Gateway>`.
+- Lösung: Gateway korrigieren (Router-IP, meist x.x.x.1).
+- Prävention: DHCP nutzen; Gateway dokumentieren.
+
+**Fehler 4: "DNS falsch → keine Namensauflösung"**
+- Symptom: `ping 8.8.8.8` funktioniert, aber `ping google.com` nicht.
+- Ursache: DNS-Server falsch oder nicht erreichbar.
+- Diagnose: `nslookup google.com`; `ipconfig /all` → DNS.
+- Lösung: DNS auf 8.8.8.8/1.1.1.1 oder Router-IP setzen; `ipconfig /flushdns`.
+- Prävention: Zuverlässige DNS-Server; DHCP mit korrektem DNS.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Wie viele nutzbare Hosts hat ein /24-Netzwerk?
+   a) 256
+   b) 254 ✓
+   c) 255
+   d) 128
+
+2. Was ist APIPA?
+   a) Eine statische IP
+   b) Automatische IP (169.254.x.x) bei DHCP-Ausfall ✓
+   c) Eine öffentliche IP
+   d) Ein DNS-Server
+
+3. Welcher private IP-Bereich ist 192.168.0.0/16?
+   a) 10.x.x.x
+   b) 172.16.x.x – 172.31.x.x
+   c) 192.168.x.x ✓
+   d) 127.x.x.x
+
+4. Was ist die Loopback-Adresse?
+   a) 192.168.1.1
+   b) 10.0.0.1
+   c) 127.0.0.1 ✓
+   d) 0.0.0.0
+
+5. Was macht der Default Gateway?
+   a) Übersetzt Domainnamen
+   b) Leitet Traffic zu anderen Netzwerken (Router) ✓
+   c) Vergibt IP-Adressen
+   d) Blockiert Traffic
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #6001:** "User: 'Mein PC hat Internet, aber ich kann keine Webseiten aufrufen. Nur manche funktionieren.'"
+
+**Lösung (aufklappbar):**
+1. Prüfen: `ping 8.8.8.8` (IP) → funktioniert? `ping google.com` (DNS) → funktioniert?
+2. Wenn IP ok, DNS nicht → DNS-Problem.
+3. `ipconfig /all` → DNS-Server prüfen.
+4. `nslookup google.com` → DNS testen.
+5. Lösung: DNS auf 8.8.8.8/1.1.1.1 setzen; `ipconfig /flushdns`.
+6. Wenn DNS ok, aber Browser nicht → Proxy/Firewall prüfen.
+7. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100)
+- Quellen: CompTIA A+ V15 Exam Objectives (Core 1) – Networking; Microsoft Learn Windows 11 Overview
+- UNGEPRÜFT: CIDR-Host-Anzahlen (Formel) – Standard, aber in Quelle verifizieren
+- UNGEPRÜFT: IPv6-Details – aus allgemeinem Wissen

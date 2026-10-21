@@ -1,0 +1,160 @@
+---
+title: "Modul 9 – Lektion 1: Ereignisanzeige und Systemüberwachung"
+level: 2
+module: 9
+slug: "modul-9-windows-tiefe-01-ereignisanzeige"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100)"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "https://assets.ctfassets.net/82ripq7fjls2/6I8WL66IBa1AUovioDGrnM/f74a7eca336fd4e4c8e723a1f893086d/CompTIA-A-220-1202-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 9 – Lektion 1: Ereignisanzeige und Systemüberwachung
+
+## 1. Lernziele
+- Du kannst die Ereignisanzeige (Event Viewer) professionell nutzen.
+- Du kannst benutzerdefinierte Ansichten erstellen.
+- Du kannst wichtige Event-IDs interpretieren.
+- Du kannst Systemüberwachung mit Performance Monitor durchführen.
+
+## 2. Theorie kompakt
+
+**Ereignisanzeige (eventvwr.msc):**
+- Zentrales Tool für System-/Anwendungs-/Sicherheits-Logs.
+- **Windows-Protokolle:** Anwendung, Sicherheit, Setup, System, Weitergeleitete Ereignisse.
+- **Anwendungs- und Dienstprotokolle:** Spezifische Logs (z. B. Microsoft-Windows-PowerShell/Operational, Microsoft-Windows-TaskScheduler).
+
+**Benutzerdefinierte Ansichten:**
+- Ansicht → Benutzerdefinierte Ansichten erstellen → Filter nach Event-Level, Quelle, Event-ID, Zeitraum.
+- Speichern für wiederholte Nutzung.
+
+**Wichtige Event-IDs:**
+
+| Event-ID | Quelle | Bedeutung |
+|---|---|---|
+| 41 | Kernel-Power | Unerwarteter Neustart/Absturz |
+| 6008 | EventLog | Unerwartetes Herunterfahren |
+| 1001 | BugCheck | Bluescreen (BSOD) mit Stop-Code |
+| 4624 | Security | Erfolgreiche Anmeldung |
+| 4625 | Security | Fehlgeschlagene Anmeldung |
+| 4720 | Security | Benutzerkonto erstellt |
+| 4726 | Security | Benutzerkonto gelöscht |
+| 7001 | Service Control Manager | Dienst-Startfehler |
+| 7009 | Service Control Manager | Timeout beim Dienst-Start |
+| 1000 | Application Error | Anwendung abgestürzt |
+| 1002 | Application Hang | Anwendung reagiert nicht |
+
+**Performance Monitor (perfmon.msc):**
+- Echtzeit-Überwachung von CPU, RAM, Disk, Netzwerk.
+- **Leistungsindikatoren (Counters):** z. B. Processor\% Processor Time, Memory\Available MBytes, PhysicalDisk\% Disk Time.
+- **Daten-Collector-Sets:** Aufzeichnung über Zeitraum (für Trend-Analyse).
+- **Berichte:** Systemdiagnose, Systemleistung.
+
+**Resource Monitor (resmon.exe):**
+- Detaillierte Echtzeit-Analyse: CPU, Memory, Disk, Network.
+- Pro Prozess: welche Dateien/Dienste nutzen Ressourcen.
+- Nützlich für: "Welcher Prozess nutzt 100% Disk?"
+
+**Reliability Monitor (perfmon /rel):**
+- Grafische Darstellung von Systemstabilität über Zeit.
+- Zeigt Abstürze, Updates, Fehler.
+- Nützlich für: "Wann hat das Problem begonnen?"
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Ereignisanzeige und Performance Monitor nutzen.
+
+Schritte:
+1. `eventvwr.msc` → System-Log → Filter: Event-Level "Fehler" und "Warnung" (letzte 24 h).
+2. Benutzerdefinierte Ansicht erstellen: Name "Kritische Fehler", Filter: Level Critical+Error, Quelle: alle, Zeitraum: letzte 7 Tage.
+3. `perfmon.msc` → Leistungsüberwachung → Indikatoren hinzufügen: Processor\% Processor Time, Memory\Available MBytes, PhysicalDisk\% Disk Time.
+4. Last erzeugen (z. B. `stress`-Tool oder Prime95) → Indikatoren beobachten.
+5. `resmon.exe` → Disk-Tab → welcher Prozess nutzt Disk?
+6. `perfmon /rel` → Reliability Monitor → Systemstabilität prüfen.
+
+**Erwartetes Ergebnis:** Logs gefiltert; Performance-Indikatoren verstanden; keine kritischen Fehler.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Zu viele Events – relevante nicht findbar"**
+- Symptom: Tausende Events; Übersicht verloren.
+- Ursache: Kein Filter; zu breite Ansicht.
+- Diagnose: Filter setzen.
+- Lösung: Benutzerdefinierte Ansicht erstellen; nach Event-ID filtern.
+- Prävention: Regelmäßige Log-Reviews; Alerts.
+
+**Fehler 2: "Event-ID 41 (Kernel-Power) – unerwarteter Neustart"**
+- Symptom: PC startet unerwartet neu; Event-ID 41 im Log.
+- Ursache: Stromausfall, Überhitzung, Hardware-Defekt, Treiber.
+- Diagnose: Weitere Events (6008, 1001) prüfen; Temperatur; PSU.
+- Lösung: Hardware prüfen; Treiber aktualisieren; PSU ersetzen.
+- Prävention: Temperatur-Monitoring; USV; regelmäßige Hardware-Checks.
+
+**Fehler 3: "Performance Monitor zeigt 100% Disk – System langsam"**
+- Symptom: System träge; Disk-Auslastung bei 100%.
+- Ursache: Defekte Festplatte; zu wenig RAM (Paging); Antivirus-Scan.
+- Diagnose: `resmon` → Disk-Tab → welcher Prozess?
+- Lösung: SMART prüfen (CrystalDiskInfo); RAM erhöhen; Antivirus-Ausschlüsse.
+- Prävention: Regelmäßige SMART-Checks; RAM-Upgrade.
+
+**Fehler 4: "Reliability Monitor zeigt Absturz-Serie"**
+- Symptom: Mehrere Abstürze in kurzer Zeit.
+- Ursache: Treiber, Hardware, Update.
+- Diagnose: Reliability Monitor → Details (welche Anwendung?).
+- Lösung: Treiber aktualisieren; Hardware prüfen; Update rückgängig machen.
+- Prävention: Regelmäßige Updates; Hardware-Monitoring.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was zeigt Event-ID 41?
+   a) Erfolgreiche Anmeldung
+   b) Unerwarteter Neustart/Absturz (Kernel-Power) ✓
+   c) Dienst-Start
+   d) Windows-Update
+
+2. Welches Tool zeigt Echtzeit-Ressourcennutzung pro Prozess?
+   a) perfmon
+   b) resmon (Resource Monitor) ✓
+   c) eventvwr
+   d) msinfo32
+
+3. Was ist der Reliability Monitor?
+   a) Ein Antivirus
+   b) Grafische Darstellung der Systemstabilität über Zeit ✓
+   c) Ein Backup-Tool
+   d) Ein Netzwerk-Monitor
+
+4. Wie erstellt man eine benutzerdefinierte Ansicht in der Ereignisanzeige?
+   a) Ansicht → Benutzerdefinierte Ansichten erstellen ✓
+   b) Datei → Neu
+   c) Bearbeiten → Filter
+   d) Extras → Optionen
+
+5. Welcher Leistungsindikator zeigt die CPU-Auslastung?
+   a) Memory\Available MBytes
+   b) Processor\% Processor Time ✓
+   c) PhysicalDisk\% Disk Time
+   d) Network Interface\Bytes Total/sec
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #10001:** "User: 'Mein PC startet seit gestern unerwartet neu. Ich verliere meine Arbeit.'"
+
+**Lösung (aufklappbar):**
+1. Event Viewer → System-Log → Event-ID 41 (Kernel-Power) suchen → Zeitstempel.
+2. Weitere Events: 6008 (unerwartetes Herunterfahren), 1001 (BSOD).
+3. Temperatur prüfen (HWiNFO) → Überhitzung?
+4. SMART prüfen (CrystalDiskInfo) → Festplatte?
+5. PSU prüfen (Wattage ausreichend?).
+6. Treiber aktualisieren (GPU, Chipsatz).
+7. Windows Update prüfen (letzte Updates).
+8. Dokumentieren; User informieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100)
+- Quellen: Microsoft Learn Windows 11 Overview; CompTIA A+ V15 Exam Objectives (Core 2)
+- UNGEPRÜFT: Event-IDs (41, 6008, 1001, etc.) – in Microsoft-Docs verifizieren
+- UNGEPRÜFT: perfmon/resmon Befehle und Indikatoren – in Lab verifizieren
+- UNGEPRÜFT: Reliability Monitor (perfmon /rel) – in Lab verifizieren

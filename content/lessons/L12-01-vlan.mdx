@@ -1,0 +1,150 @@
+---
+title: "Modul 12 – Lektion 1: VLAN und Netzwerksegmentierung"
+level: 2
+module: 12
+slug: "modul-12-netzwerk-tiefe-01-vlan"
+last_verified: "2026-10-19"
+windows_version: "Allgemein (Netzwerk)"
+sources:
+  - "https://assets.ctfassets.net/82ripq7fjls2/1oSdlyujpaX3GrM0rir6Ge/91afb2be72785281e8fb4c0d9a70c6f4/CompTIA-A-220-1201-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 12 – Lektion 1: VLAN und Netzwerksegmentierung
+
+## 1. Lernziele
+- Du kannst VLAN (Virtual LAN) erklären.
+- Du kannst VLANs konfigurieren und Troubleshooten.
+- Du kannst Trunking (802.1Q) erklären.
+- Du kannst Netzwerksegmentierung begründen.
+
+## 2. Theorie kompakt
+
+**VLAN (Virtual LAN):** Logische Segmentierung eines physischen Netzwerks in mehrere Broadcast-Domains. Ermöglicht Trennung von Traffic (z. B. VoIP, Gäste, Management).
+
+**VLAN-Konzepte:**
+- **Access Port:** Port gehört zu einem VLAN (untagged). Endgeräte (PCs, Drucker) verbinden sich hier.
+- **Trunk Port:** Port transportiert mehrere VLANs (tagged mit 802.1Q). Verbindet Switches/Router.
+- **Native VLAN:** VLAN, das auf einem Trunk untagged übertragen wird (Standard: VLAN 1). Sicherheitsrisiko, wenn nicht konfiguriert.
+- **802.1Q Tag:** 4-Byte-Tag im Ethernet-Frame (VLAN ID 1-4094).
+
+**VLAN-Konfiguration (Switch, Beispiel Cisco):**
+- `vlan 10` → VLAN 10 erstellen.
+- `name MANAGEMENT` → VLAN benennen.
+- `interface fa0/1` → `switchport mode access` → `switchport access vlan 10` → Access Port für VLAN 10.
+- `interface gi0/1` → `switchport mode trunk` → `switchport trunk allowed vlan 10,20,30` → Trunk Port.
+
+**Router-on-a-Stick:** Router mit Subinterfaces für Inter-VLAN-Routing (ein physischer Port, mehrere logische).
+
+**Inter-VLAN-Routing:**
+- Ohne Router: VLANs können nicht miteinander kommunizieren.
+- Mit Router (Router-on-a-Stick) oder Layer-3-Switch: Routing zwischen VLANs.
+
+**Netzwerksegmentierung (Best Practices):**
+- Management-VLAN (nur Admins).
+- User-VLAN (Arbeitsplätze).
+- Server-VLAN (Server, DCs).
+- Gast-VLAN (Besucher, isoliert).
+- VoIP-VLAN (Telefonie).
+
+**VLAN-Troubleshooting:**
+- Port im falschen VLAN? → `show vlan brief` (Cisco).
+- Trunk nicht konfiguriert? → `show interfaces trunk`.
+- Native VLAN Mismatch → Kommunikation fehlschlägt.
+- IP-Konfiguration falsch (falsches Subnetz für VLAN).
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: VLAN-Konzepte verstehen (Simulation, da kein echter Switch im MVP).
+
+Schritte (konzeptionell, mit Packet Tracer oder Dokumentation):
+1. VLAN-Plan erstellen: VLAN 10 (Management), VLAN 20 (User), VLAN 30 (Server).
+2. IP-Plan: VLAN 10: 192.168.10.0/24; VLAN 20: 192.168.20.0/24; VLAN 30: 192.168.30.0/24.
+3. Switch-Konfiguration (Cisco Packet Tracer): VLANs erstellen, Ports zuweisen, Trunk konfigurieren.
+4. Router-on-a-Stick: Subinterfaces für jedes VLAN.
+5. Test: PC in VLAN 20 kann Server in VLAN 30 erreichen (über Router).
+6. Dokumentation: VLAN-Plan, IP-Plan, Konfiguration.
+
+**Erwartetes Ergebnis:** VLAN-Konzept verstanden; Konfiguration dokumentiert.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "VLAN nicht konfiguriert – Port im falschen VLAN"**
+- Symptom: Gerät hat keine Verbindung zum erwarteten Netzwerk.
+- Ursache: Port nicht dem richtigen VLAN zugeordnet.
+- Diagnose: Switch-Konfiguration prüfen (`show vlan brief`).
+- Lösung: Port dem richtigen VLAN zuweisen.
+- Prävention: VLAN-Plan dokumentieren; Port-Beschriftung.
+
+**Fehler 2: "Trunk nicht konfiguriert – VLANs nicht übertragen"**
+- Symptom: Geräte in VLAN X auf Switch A können Geräte in VLAN X auf Switch B nicht erreichen.
+- Ursache: Trunk-Port nicht konfiguriert oder VLAN nicht erlaubt.
+- Diagnose: `show interfaces trunk` → erlaubte VLANs prüfen.
+- Lösung: Trunk konfigurieren; VLANs erlauben.
+- Prävention: Trunk-Konfiguration standardisieren.
+
+**Fehler 3: "Native VLAN Mismatch – Kommunikation fehlschlägt"**
+- Symptom: Geräte in einem VLAN können nicht kommunizieren; Logs zeigen "Native VLAN Mismatch".
+- Ursache: Native VLAN auf Trunk-Ports unterschiedlich konfiguriert.
+- Diagnose: `show interfaces trunk` → Native VLAN vergleichen.
+- Lösung: Native VLAN auf beiden Seiten gleich setzen.
+- Prävention: Native VLAN standardisieren (z. B. VLAN 99 für Management).
+
+**Fehler 4: "Inter-VLAN-Routing nicht konfiguriert – VLANs isoliert"**
+- Symptom: Geräte in verschiedenen VLANs können nicht kommunizieren.
+- Ursache: Kein Router/Layer-3-Switch für Inter-VLAN-Routing.
+- Diagnose: Routing-Tabelle prüfen; Router-Konfiguration.
+- Lösung: Router-on-a-Stick oder Layer-3-Switch konfigurieren.
+- Prävention: Netzwerkdesign planen; Routing dokumentieren.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist ein VLAN?
+   a) Ein physisches Kabel
+   b) Eine logische Segmentierung eines physischen Netzwerks in mehrere Broadcast-Domains ✓
+   c) Ein Router
+   d) Ein Switch
+
+2. Was ist ein Access Port?
+   a) Ein Port, der mehrere VLANs transportiert
+   b) Ein Port, der zu einem VLAN gehört (untagged) ✓
+   c) Ein Port für Management
+   d) Ein Port für VoIP
+
+3. Was ist ein Trunk Port?
+   a) Ein Port für ein einzelnes VLAN
+   b) Ein Port, der mehrere VLANs transportiert (tagged mit 802.1Q) ✓
+   c) Ein Port für Management
+   d) Ein Port für VoIP
+
+4. Was ist der Native VLAN?
+   a) Das Standard-VLAN auf einem Trunk (untagged) ✓
+   b) Das wichtigste VLAN
+   c) Das Management-VLAN
+   d) Das Gast-VLAN
+
+5. Was ist Router-on-a-Stick?
+   a) Ein Router mit mehreren physischen Ports
+   b) Ein Router mit Subinterfaces für Inter-VLAN-Routing (ein physischer Port) ✓
+   c) Ein Switch
+   d) Ein Kabel
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #13001:** "User: 'Mein PC kann den Server im Serverraum nicht erreichen. Andere PCs können ihn erreichen.'"
+
+**Lösung (aufklappbar):**
+1. Prüfen: Ist der PC im richtigen VLAN? (Switch-Port prüfen.)
+2. IP-Konfiguration: `ipconfig` → IP/Subnetz/Gateway korrekt für VLAN?
+3. Ping zum Gateway → erreichbar?
+4. Ping zum Server → erreichbar?
+5. Wenn Gateway nicht erreichbar: VLAN-Zuordnung oder Trunk-Problem.
+6. Wenn Gateway erreichbar, aber Server nicht: Routing-Problem oder Server-Problem.
+7. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Allgemein (Netzwerk)
+- Quellen: CompTIA A+ V15 Exam Objectives (Core 1) – Networking
+- UNGEPRÜFT: VLAN-Konfiguration (Cisco-Syntax) – herstellerabhängig, in Packet Tracer verifizieren
+- UNGEPRÜFT: 802.1Q-Tag-Details – aus allgemeinem Wissen
+- UNGEPRÜFT: Inter-VLAN-Routing-Konfiguration – in Lab verifizieren

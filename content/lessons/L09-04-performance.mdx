@@ -1,0 +1,159 @@
+---
+title: "Modul 9 – Lektion 4: Performance-Troubleshooting"
+level: 2
+module: 9
+slug: "modul-9-windows-tiefe-04-performance"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100)"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "https://assets.ctfassets.net/82ripq7fjls2/6I8WL66IBa1AUovioDGrnM/f74a7eca336fd4e4c8e723a1f893086d/CompTIA-A-220-1202-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 9 – Lektion 4: Performance-Troubleshooting
+
+## 1. Lernziele
+- Du kannst Performance-Probleme systematisch diagnostizieren.
+- Du kannst CPU/RAM/Disk/Netzwerk-Engpässe identifizieren.
+- Du kannst Maßnahmen zur Performance-Verbesserung durchführen.
+- Du kannst Tools für Performance-Analyse nutzen.
+
+## 2. Theorie kompakt
+
+**Performance-Engpässe (Bottlenecks):**
+
+| Ressource | Symptom | Diagnose-Tool | Maßnahme |
+|---|---|---|---|
+| **CPU** | Hohe Auslastung (>80% dauerhaft); System träge | Task-Manager, Resource Monitor | Prozess beenden; Priorität anpassen; CPU-Upgrade |
+| **RAM** | Hohe Auslastung (>90%); Paging; System träge | Task-Manager, Resource Monitor | RAM erhöhen; Programme schließen; Pagefile anpassen |
+| **Disk** | 100% Auslastung; lange Ladezeiten | Resource Monitor (Disk-Tab), CrystalDiskInfo | SSD-Upgrade; Defragmentierung (HDD); SMART prüfen |
+| **Netzwerk** | Langsame Downloads; Timeouts | Resource Monitor (Network-Tab), ping/tracert | Netzwerk prüfen; Bandbreite erhöhen; QoS |
+| **GPU** | Ruckeln bei Video/Grafik | Task-Manager (GPU-Tab), GPU-Z | Treiber aktualisieren; GPU-Upgrade |
+
+**Performance-Troubleshooting-Workflow:**
+1. **Identify:** Welche Ressource ist der Engpass? (Task-Manager → Leistung).
+2. **Isolate:** Welcher Prozess verursacht das? (Resource Monitor).
+3. **Analyze:** Warum? (Malware? Zu viele Programme? Hardware-Defekt?).
+4. **Resolve:** Maßnahme durchführen.
+5. **Verify:** Performance verbessert? User bestätigt.
+
+**Pagefile (Auslagerungsdatei):**
+- Windows nutzt Pagefile (pagefile.sys) als virtuellen RAM.
+- Standard: Automatisch verwaltet (System verwaltet Größe).
+- Manuelles Pagefile: Feste Größe (z. B. 1,5× RAM) auf schneller Disk (SSD).
+- Zu großes/kleines Pagefile → Performance-Probleme.
+
+**Defragmentierung:**
+- **HDD:** Defragmentierung sinnvoll (Dateien zusammenhängend speichern).
+- **SSD:** Defragmentierung NICHT empfohlen (Wear); Windows optimiert SSDs (TRIM) automatisch.
+- `dfrgui` → Defragmentieren und optimieren.
+
+**TRIM (SSD):**
+- Windows sendet TRIM-Befehle an SSD (freigegebene Blöcke markieren).
+- `fsutil behavior query DisableDeleteNotify` → 0 = TRIM aktiv.
+- `Optimize-Volume -DriveLetter C -ReTrim` (PowerShell) → manuell TRIM.
+
+**Startup-Optimierung:**
+- Task-Manager → Start → nicht benötigte deaktivieren.
+- `msconfig` → selektiver Start (nur für Diagnose).
+- Autostart-Ordner aufräumen.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Performance analysieren und verbessern.
+
+Schritte:
+1. Task-Manager → Leistung → CPU/RAM/Disk/Netzwerk/GPU prüfen.
+2. Resource Monitor → CPU/Disk/Memory/Network → Top-Prozesse identifizieren.
+3. Startup-Programme prüfen → nicht benötigte deaktivieren.
+4. Disk-Optimierung: `dfrgui` → Laufwerk auswählen → Optimieren.
+5. Pagefile prüfen: Systemeigenschaften → Erweitert → Leistung → Einstellungen → Erweitert → Virtueller Arbeitsspeicher.
+6. SMART prüfen: CrystalDiskInfo oder `Get-PhysicalDisk`.
+7. Windows Update prüfen (Updates können Performance beeinflussen).
+
+**Erwartetes Ergebnis:** Performance-Engpass identifiziert; Maßnahmen durchgeführt.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "CPU bei 100% – System eingefroren"**
+- Symptom: System reagiert nicht; Task-Manager zeigt 100% CPU.
+- Ursache: Prozess mit hoher CPU (Malware, defektes Programm, Windows Update).
+- Diagnose: Task-Manager → Prozesse (sortiert nach CPU).
+- Lösung: Prozess beenden; Malware-Scan; Windows Update prüfen.
+- Prävention: Regelmäßige Malware-Scans; Startup-Optimierung.
+
+**Fehler 2: "RAM voll – System swapt"**
+- Symptom: System langsam; Festplatte rattert (Paging).
+- Ursache: Zu wenig RAM für laufende Programme.
+- Diagnose: Task-Manager → Leistung → RAM; Resource Monitor → Memory.
+- Lösung: Programme schließen; RAM erhöhen; Pagefile anpassen.
+- Prävention: RAM-Upgrade; Programme schließen, die nicht benötigt werden.
+
+**Fehler 3: "SSD defragmentiert – Wear erhöht"**
+- Symptom: SSD-Lebensdauer verkürzt; Performance sinkt.
+- Ursache: SSD defragmentiert (unnötig).
+- Diagnose: `dfrgui` → Laufwerkstyp prüfen.
+- Lösung: Defragmentierung für SSD deaktivieren; TRIM aktivieren.
+- Prävention: Windows erkennt SSD automatisch; keine manuelle Defragmentierung.
+
+**Fehler 4: "Pagefile zu klein – Out of Memory"**
+- Symptom: "Nicht genügend Arbeitsspeicher" trotz freiem RAM.
+- Ursache: Pagefile zu klein oder deaktiviert.
+- Diagnose: Systemeigenschaften → Virtueller Arbeitsspeicher.
+- Lösung: Pagefile auf "System verwaltet" setzen; Neustart.
+- Prävention: Automatische Pagefile-Verwaltung aktivieren.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist ein Performance-Bottleneck?
+   a) Ein Virus
+   b) Die Ressource, die die Leistung begrenzt (CPU/RAM/Disk/Netzwerk) ✓
+   c) Ein Backup
+   d) Ein Update
+
+2. Sollte man eine SSD defragmentieren?
+   a) Ja, regelmäßig
+   b) Nein – SSDs nutzen TRIM, Defragmentierung verursacht Wear ✓
+   c) Nur monatlich
+   d) Nur bei Problemen
+
+3. Was ist TRIM?
+   a) Ein Defragmentierungs-Tool
+   b) Ein Befehl, der freigegebene Blöcke auf SSD markiert ✓
+   c) Ein Backup-Tool
+   d) Ein Antivirus
+
+4. Welches Tool zeigt den Top-Disk-Verbraucher?
+   a) Task-Manager (Prozesse)
+   b) Resource Monitor (Disk-Tab) ✓
+   c) Event Viewer
+   d) msinfo32
+
+5. Was ist die empfohlene Pagefile-Einstellung?
+   a) Deaktiviert
+   b) Feste Größe 1 GB
+   c) System verwaltet (automatisch) ✓
+   d) Manuell 10 GB
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #10004:** "User: 'Mein PC ist seit ein paar Tagen sehr langsam. Besonders beim Öffnen von Programmen. Der Lüfter ist auch sehr laut.'"
+
+**Lösung (aufklappbar):**
+1. Task-Manager → Leistung → CPU/RAM/Disk/GPU prüfen.
+2. Wenn Disk 100%: Resource Monitor → Disk-Tab → Top-Prozess.
+3. Wenn CPU hoch: Prozess identifizieren; Malware-Scan.
+4. Wenn RAM voll: Programme schließen; RAM-Upgrade prüfen.
+5. Temperatur prüfen (HWiNFO) → Überhitzung? → Reinigung, Thermal Paste.
+6. SMART prüfen (CrystalDiskInfo) → Festplatte defekt?
+7. Startup-Programme prüfen → nicht benötigte deaktivieren.
+8. Windows Update prüfen.
+9. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100)
+- Quellen: Microsoft Learn Windows 11 Overview; CompTIA A+ V15 Exam Objectives (Core 2)
+- UNGEPRÜFT: Performance-Indikatoren und Schwellwerte – aus allgemeinem Wissen
+- UNGEPRÜFT: TRIM-Befehle (fsutil, Optimize-Volume) – in Lab verifizieren
+- UNGEPRÜFT: Defragmentierungs-Details (dfrgui) – in Lab verifizieren

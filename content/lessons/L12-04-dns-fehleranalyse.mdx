@@ -1,0 +1,160 @@
+---
+title: "Modul 12 – Lektion 4: DNS-Fehleranalyse"
+level: 2
+module: 12
+slug: "modul-12-netzwerk-tiefe-04-dns-fehleranalyse"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100)"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "https://assets.ctfassets.net/82ripq7fjls2/1oSdlyujpaX3GrM0rir6Ge/91afb2be72785281e8fb4c0d9a70c6f4/CompTIA-A-220-1201-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 12 – Lektion 4: DNS-Fehleranalyse
+
+## 1. Lernziele
+- Du kannst DNS-Probleme systematisch diagnostizieren.
+- Du kannst nslookup/dig für DNS-Tests nutzen.
+- Du kannst DNS-Cache-Probleme beheben.
+- Du kannst DNS-Server-Konfiguration prüfen.
+
+## 2. Theorie kompakt
+
+**DNS-Fehleranalyse-Workflow:**
+
+1. **Symptom:** "Webseite lädt nicht" oder "Server nicht gefunden".
+2. **Test 1 – IP-Erreichbarkeit:** `ping 8.8.8.8` → Internet erreichbar?
+   - Wenn nein → Netzwerk/Internet-Problem (nicht DNS).
+   - Wenn ja → weiter zu Test 2.
+3. **Test 2 – DNS-Auflösung:** `nslookup google.com` → DNS funktioniert?
+   - Wenn nein → DNS-Problem.
+   - Wenn ja → weiter zu Test 3.
+4. **Test 3 – DNS-Server:** `nslookup google.com 8.8.8.8` → mit anderem Server testen.
+   - Wenn ja → Originaler DNS-Server problematisch.
+   - Wenn nein → Allgemeines DNS-Problem.
+5. **Test 4 – Cache:** `ipconfig /displaydns` → Cache prüfen; `ipconfig /flushdns` → Cache leeren.
+6. **Test 5 – Konfiguration:** `ipconfig /all` → DNS-Server korrekt?
+
+**DNS-Diagnose-Tools:**
+- `nslookup` – DNS-Abfragen.
+- `ipconfig /displaydns` – Cache anzeigen.
+- `ipconfig /flushdns` – Cache leeren.
+- `Resolve-DnsName` (PowerShell) – DNS-Auflösung mit Details.
+- `dnscmd` (Server) – DNS-Server-Verwaltung (Windows Server).
+
+**Häufige DNS-Probleme:**
+
+| Problem | Symptom | Ursache | Lösung |
+|---|---|---|---|
+| DNS-Server falsch | Keine Namensauflösung | Client nutzt falschen DNS | DNS auf 8.8.8.8/1.1.1.1 setzen |
+| DNS-Server offline | Timeout bei nslookup | DNS-Server nicht erreichbar | Anderen DNS-Server nutzen; Server prüfen |
+| Cache vergiftet | Falsche IP für Domain | Malware, MITM | `ipconfig /flushdns`; Malware-Scan |
+| DNS-Record fehlt | "Server not found" für interne Domain | Record nicht erstellt | Record auf DNS-Server erstellen |
+| DNS-Zone nicht geladen | Alle Abfragen schlagen fehl | DNS-Zone beschädigt | Zone neu laden; DNS-Dienst neu starten |
+
+**DNS-Server-Konfiguration (Windows Server):**
+- DNS-Manager (`dnsmgmt.msc`).
+- Forward Lookup Zone: Domain → Records (A, CNAME, MX, etc.).
+- Reverse Lookup Zone: IP → Name (PTR).
+- Forwarders: Externe DNS-Server für nicht-autoritative Abfragen.
+- Conditional Forwarders: Spezifische Domains an spezifische Server.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: DNS-Fehleranalyse durchführen.
+
+Schritte:
+1. `nslookup google.com` → DNS-Server und IP notieren.
+2. `nslookup google.com 8.8.8.8` → mit anderem Server testen.
+3. `ipconfig /displaydns` → Cache prüfen (Einträge?).
+4. `ipconfig /flushdns` → Cache leeren.
+5. `Resolve-DnsName google.com` (PowerShell) → Details.
+6. DNS-Problem simulieren: DNS auf 192.168.99.99 setzen → `nslookup google.com` → Timeout.
+7. DNS zurücksetzen: 8.8.8.8 → `nslookup google.com` → funktioniert.
+
+**Erwartetes Ergebnis:** DNS-Fehleranalyse durchgeführt; Problem identifiziert und gelöst.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "nslookup funktioniert, aber Browser lädt nicht"**
+- Symptom: DNS-Auflösung OK, aber Browser zeigt Fehler.
+- Ursache: Proxy; Firewall; Browser-Cache; IPv6-Problem.
+- Diagnose: Browser in anderem Profil testen; Proxy-Einstellungen.
+- Lösung: Proxy deaktivieren; Browser-Cache leeren; IPv6 deaktivieren (Test).
+- Prävention: Proxy-Dokumentation; Browser-Updates.
+
+**Fehler 2: "DNS-Server antwortet nicht (Timeout)"**
+- Symptom: `nslookup` → "DNS request timed out".
+- Ursache: DNS-Server offline; Firewall blockiert Port 53; Netzwerkproblem.
+- Diagnose: `ping <DNS-Server>`; `Test-NetConnection <DNS-Server> -Port 53`.
+- Lösung: Anderen DNS-Server nutzen; Firewall prüfen; DNS-Server neu starten.
+- Prävention: Redundante DNS-Server; Monitoring.
+
+**Fehler 3: "Interne Domain nicht auflösbar"**
+- Symptom: `nslookup server.lab.local` → "Non-existent domain".
+- Ursache: DNS-Record fehlt; DNS-Zone nicht geladen; Client nutzt externen DNS.
+- Diagnose: DNS-Manager auf DC prüfen; `ipconfig /all` auf Client.
+- Lösung: Record erstellen; Client-DNS auf DC setzen; DNS-Dienst neu starten.
+- Prävention: DNS-Records dokumentieren; Client-DNS automatisch via DHCP.
+
+**Fehler 4: "DNS-Cache vergiftet – falsche IP"**
+- Symptom: `nslookup` gibt falsche IP für bekannte Domain.
+- Ursache: Malware; DNS-Hijacking; MITM.
+- Diagnose: `ipconfig /displaydns` → verdächtige Einträge; VirusTotal.
+- Lösung: `ipconfig /flushdns`; Malware-Scan; DNS-Server prüfen; Router-DNS prüfen.
+- Prävention: Sichere DNS-Server (DoH/DoT); Malware-Schutz; Router-Firmware-Updates.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist der erste Schritt bei DNS-Fehleranalyse?
+   a) DNS-Cache leeren
+   b) IP-Erreichbarkeit testen (`ping 8.8.8.8`) ✓
+   c) nslookup
+   d) DNS-Server ändern
+
+2. Was zeigt `ipconfig /displaydns`?
+   a) IP-Konfiguration
+   b) DNS-Cache (gespeicherte Einträge) ✓
+   c) DHCP-Server
+   d) Gateway
+
+3. Was ist ein Forwarder in DNS?
+   a) Ein Record-Typ
+   b) Externer DNS-Server für nicht-autoritative Abfragen ✓
+   c) Ein Client
+   d) Ein Router
+
+4. Was ist eine Reverse Lookup Zone?
+   a) Domain → IP
+   b) IP → Name (PTR-Records) ✓
+   c) E-Mail-Server
+   d) Namensserver
+
+5. Was ist Conditional Forwarding?
+   a) Alle Abfragen an einen Server
+   b) Spezifische Domains an spezifische Server ✓
+   c) Keine Weiterleitung
+   d) Broadcast
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #13004:** "User: 'Ich kann intern (fileserver.lab.local) nicht zugreifen, aber Internet funktioniert.'"
+
+**Lösung (aufklappbar):**
+1. `nslookup fileserver.lab.local` → DNS-Auflösung?
+2. Wenn nicht: `ipconfig /all` → DNS-Server (muss DC sein, nicht 8.8.8.8).
+3. Wenn DNS falsch: auf DC-IP setzen; `ipconfig /flushdns`.
+4. Wenn DNS korrekt, aber Auflösung fehlschlägt: DNS-Manager auf DC → Record für fileserver vorhanden?
+5. Wenn Record fehlt: A-Record erstellen.
+6. Wenn Record vorhanden, aber falsche IP: korrigieren.
+7. Testen: `nslookup`, `ping`, Zugriff.
+8. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100)
+- Quellen: Microsoft Learn Windows 11 Overview; CompTIA A+ V15 Exam Objectives (Core 1)
+- UNGEPRÜFT: DNS-Record-Typen und Details – aus allgemeinem Wissen; in RFC/Microsoft-Docs verifizieren
+- UNGEPRÜFT: dnscmd/dnsmgmt-Syntax – in Lab verifizieren
+- UNGEPRÜFT: Conditional Forwarding Details – in Microsoft-Docs verifizieren
+- UNGEPRÜFT: DoH/DoT-Konfiguration – in Microsoft-Docs verifizieren

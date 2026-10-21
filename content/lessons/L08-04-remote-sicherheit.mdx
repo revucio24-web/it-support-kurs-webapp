@@ -1,0 +1,158 @@
+---
+title: "Modul 8 – Lektion 4: Remote-Support-Sicherheit und Compliance"
+level: 1
+module: 8
+slug: "modul-8-remote-04-sicherheit-compliance"
+last_verified: "2026-10-19"
+windows_version: "Allgemein (kein OS-spezifisch)"
+sources:
+  - "https://www.microsoft.com/en-ca/security/business/identity-access/microsoft-entra-id (Abruf 2026-10-19)"
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+---
+
+# Modul 8 – Lektion 4: Remote-Support-Sicherheit und Compliance
+
+## 1. Lernziele
+- Du kennst die Sicherheitsrisiken von Remote-Support.
+- Du kannst Remote-Support sicher durchführen (Best Practices).
+- Du kennst Compliance-Anforderungen (DSGVO, Audit).
+- Du kannst Remote-Support-Sessions auditieren.
+
+## 2. Theorie kompakt
+
+**Sicherheitsrisiken von Remote-Support:**
+- **Unbefugter Zugriff:** Angreifer nutzt offene Remote-Session.
+- **Datenleck:** Sensible Daten werden übertragen/gesehen.
+- **Malware-Übertragung:** Malware wird über Remote-Session übertragen.
+- **Session-Hijacking:** Angreifer übernimmt Session.
+- **Credential-Theft:** Passwörter werden während Session eingegeben.
+
+**Best Practices für sicheren Remote-Support:**
+1. **Erlaubnis:** Immer um Erlaubnis bitten (mündlich oder schriftlich).
+2. **Identitätsprüfung:** User identifizieren (Name, Abteilung, Mitarbeiter-ID).
+3. **Minimale Rechte:** Nur notwendige Zugriffe (keine Admin-Rechte ohne Bedarf).
+4. **Verschlüsselung:** Nur verschlüsselte Tools (TLS, Ende-zu-Ende).
+5. **Session-Timeout:** Automatischer Disconnect bei Inaktivität.
+6. **Session beenden:** Nach Abschluss sofort beenden.
+7. **Keine sensiblen Daten:** Keine Passwörter im Klartext; keine sensiblen Dateien kopieren.
+8. **Audit-Trail:** Session protokollieren (Start/Ende, Aktionen).
+9. **VPN/Gateway:** RDP nur über VPN oder Gateway (nicht direkt ins Internet).
+10. **MFA:** Für Admin-Zugriff MFA erforderlich.
+
+**Compliance (DSGVO):**
+- **Datenschutz:** User-Daten nur mit Einwilligung verarbeiten.
+- **Zweckbindung:** Daten nur für Support-Zwecke nutzen.
+- **Datenminimierung:** Nur notwendige Daten erheben.
+- **Löschung:** Daten nach Zweckerfüllung löschen.
+- **Aufbewahrung:** Logs nach gesetzlichen Fristen aufbewahren (z. B. 6 Monate).
+- **Einwilligung:** User muss Remote-Support zustimmen (mündlich oder schriftlich).
+
+**Audit-Trail:**
+- **Was protokollieren:** Session-Start/Ende, User, Supporter, Aktionen, Dateizugriffe.
+- **Wo speichern:** Ticketsystem, SIEM, Intune Audit Logs.
+- **Aufbewahrung:** Nach Compliance-Vorgaben (z. B. 90 Tage, 1 Jahr).
+- **Zugriff:** Nur autorisierte Personen.
+
+**Incident-Response bei Remote-Support-Vorfall:**
+1. Session sofort beenden.
+2. Betroffenen User informieren.
+3. Passwörter zurücksetzen (wenn Credentials exponiert).
+4. Systeme prüfen (Malware-Scan, Logs).
+5. Incident melden (Security-Team).
+6. Dokumentieren und Lessons Learned.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Remote-Support-Session auditieren.
+
+Schritte:
+1. Remote-Support-Session durchführen (Simulation).
+2. Audit-Trail erstellen: Start/Ende, User, Supporter, Aktionen, Ergebnis.
+3. Compliance-Check: Wurde Erlaubnis eingeholt? Wurden sensible Daten exponiert? Session beendet?
+4. Dokumentation im Ticket.
+
+**Erwartetes Ergebnis:** Audit-Trail vollständig; Compliance geprüft.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Session nicht beendet – unbefugter Zugriff"**
+- Symptom: Offene Remote-Verbindung nach Abschluss; unbefugter Zugriff.
+- Ursache: Supporter vergisst, Session zu beenden.
+- Diagnose: Aktive Verbindungen prüfen.
+- Lösung: Session sofort beenden; Passwörter zurücksetzen (falls exponiert).
+- Prävention: Checkliste; Session-Timeout; automatischer Disconnect.
+
+**Fehler 2: "Passwort im Klartext während Remote-Session eingegeben"**
+- Symptom: Passwort sichtbar für Supporter; Sicherheitsvorfall.
+- Ursache: User gibt Passwort ein, während Supporter zuschaut.
+- Diagnose: Session-Aufzeichnung (falls vorhanden).
+- Lösung: Passwort zurücksetzen; User schulen (Passwort nicht eingeben, während Supporter zuschaut).
+- Prävention: User auffordern, Passwort einzugeben, während Supporter wegschaut; oder Passwort-Reset durchführen.
+
+**Fehler 3: "Keine Einwilligung eingeholt – DSGVO-Verstoß"**
+- Symptom: User beschwert sich; Datenschutzbehörde.
+- Ursache: Remote-Support ohne Einwilligung.
+- Diagnose: Dokumentation prüfen.
+- Lösung: Entschuldigen; Prozess anpassen; Einwilligung nachholen.
+- Prävention: Einwilligung als Pflichtschritt; Dokumentation.
+
+**Fehler 4: "Audit-Trail fehlt – kein Nachvollzug"**
+- Symptom: Bei Vorfall keine Nachvollziehbarkeit.
+- Ursache: Keine Protokollierung.
+- Diagnose: Logs prüfen.
+- Lösung: Nachträglich dokumentieren (soweit möglich).
+- Prävention: Automatische Protokollierung; Audit-Logs.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist ein Audit-Trail?
+   a) Ein Backup
+   b) Eine Protokollierung von Aktionen (Start/Ende, User, Supporter, Aktionen) ✓
+   c) Ein Passwort
+   d) Ein Netzwerk
+
+2. Was ist die DSGVO-Zweckbindung?
+   a) Daten nur für Support-Zwecke nutzen ✓
+   b) Daten beliebig nutzen
+   c) Daten löschen
+   d) Daten verschlüsseln
+
+3. Was sollte man bei Remote-Support NICHT tun?
+   a) Erlaubnis einholen
+   b) Session dokumentieren
+   c) Passwörter im Klartext übertragen ✓
+   d) Session beenden
+
+4. Warum ist MFA für Admin-Zugriff wichtig?
+   a) Weil es schneller ist
+   b) Weil es unbefugten Zugriff verhindert ✓
+   c) Weil es kostenlos ist
+   d) Weil es einfach ist
+
+5. Was ist die erste Aktion bei einem Remote-Support-Vorfall?
+   a) Passwort zurücksetzen
+   b) Session sofort beenden ✓
+   c) User informieren
+   d) Incident melden
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #9004:** "User: 'Der Supporter hat sich gestern mit mir verbunden und jetzt kann ich nicht mehr auf meine Dateien zugreifen. Ich denke, er hat etwas kaputt gemacht.'"
+
+**Lösung (aufklappbar):**
+1. Informationen sammeln: Welcher Supporter? Wann? Was wurde gemacht? Welche Dateien?
+2. Audit-Trail prüfen: Session-Logs, Ticket-Dokumentation.
+3. System prüfen: Berechtigungen, Dateien, Logs.
+4. Wenn Berechtigungen geändert: Zurücksetzen.
+5. Wenn Daten gelöscht: Wiederherstellen (Papierkorb, Shadow Copies, Backup).
+6. User informieren; Entschuldigung.
+7. Incident melden (falls Sicherheitsvorfall).
+8. Dokumentieren; Lessons Learned; Schulung.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Allgemein (kein OS-spezifisch)
+- Quellen: Microsoft Security (Entra ID); Microsoft Learn Windows 11 Overview
+- UNGEPRÜFT: DSGVO-Details (Aufbewahrungsfristen, etc.) – aus allgemeinem Wissen; mit Rechtsabteilung verifizieren
+- UNGEPRÜFT: Audit-Trail-Anforderungen – aus allgemeiner Praxis
+- UNGEPRÜFT: Compliance-Best-Practices – aus allgemeinem Wissen

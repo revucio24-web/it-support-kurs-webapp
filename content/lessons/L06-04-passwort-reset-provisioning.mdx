@@ -1,0 +1,158 @@
+---
+title: "Modul 6 – Lektion 4: Passwort-Resets und User-Provisioning (M365)"
+level: 1
+module: 6
+slug: "modul-6-m365-04-passwort-reset-provisioning"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100) + M365"
+sources:
+  - "https://learn.microsoft.com/en-us/mem/intune/fundamentals/what-is-intune (Abruf 2026-10-19)"
+  - "https://www.microsoft.com/en-ca/security/business/identity-access/microsoft-entra-id (Abruf 2026-10-19)"
+---
+
+# Modul 6 – Lektion 4: Passwort-Resets und User-Provisioning (M365)
+
+## 1. Lernziele
+- Du kannst User in M365 erstellen und lizenzieren (Provisioning).
+- Du kannst Passwort-Resets durchführen (Admin + SSPR).
+- Du kannst MFA zurücksetzen.
+- Du kannst User deaktivieren/löschen (Deprovisioning).
+
+## 2. Theorie kompakt
+
+**User-Provisioning (M365):**
+1. M365 Admin Center → Benutzer → "Benutzer hinzufügen".
+2. Basisinfo: Name, Benutzername (E-Mail), Domain.
+3. Optional: Rollen (Global Admin, User Admin, etc.), Gruppen.
+4. Lizenz zuweisen (verfügbare Lizenzen).
+5. Passwort: Automatisch generieren oder selbst setzen; "Benutzer muss Passwort bei erster Anmeldung ändern".
+6. Abschließen → User erhält Willkommens-E-Mail (optional).
+
+**Passwort-Reset (Admin):**
+1. M365 Admin Center → Benutzer → User auswählen → "Passwort zurücksetzen".
+2. Optionen: "Passwort automatisch erstellen" oder "selbst eingeben".
+3. "Benutzer muss Passwort bei nächster Anmeldung ändern" (empfohlen).
+4. Temporäres Passwort an User kommunizieren (sicher! z. B. per Telefon, nicht per E-Mail im Klartext).
+
+**SSPR (Self-Service Password Reset):**
+- User kann selbst zurücksetzen, wenn aktiviert.
+- Voraussetzung: User hat Security Info hinterlegt (Telefon, E-Mail, Authenticator).
+- Aktivierung: Entra ID → Password Reset → "Self Service Password Reset enabled" → "All" oder "Selected".
+- User-Flow: "Passwort vergessen?" → Identitätsprüfung (SMS/Code) → neues Passwort setzen.
+
+**MFA-Reset (Admin):**
+1. Entra ID Admin Center → Benutzer → User auswählen.
+2. "Authentication methods" → "Require re-register multifactor authentication" oder einzelne Methoden löschen.
+3. User meldet sich an → MFA-Registrierung neu.
+
+**Deprovisioning (User verlässt Unternehmen):**
+1. Konto blockieren (Sign-in blockieren) → sofortiger Zugriffsentzug.
+2. Lizenzen entfernen (Kosten sparen).
+3. Daten sichern (OneDrive/Exchange → andere User).
+4. Postfach konvertieren (Shared Mailbox) oder löschen.
+5. Konto löschen (nach Aufbewahrungsfrist, z. B. 30 Tage).
+
+**Gruppen und Rollen:**
+- **Microsoft 365 Groups:** E-Mail, Teams, SharePoint, Planner.
+- **Security Groups:** Zugriffssteuerung (Shares, Apps).
+- **Distribution Lists:** E-Mail-Verteiler.
+- **Admin-Rollen:** Global Admin, User Admin, Exchange Admin, etc. (Least Privilege!).
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: User-Provisioning und Passwort-Reset durchführen (Simulation).
+
+Schritte (konzeptionell):
+1. M365 Admin Center → Benutzer → "Benutzer hinzufügen" → Formular ausfüllen.
+2. Lizenz zuweisen (verfügbare prüfen).
+3. Passwort zurücksetzen: User auswählen → "Passwort zurücksetzen" → temporäres Passwort notieren.
+4. MFA-Reset: Entra ID → Benutzer → Authentication methods → löschen.
+5. User blockieren: "Anmeldung blockieren" → Status prüfen.
+6. User löschen: "Benutzer löschen" → Bestätigung.
+
+**Erwartetes Ergebnis:** Provisioning-Workflow verstanden; Passwort-Reset durchgeführt (Simulation).
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Temporäres Passwort an User per E-Mail gesendet"**
+- Symptom: Sicherheitsvorfall; Passwort in Klartext in E-Mail.
+- Ursache: Supporter sendet Passwort per E-Mail.
+- Diagnose: E-Mail-Inhalt prüfen (Audit).
+- Lösung: Passwort sofort zurücksetzen; User per Telefon informieren.
+- Prävention: Regel: Passwörter nur telefonisch/persönlich; niemals per E-Mail.
+
+**Fehler 2: "User kann SSPR nicht nutzen – keine Security Info"**
+- Symptom: "Passwort vergessen?" → "Ihr Konto ist nicht für Passwortzurücksetzung eingerichtet".
+- Ursache: User hat keine Security Info hinterlegt.
+- Diagnose: Entra ID → Benutzer → Authentication methods.
+- Lösung: Admin setzt Passwort zurück; User hinterlegt Security Info bei nächster Anmeldung.
+- Prävention: Bei Onboarding Security Info hinterlegen lassen; SSPR für alle aktivieren.
+
+**Fehler 3: "Deprovisioning unvollständig – User hat noch Zugriff"**
+- Symptom: Gelöschter User kann sich noch anmelden.
+- Ursache: Konto nur gelöscht, aber Session noch aktiv; oder Account in anderer App (Teams, SharePoint) noch vorhanden.
+- Diagnose: Sign-in Logs; aktive Sessions.
+- Lösung: Konto blockieren (nicht nur löschen); Sessions beenden; Tokens widerrufen.
+- Prävention: Deprovisioning-Checkliste; sofort blockieren, dann löschen.
+
+**Fehler 4: "Zu viele Global Admins"**
+- Symptom: Sicherheitsrisiko; zu viele Personen mit Vollzugriff.
+- Ursache: Jeder Supporter bekommt Global Admin.
+- Diagnose: M365 Admin Center → Rollen → Global Admins.
+- Lösung: Rollen reduzieren (Least Privilege); User Admin, Helpdesk Admin etc. zuweisen.
+- Prävention: Rollen-Konzept; regelmäßige Review (quartalsweise).
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist der erste Schritt beim User-Provisioning?
+   a) Lizenz zuweisen
+   b) Benutzer in M365 Admin Center erstellen ✓
+   c) Passwort setzen
+   d) Gruppe zuweisen
+
+2. Was ist SSPR?
+   a) Self-Service Password Reset – User kann selbst Passwort zurücksetzen ✓
+   b) Secure Server Password Recovery
+   c) System Service Password Reset
+   d) Smart Security Password Reset
+
+3. Was sollte man bei Deprovisioning zuerst tun?
+   a) Konto löschen
+   b) Anmeldung blockieren (sofortiger Zugriffsentzug) ✓
+   c) Lizenz entfernen
+   d) Daten löschen
+
+4. Welche Admin-Rolle sollte man bevorzugen (Least Privilege)?
+   a) Global Admin für alle
+   b) Spezifische Rollen (User Admin, Helpdesk Admin, etc.) ✓
+   c) Keine Rolle
+   d) Exchange Admin für alle
+
+5. Wie kommuniziert man ein temporäres Passwort?
+   a) Per E-Mail im Klartext
+   b) Telefonisch oder persönlich (niemals per E-Mail) ✓
+   c) Per SMS
+   d) Per Chat
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #7004:** "HR: 'Neuer Mitarbeiter Max Mustermann startet am Montag. Bitte richten Sie M365-Konto ein.'"
+
+**Lösung (aufklappbar):**
+1. M365 Admin Center → Benutzer → "Benutzer hinzufügen".
+2. Basisinfo: Name, Benutzername (max.mustermann@firma.de), Domain.
+3. Passwort: Automatisch generieren; "Benutzer muss Passwort bei erster Anmeldung ändern".
+4. Lizenz zuweisen (verfügbare prüfen).
+5. Gruppen zuweisen (Abteilung, Teams).
+6. Willkommens-E-Mail (optional) – ohne Passwort!
+7. Passwort telefonisch an HR/User kommunizieren.
+8. SSPR/MFA-Registrierung bei erster Anmeldung sicherstellen.
+9. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100) + M365
+- Quellen: Microsoft Learn (Intune Fundamentals, Entra ID); Microsoft Security (Entra ID)
+- UNGEPRÜFT: Exakte M365 Admin Center UI-Pfade – können sich ändern
+- UNGEPRÜFT: SSPR-Konfigurationsschritte – in Microsoft-Docs verifizieren
+- UNGEPRÜFT: Deprovisioning-Aufbewahrungsfristen – variabel

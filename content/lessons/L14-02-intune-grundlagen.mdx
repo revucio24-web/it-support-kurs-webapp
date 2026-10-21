@@ -1,0 +1,153 @@
+---
+title: "Modul 14 – Lektion 2: Microsoft Intune (Grundlagen, MDM/MAM)"
+level: 2
+module: 14
+slug: "modul-14-deployment-intune-02-intune-grundlagen"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100)"
+sources:
+  - "https://learn.microsoft.com/en-us/mem/intune/fundamentals/what-is-intune (Abruf 2026-10-19)"
+  - "https://learn.microsoft.com/en-us/intune/fundamentals/core-concepts (Abruf 2026-10-19)"
+---
+
+# Modul 14 – Lektion 2: Microsoft Intune (Grundlagen, MDM/MAM)
+
+## 1. Lernziele
+- Du kannst Intune und seine Funktionen erklären.
+- Du kannst MDM (Mobile Device Management) und MAM (Mobile Application Management) unterscheiden.
+- Du kannst Geräte in Intune enrollen.
+- Du kannst Compliance-Policies und Configuration Profiles erklären.
+
+## 2. Theorie kompakt
+
+**Microsoft Intune:** Cloud-basierter MDM/MAM-Service. Verwaltet Geräte und Apps (Windows, macOS, iOS, Android, Linux).
+
+**Intune-Pillars (3 Säulen):**
+1. **Identities:** User/Gruppen (Entra ID), RBAC, Conditional Access.
+2. **Devices:** Enrollment, Configuration, Compliance, Retirement.
+3. **Apps:** Deployment, Configuration, Protection (MAM).
+
+**MDM vs. MAM:**
+- **MDM (Mobile Device Management):** Ganzer Geräteverwaltung (Enrollment, Policies, Wipe).
+- **MAM (Mobile Application Management):** Nur App-Verwaltung (App Protection Policies, ohne Geräte-Enrollment). Für BYOD (Bring Your Own Device).
+
+**Enrollment (Geräteregistrierung):**
+- **Windows Autopilot:** Zero-Touch-Provisioning (Gerät wird beim ersten Start automatisch konfiguriert).
+- **Entra ID Join:** Gerät wird Entra ID beigetreten (Cloud-only).
+- **Hybrid Entra ID Join:** Gerät wird AD + Entra ID beigetreten (Hybrid).
+- **Manual Enrollment:** User meldet Gerät manuell an (Company Portal).
+
+**Configuration Profiles:**
+- Geräteeinstellungen (z. B. WLAN, VPN, E-Mail, BitLocker, Firewall).
+- Zuweisung an User/Gruppe/Gerät.
+- Plattform-spezifisch (Windows, macOS, iOS, Android).
+
+**Compliance Policies:**
+- Definieren, was ein "compliant" Gerät ausmacht (z. B. OS-Version, Verschlüsselung, Passwort, Jailbreak).
+- Non-compliant Geräte → Aktionen (Benachrichtigung, Zugriff blockieren, Wipe).
+
+**Conditional Access (Entra ID):**
+- Zugriff auf Ressourcen basierend auf Bedingungen (User, Gerät, Ort, App, Risiko).
+- Kombiniert mit Intune Compliance (nur compliant Geräte bekommen Zugriff).
+
+**Intune Admin Center:**
+- Geräte, Apps, Compliance, Configuration Profiles.
+- Endpoint Analytics, Update Rings, Autopilot.
+- Remote Help (Support).
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Intune-Konzepte verstehen (Simulation, da kein Tenant im MVP).
+
+Schritte (konzeptionell):
+1. Intune Admin Center (intune.microsoft.com) öffnen (mit Test-Tenant).
+2. Geräte → "Alle Geräte" → enrolltes Gerät prüfen.
+3. Apps → "Alle Apps" → bereitgestellte Apps prüfen.
+4. Compliance → "Policies" → Compliance Policy erstellen (z. B. BitLocker erforderlich).
+5. Configuration Profiles → "Create Profile" → WLAN-Profil erstellen.
+6. Autopilot → "Devices" → Autopilot-Gerät registrieren.
+
+**Erwartetes Ergebnis:** Intune-Konzepte verstanden; Admin Center navigiert.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Gerät nicht enrollt – Company Portal Fehler"**
+- Symptom: Enrollment schlägt fehl; "Something went wrong".
+- Ursache: Entra ID Join fehlgeschlagen; Lizenz fehlt; Netzwerkproblem.
+- Diagnose: Intune Admin Center → Geräte → Enrollment-Status; Entra ID → Audit Logs.
+- Lösung: Entra ID Join prüfen; Intune-Lizenz zuweisen; Netzwerk prüfen.
+- Prävention: Enrollment-Checkliste; Autopilot für Zero-Touch.
+
+**Fehler 2: "Compliance Policy nicht angewendet"**
+- Symptom: Gerät als "Not evaluated" oder "Non-compliant" angezeigt.
+- Ursache: Policy nicht zugewiesen; Gerät nicht enrollt; Sync nicht erfolgt.
+- Diagnose: Intune Admin Center → Gerät → "Device compliance".
+- Lösung: Policy zuweisen; manuell synchronisieren (Company Portal → "Check access").
+- Prävention: Policy-Zuweisung bei Enrollment; Sync-Intervall prüfen.
+
+**Fehler 3: "Configuration Profile Konflikt"**
+- Symptom: Einstellung wird nicht angewendet; "Conflict" in Intune.
+- Ursache: Mehrere Profile setzen gleiche Einstellung unterschiedlich.
+- Diagnose: Intune Admin Center → Gerät → "Configuration profiles".
+- Lösung: Konflikt auflösen (eine Policy entfernen oder priorisieren).
+- Prävention: Policy-Design planen; keine überlappenden Einstellungen.
+
+**Fehler 4: "Conditional Access blockiert Zugriff"**
+- Symptom: User kann sich nicht anmelden; "Zugriff blockiert".
+- Ursache: Gerät nicht compliant; MFA fehlt; Standort nicht erlaubt.
+- Diagnose: Entra ID → Sign-in Logs → Conditional Access-Tab.
+- Lösung: Compliance prüfen; MFA registrieren; Standort/Bedingung anpassen.
+- Prävention: Conditional Access dokumentieren; Pilot-Gruppe testen.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist Intune?
+   a) Ein Antivirus
+   b) Ein Cloud-basierter MDM/MAM-Service ✓
+   c) Ein VPN
+   d) Ein Backup-Tool
+
+2. Was ist der Unterschied zwischen MDM und MAM?
+   a) Keiner
+   b) MDM = ganze Geräteverwaltung; MAM = nur App-Verwaltung (BYOD) ✓
+   c) MDM = nur Apps; MAM = ganze Geräte
+   d) MDM = kostenlos; MAM = kostenpflichtig
+
+3. Was ist Windows Autopilot?
+   a) Ein Antivirus
+   b) Zero-Touch-Provisioning (Gerät wird beim ersten Start automatisch konfiguriert) ✓
+   c) Ein VPN
+   d) Ein Backup-Tool
+
+4. Was prüft eine Compliance Policy?
+   a) Ob der User angemeldet ist
+   b) Ob das Gerät die Anforderungen erfüllt (OS-Version, Verschlüsselung, etc.) ✓
+   c) Ob das Gerät online ist
+   d) Ob die Lizenz gültig ist
+
+5. Was ist Conditional Access?
+   a) Zugriff basierend auf Bedingungen (User, Gerät, Ort, App, Risiko) ✓
+   b) Eine Firewall
+   c) Ein Antivirus
+   d) Ein Backup
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #15002:** "User: 'Mein neuer Laptop wurde geliefert, aber ich kann mich nicht anmelden. Es erscheint eine Fehlermeldung, dass das Gerät nicht registriert ist.'"
+
+**Lösung (aufklappbar):**
+1. Prüfen: Ist das Gerät bei Autopilot registriert? Intune Admin Center → Autopilot → Devices.
+2. Wenn nicht: Manuelle Enrollment (Company Portal) oder Autopilot-Registrierung.
+3. Entra ID Join prüfen: `dsregcmd /status` auf dem Gerät.
+4. Intune-Lizenz prüfen (User hat M365 Business Premium oder Intune-Lizenz?).
+5. Netzwerk prüfen (Internetzugang für Enrollment).
+6. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100)
+- Quellen: Microsoft Learn (Intune Fundamentals, What is Intune, Core Concepts)
+- UNGEPRÜFT: Intune Admin Center UI-Pfade – können sich ändern
+- UNGEPRÜFT: Autopilot-Konfigurationsschritte – in Microsoft-Docs verifizieren
+- UNGEPRÜFT: Compliance Policy Details – in Microsoft-Docs verifizieren
+- UNGEPRÜFT: Conditional Access Details – in Microsoft-Docs verifizieren

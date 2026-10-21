@@ -1,0 +1,155 @@
+---
+title: "Modul 11 – Lektion 4: GPO-Troubleshooting"
+level: 2
+module: 11
+slug: "modul-11-ad-gpo-04-gpo-troubleshooting"
+last_verified: "2026-10-19"
+windows_version: "Windows Server 2022 (Evaluation) + Windows 11 24H2 (Client)"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "https://assets.ctfassets.net/82ripq7fjls2/6I8WL66IBa1AUovioDGrnM/f74a7eca336fd4e4c8e723a1f893086d/CompTIA-A-220-1202-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 11 – Lektion 4: GPO-Troubleshooting
+
+## 1. Lernziele
+- Du kannst GPO-Probleme systematisch diagnostizieren.
+- Du kannst gpresult, rsop und Event Viewer nutzen.
+- Du kannst GPO-Verarbeitungsfehler beheben.
+- Du kannst GPO-Performance-Probleme lösen.
+
+## 2. Theorie kompakt
+
+**GPO-Troubleshooting-Tools:**
+
+| Tool | Funktion |
+|---|---|
+| `gpresult /r` | Angewendete GPOs (Zusammenfassung) |
+| `gpresult /h C:\report.html` | HTML-Bericht (detailliert) |
+| `gpresult /v` | Ausführliche Ausgabe |
+| `rsop.msc` | Resultant Set of Policy (grafisch) |
+| `gpupdate /force` | GPOs sofort aktualisieren |
+| `gpupdate /target:computer` | Nur Computer-GPOs |
+| `gpupdate /target:user` | Nur User-GPOs |
+| Event Viewer → GroupPolicy | GPO-Verarbeitungs-Logs |
+
+**GPO-Verarbeitungsfehler:**
+
+| Fehler | Ursache | Lösung |
+|---|---|---|
+| GPO nicht angewendet | Nicht verknüpft; Sicherheitsfilterung; WMI-Filter | Verknüpfen; Berechtigung hinzufügen; WMI-Filter prüfen |
+| GPO-Konflikt | Spätere GPO überschreibt | Enforced setzen; Reihenfolge ändern |
+| Langsame Verarbeitung | Zu viele GPOs; große Skripte; langsame Verbindung | GPOs konsolidieren; Skripte optimieren |
+| SYSVOL nicht erreichbar | Netzwerkproblem; DFSR-Replikation | Netzwerk prüfen; Replikation erzwingen |
+| WMI-Filter fehlerhaft | Filterbedingung falsch | WMI-Filter in GPMC prüfen/korrigieren |
+
+**GPO-Debugging:**
+- `gpresult /h C:\gpreport.html` → Bericht öffnen → "Component Status" prüfen.
+- Event Viewer → Anwendungs- und Dienstprotokolle → Microsoft → Windows → GroupPolicy → Operational.
+- Filter nach Event-Level: Fehler und Warnungen.
+
+**GPO-Verarbeitungsreihenfolge prüfen:**
+- `gpresult /r` → "Angewendete Gruppenrichtlinienobjekte" → Reihenfolge anzeigen.
+- Wenn erwartete GPO fehlt → Verknüpfung/Berechtigung prüfen.
+
+**Loopback-Verarbeitung:**
+- In Terminalserver/RDS-Umgebungen: User-GPOs basierend auf Computer-OU.
+- Aktivierung: GPO → Computer Configuration → Policies → Administrative Templates → System → Group Policy → "Configure user Group Policy loopback processing mode".
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: GPO-Troubleshooting durchführen.
+
+Schritte:
+1. Client-VM: `gpresult /r` → angewendete GPOs prüfen.
+2. `gpresult /h C:\gpreport.html` → Bericht erstellen und öffnen.
+3. Event Viewer → GroupPolicy-Log → Fehler/Warnungen prüfen.
+4. GPO-Problem simulieren: GPO-Verknüpfung entfernen → `gpupdate /force` → `gpresult /r` (GPO fehlt).
+5. GPO-Verknüpfung wiederherstellen → `gpupdate /force` → `gpresult /r` (GPO vorhanden).
+6. `gpupdate /target:computer /force` → nur Computer-GPOs.
+
+**Erwartetes Ergebnis:** GPO-Troubleshooting-Tools angewendet; Problem identifiziert und gelöst.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "GPO angewendet, aber Einstellung nicht wirksam"**
+- Symptom: GPO in `gpresult` sichtbar, aber Einstellung nicht aktiv.
+- Ursache: Einstellung an falscher Stelle (Computer vs. User); oder Registry-Wert wird von anderer Quelle überschrieben.
+- Diagnose: `gpresult /h` → Einstellung prüfen; Registry prüfen.
+- Lösung: Einstellung in richtiger GPO-Sektion setzen; Registry-Wert prüfen.
+- Prävention: GPO-Design planen; Dokumentation.
+
+**Fehler 2: "GPO-Verarbeitung fehlschlägt – Event-ID 1058/1030"**
+- Symptom: GPO wird nicht angewendet; Event-ID 1058 (SYSVOL nicht erreichbar) oder 1030 (GPO nicht gefunden).
+- Ursache: SYSVOL-Share nicht erreichbar; Netzwerkproblem; Berechtigung.
+- Diagnose: `\\domain\SYSVOL` vom Client prüfen; Event Viewer.
+- Lösung: Netzwerk prüfen; SYSVOL-Berechtigung prüfen; DFSR-Replikation.
+- Prävention: Netzwerk-Monitoring; SYSVOL-Backup.
+
+**Fehler 3: "gpresult zeigt 'Nicht angewendet' für GPO"**
+- Symptom: GPO in Liste, aber Status "Nicht angewendet (leer)" oder "Nicht angewendet (deaktiviert)".
+- Ursache: GPO leer (keine Einstellungen); oder GPO deaktiviert; oder Sicherheitsfilterung.
+- Diagnose: GPO in GPMC prüfen; Einstellungen vorhanden?
+- Lösung: Einstellungen hinzufügen; GPO aktivieren; Berechtigung prüfen.
+- Prävention: GPO vor Verknüpfung prüfen.
+
+**Fehler 4: "Loopback-Verarbeitung nicht aktiv – RDS-User-GPOs fehlen"**
+- Symptom: Auf RDS-Server werden User-GPOs nicht angewendet.
+- Ursache: Loopback-Verarbeitung nicht aktiviert.
+- Diagnose: `gpresult /r` auf RDS-Server (User-Kontext).
+- Lösung: Loopback-Verarbeitung aktivieren (GPO).
+- Prävention: Bei RDS-Deployment Loopback aktivieren.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was zeigt `gpresult /r`?
+   a) Registry-Werte
+   b) Angewendete GPOs (Zusammenfassung) ✓
+   c) Dienste
+   d) Benutzer
+
+2. Was ist `rsop.msc`?
+   a) Registry-Editor
+   b) Resultant Set of Policy (grafisch) ✓
+   c) Dienst-Manager
+   d) Disk-Manager
+
+3. Welcher Befehl aktualisiert nur Computer-GPOs?
+   a) `gpupdate /force`
+   b) `gpupdate /target:computer` ✓
+   c) `gpresult /r`
+   d) `gpedit.msc`
+
+4. Was bedeutet Event-ID 1058?
+   a) GPO erfolgreich angewendet
+   b) SYSVOL nicht erreichbar ✓
+   c) Dienst-Startfehler
+   d) Anmeldung erfolgreich
+
+5. Was ist Loopback-Verarbeitung?
+   a) User-GPOs basierend auf Computer-OU (für RDS/Terminalserver) ✓
+   b) Computer-GPOs basierend auf User-OU
+   c) GPO-Verarbeitung deaktivieren
+   d) GPO-Verarbeitung beschleunigen
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #12004:** "User: 'Die neue Desktop-Richtlinie (Wallpaper) wird bei mir nicht angewendet. Bei Kollegen funktioniert es.'"
+
+**Lösung (aufklappbar):**
+1. `gpresult /r` auf betroffenem PC → ist die GPO angewendet?
+2. Wenn nicht: Sicherheitsfilterung prüfen (User in richtiger Gruppe?).
+3. `gpupdate /force` → erneut prüfen.
+4. Wenn immer noch nicht: WMI-Filter prüfen; Block Inheritance?
+5. Event Viewer → GroupPolicy-Log → Fehler?
+6. GPO-Einstellung prüfen (Pfad zum Wallpaper korrekt? Berechtigung auf Datei?).
+7. Wenn GPO angewendet, aber Wallpaper nicht: Registry prüfen (`HKCU\Control Panel\Desktop\Wallpaper`); Datei-Berechtigung.
+8. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows Server 2022 (Evaluation) + Windows 11 24H2 (Client)
+- Quellen: Microsoft Learn Windows 11 Overview; CompTIA A+ V15 Exam Objectives (Core 2)
+- UNGEPRÜFT: GPO-Fehler-Event-IDs (1058, 1030) – in Microsoft-Docs verifizieren
+- UNGEPRÜFT: gpresult/rsop-Syntax – in Lab verifizieren
+- UNGEPRÜFT: Loopback-Verarbeitung Details – in Microsoft-Docs verifizieren

@@ -1,0 +1,153 @@
+---
+title: "Modul 6 – Lektion 2: Outlook (Profil, PST/OST, Troubleshooting)"
+level: 1
+module: 6
+slug: "modul-6-m365-02-outlook"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100) + Outlook (M365)"
+sources:
+  - "https://learn.microsoft.com/en-us/defender-endpoint/ (Abruf 2026-10-19)"
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+---
+
+# Modul 6 – Lektion 2: Outlook (Profil, PST/OST, Troubleshooting)
+
+## 1. Lernziele
+- Du kannst Outlook-Profile verwalten (erstellen, reparieren, löschen).
+- Du kannst PST/OST-Dateien erklären und verwalten.
+- Du kannst typische Outlook-Probleme diagnostizieren.
+- Du kannst Outlook im Safe Mode starten und Add-ins verwalten.
+
+## 2. Theorie kompakt
+
+**Outlook-Profile:**
+- Speichern E-Mail-Konten, Einstellungen, Datenpfade.
+- Verwaltung: `control mlcfg32.cpl` (Mail-Setup) oder Outlook → Datei → Kontoeinstellungen → Profile verwalten.
+- Profilpfad: `C:\Users\<User>\AppData\Local\Microsoft\Outlook`.
+
+**Datendateien:**
+- **OST (Offline Storage Table):** Cached Copy der Mailbox (Exchange/IMAP). Wird automatisch erstellt. Bei Beschädigung: löschen → Outlook erstellt neu (Sync).
+- **PST (Personal Storage Table):** Lokale Archivdatei. Wird manuell erstellt. Für Backup/Archivierung.
+
+**Outlook-Modi:**
+- **Cached Exchange Mode:** E-Mails werden lokal gecacht (OST). Schneller, offline-fähig.
+- **Online Mode:** Direkte Verbindung zum Server. Langsamer, aber immer aktuell.
+
+**Outlook Safe Mode:**
+- `outlook.exe /safe` – startet ohne Add-ins und benutzerdefinierte Einstellungen.
+- Wenn Safe Mode funktioniert → Add-in-Problem.
+
+**Outlook-Befehlszeilen-Switches (UNGEPRÜFT – in Lab verifizieren):**
+- `/safe` – Safe Mode.
+- `/cleanviews` – Ansichten zurücksetzen.
+- `/resetnavpane` – Navigationsbereich zurücksetzen.
+- `/profile <Name>` – spezifisches Profil starten.
+
+**Typische Outlook-Probleme:**
+- Startet nicht (Profil beschädigt, Add-in).
+- Senden/Empfangen hängt (Netzwerk, OST).
+- Suchfunktion funktioniert nicht (Indexierung).
+- "Outlook reagiert nicht" (große Mailbox, Add-in).
+
+**ScanPST (Inbox Repair Tool):**
+- Repariert beschädigte PST/OST-Dateien.
+- Pfad (UNGEPRÜFT): `C:\Program Files\Microsoft Office\root\Office16\SCANPST.EXE`.
+- Prozess: SCANPST starten → Datei auswählen → "Start" → "Repair".
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Outlook-Profil verwalten und reparieren.
+
+Schritte:
+1. `control mlcfg32.cpl` → Mail-Setup → "Profile anzeigen" → Profile prüfen.
+2. Neues Profil erstellen: "Hinzufügen" → Name → E-Mail-Konto hinzufügen.
+3. Standardprofil setzen: "Immer dieses Profil verwenden" oder "Nach Profil fragen".
+4. Outlook im Safe Mode starten: `Win + R` → `outlook.exe /safe`.
+5. Add-ins prüfen: Datei → Optionen → Add-Ins → "Gehe zu: COM-Add-Ins" → deaktivieren.
+6. OST-Datei löschen (Test): Outlook schließen → OST-Datei umbenennen → Outlook starten → neue OST wird erstellt.
+7. ScanPST: Tool starten → PST/OST auswählen → reparieren (Simulation).
+
+**Erwartetes Ergebnis:** Profil verwaltet; Safe Mode funktioniert; OST neu erstellt.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Outlook startet nicht – 'Cannot open the Outlook window'"**
+- Symptom: Fehlermeldung beim Start; Outlook schließt sofort.
+- Ursache: Profil beschädigt; Add-in blockiert; Navigation Pane beschädigt.
+- Diagnose: Safe Mode testen (`outlook.exe /safe`).
+- Lösung: Wenn Safe Mode funktioniert → Add-ins deaktivieren; `/resetnavpane`; neues Profil erstellen.
+- Prävention: Regelmäßige Profil-Backups; Add-ins minimieren.
+
+**Fehler 2: "Senden/Empfangen hängt"**
+- Symptom: E-Mails bleiben in "Postausgang"; keine neuen E-Mails.
+- Ursache: OST beschädigt; Netzwerkproblem; Server-Problem.
+- Diagnose: Statusleiste prüfen ("Verbindung zu Microsoft Exchange"); `ping` zum Exchange-Server.
+- Lösung: OST löschen (neu erstellen); Cached Mode deaktivieren/aktivieren; Netzwerk prüfen.
+- Prävention: Regelmäßige OST-Kompaktierung; Netzwerk-Monitoring.
+
+**Fehler 3: "Suchfunktion findet nichts"**
+- Symptom: Outlook-Suche gibt keine Ergebnisse.
+- Ursache: Windows-Search-Index beschädigt; Outlook nicht in Index.
+- Diagnose: Indizierungsstatus prüfen (Datei → Optionen → Suchen → Indizierungsstatus).
+- Lösung: Suchindex neu erstellen (Systemsteuerung → Indizierungsoptionen → Erweitert → Neu erstellen); Outlook neu starten.
+- Prävention: Regelmäßige Index-Neuerstellung bei Problemen.
+
+**Fehler 4: "Outlook reagiert nicht (Not Responding)"**
+- Symptom: Outlook friert ein; "Nicht reagierend".
+- Ursache: Große Mailbox; beschädigte Add-ins; Antivirus-Scan; Speicherplatz.
+- Diagnose: Task-Manager → Outlook CPU/RAM; Add-ins; Antivirus.
+- Lösung: Add-ins deaktivieren; Mailbox aufräumen (Archivieren); Antivirus-Ausschluss für Outlook.
+- Prävention: Mailbox-Größe überwachen; Add-ins minimieren.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist eine OST-Datei?
+   a) Eine lokale Archivdatei
+   b) Eine gecachte Kopie der Mailbox (Exchange/IMAP) ✓
+   c) Eine Konfigurationsdatei
+   d) Ein Treiber
+
+2. Wie startet man Outlook im Safe Mode?
+   a) `outlook.exe /safe` ✓
+   b) `outlook.exe -safe`
+   c) `outlook.exe /recovery`
+   d) `outlook.exe /debug`
+
+3. Was macht ScanPST?
+   a) Scannt E-Mails auf Viren
+   b) Repariert beschädigte PST/OST-Dateien ✓
+   c) Komprimiert Mailboxen
+   d) Löscht Duplikate
+
+4. Was ist Cached Exchange Mode?
+   a) Nur Online-Zugriff
+   b) Lokale Kopie der Mailbox für schnellen/offline Zugriff ✓
+   c) Ein Backup-Modus
+   d) Ein Sicherheitsmodus
+
+5. Wo liegt die OST-Datei (Standard)?
+   a) C:\Windows\Outlook
+   b) C:\Users\<User>\AppData\Local\Microsoft\Outlook ✓
+   c) C:\Program Files\Outlook
+   d) C:\Temp
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #7002:** "User: 'Outlook startet nicht mehr seit gestern. Fehlermeldung: Cannot start Microsoft Outlook.'"
+
+**Lösung (aufklappbar):**
+1. Safe Mode testen: `outlook.exe /safe`.
+2. Wenn Safe Mode funktioniert: Add-ins deaktivieren (Datei → Optionen → Add-Ins → COM-Add-Ins → deaktivieren).
+3. Wenn Safe Mode nicht funktioniert: Neues Profil erstellen (control mlcfg32.cpl → Profile → Hinzufügen).
+4. OST-Datei umbenennen (Outlook erstellt neue).
+5. `/resetnavpane` versuchen.
+6. ScanPST auf OST/PST ausführen.
+7. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100) + Outlook (M365)
+- Quellen: Microsoft Learn (Windows 11 Overview); allgemeines Outlook-Wissen
+- UNGEPRÜFT: ScanPST-Pfad (Office16) – versionssabhängig, in Lab verifizieren
+- UNGEPRÜFT: Outlook-Switches (/cleanviews, /resetnavpane) – in Lab verifizieren
+- UNGEPRÜFT: OST/PST-Standardpfade – können sich ändern

@@ -1,0 +1,164 @@
+---
+title: "Modul 9 – Lektion 3: Dienste und Task-Manager"
+level: 2
+module: 9
+slug: "modul-9-windows-tiefe-03-dienste-taskmanager"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100)"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "https://assets.ctfassets.net/82ripq7fjls2/6I8WL66IBa1AUovioDGrnM/f74a7eca336fd4e4c8e723a1f893086d/CompTIA-A-220-1202-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 9 – Lektion 3: Dienste und Task-Manager
+
+## 1. Lernziele
+- Du kannst den Task-Manager für Diagnose und Troubleshooting nutzen.
+- Du kannst Windows-Dienste (services.msc) verwalten.
+- Du kannst Prozesse beenden und Prioritäten setzen.
+- Du kannst Startup-Programme verwalten.
+
+## 2. Theorie kompakt
+
+**Task-Manager (taskmgr):**
+- `Ctrl + Shift + Esc` oder `Ctrl + Alt + Del` → Task-Manager.
+- **Registerkarten:**
+  - **Prozesse:** Laufende Apps und Hintergrundprozesse; CPU/RAM/Disk/Netzwerk-Auslastung.
+  - **Leistung:** CPU, RAM, Disk, Netzwerk, GPU in Echtzeit.
+  - **App-Verlauf:** Ressourcenverbrauch pro App (über Zeit).
+  - **Start:** Startup-Programme (Aktiviert/Deaktiviert); Startauswirkung (Hoch/Mittel/Niedrig).
+  - **Benutzer:** Angemeldete User und deren Ressourcen.
+  - **Details:** Alle Prozesse mit PID, Status, Priorität, CPU-Zeit.
+  - **Dienste:** Laufende Dienste; Starten/Stoppen.
+- **Prozess beenden:** Rechtsklick → Task beenden (oder `taskkill /PID <PID> /F`).
+- **Priorität setzen:** Details → Rechtsklick → Priorität festlegen (Niedrig bis Echtzeit). Vorsicht: "Echtzeit" kann System einfrieren.
+- **Affinität:** Details → Rechtsklick → Affinität festlegen (CPU-Kerne zuweisen).
+
+**Windows-Dienste (services.msc):**
+- Dienste = Hintergrundprozesse (ohne UI).
+- **Starttypen:**
+  - **Automatisch:** Startet beim Boot.
+  - **Automatisch (Verzögert):** Startet nach Boot (weniger Boot-Last).
+  - **Manuell:** Startet bei Bedarf (durch Anwendung oder User).
+  - **Deaktiviert:** Startet nicht.
+- **Dienst-Status:** Wird ausgeführt / Gestoppt / Angehalten.
+- **Befehle:** `sc query <Dienst>`, `sc start <Dienst>`, `sc stop <Dienst>`, `sc config <Dienst> start= auto`.
+- **Abhängigkeiten:** Einige Dienste hängen von anderen ab (z. B. Print Spooler → RPC).
+
+**Wichtige Dienste:**
+
+| Dienst | Name | Funktion |
+|---|---|---|
+| Print Spooler | Spooler | Druckwarteschlange |
+| Windows Update | wuauserv | Updates |
+| BITS | BITS | Hintergrundübertragung |
+| DHCP Client | Dhcp | IP-Vergabe |
+| DNS Client | Dnscache | DNS-Cache |
+| Windows Defender | WinDefend | Antivirus |
+| Windows Firewall | MpsSvc | Firewall |
+| Task Scheduler | Schedule | Geplante Tasks |
+
+**Startup-Programme verwalten:**
+- Task-Manager → Start → Deaktivieren (empfohlen für nicht benötigte).
+- `shell:startup` → Autostart-Ordner (User).
+- `shell:common startup` → Autostart-Ordner (alle User).
+- Registry: `HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run` und `HKCU\...\Run`.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Task-Manager und Dienste nutzen.
+
+Schritte:
+1. `taskmgr` → Prozesse → CPU/RAM-Auslastung prüfen.
+2. Task-Manager → Start → Startup-Programme prüfen; nicht benötigte deaktivieren.
+3. `services.msc` → Dienste auflisten; Print Spooler suchen → Status und Starttyp prüfen.
+4. Print Spooler stoppen: Rechtsklick → Beenden. Status prüfen (`sc query spooler`).
+5. Print Spooler starten: Rechtsklick → Starten.
+6. Details-Registerkarte: Prozess mit hoher CPU finden → Priorität ändern (Vorsicht!).
+7. `tasklist` (CMD) → laufende Prozesse; `taskkill /IM notepad.exe /F` (Test).
+
+**Erwartetes Ergebnis:** Task-Manager und Dienste verstanden; Startup optimiert.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Dienst lässt sich nicht starten – Abhängigkeit fehlt"**
+- Symptom: "Der Dienst konnte nicht gestartet werden"; Fehler 1068 (Abhängigkeitsdienst konnte nicht gestartet werden).
+- Ursache: Abhängiger Dienst gestoppt/deaktiviert.
+- Diagnose: services.msc → Dienst → Eigenschaften → Abhängigkeiten.
+- Lösung: Abhängige Dienste starten; Starttyp korrigieren.
+- Prävention: Abhängigkeiten prüfen; Starttyp dokumentieren.
+
+**Fehler 2: "Prozess lässt sich nicht beenden – Zugriff verweigert"**
+- Symptom: "Zugriff verweigert" beim Beenden eines Prozesses.
+- Ursache: Prozess läuft als SYSTEM oder anderer User; oder geschützter Prozess.
+- Diagnose: Prozess-Eigentümer prüfen (Task-Manager → Details → Benutzername).
+- Lösung: Als Administrator beenden (`taskkill /F /IM <Name>` als Admin); oder im abgesicherten Modus.
+- Prävention: Nur Prozesse beenden, die man versteht.
+
+**Fehler 3: "Zu viele Startup-Programme – langsamer Boot"**
+- Symptom: PC braucht lange zum Starten.
+- Ursache: Viele Autostart-Programme.
+- Diagnose: Task-Manager → Start → Startauswirkung prüfen.
+- Lösung: Nicht benötigte deaktivieren; Startup-Ordner aufräumen.
+- Prävention: Regelmäßige Startup-Review; nur notwendige Programme.
+
+**Fehler 4: "Dienst deaktiviert – Funktion fehlt"**
+- Symptom: Feature funktioniert nicht (z. B. Drucken, Windows Update).
+- Ursache: Dienst deaktiviert (manuell oder durch Tool).
+- Diagnose: services.msc → Dienst-Status/Starttyp.
+- Lösung: Starttyp auf "Automatisch" setzen; Dienst starten.
+- Prävention: Dienste nicht blind deaktivieren; Dokumentation.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Welche Tastenkombination öffnet den Task-Manager?
+   a) Ctrl + Alt + Del
+   b) Ctrl + Shift + Esc ✓
+   c) Win + R
+   d) Win + X
+
+2. Was zeigt die Registerkarte "Start" im Task-Manager?
+   a) Laufende Prozesse
+   b) Startup-Programme mit Startauswirkung ✓
+   c) Dienste
+   d) Benutzer
+
+3. Was ist der Starttyp "Automatisch (Verzögert)"?
+   a) Startet sofort beim Boot
+   b) Startet nach dem Boot (reduziert Boot-Last) ✓
+   c) Startet manuell
+   d) Startet nicht
+
+4. Welcher Befehl stoppt einen Dienst?
+   a) `sc start <Dienst>`
+   b) `sc stop <Dienst>` ✓
+   c) `net start <Dienst>`
+   d) `taskkill <Dienst>`
+
+5. Was ist eine Dienst-Abhängigkeit?
+   a) Ein Dienst, der von einem anderen abhängt ✓
+   b) Ein deaktivierter Dienst
+   c) Ein automatischer Dienst
+   d) Ein manueller Dienst
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #10003:** "User: 'Mein PC ist seit dem letzten Update sehr langsam beim Starten. Es dauert 5 Minuten bis der Desktop erscheint.'"
+
+**Lösung (aufklappbar):**
+1. Task-Manager → Start → Startup-Programme prüfen (Startauswirkung "Hoch").
+2. Nicht benötigte deaktivieren.
+3. `services.msc` → Dienste prüfen (Starttyp "Automatisch" mit vielen Diensten).
+4. Event Viewer → System-Log → Boot-Dauer prüfen (Event-ID 100-110?).
+5. Windows Update prüfen (letztes Update).
+6. Malware-Scan (Defender).
+7. Wenn nötig: Clean Boot (msconfig → selektiver Start) → Isolation.
+8. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100)
+- Quellen: Microsoft Learn Windows 11 Overview; CompTIA A+ V15 Exam Objectives (Core 2)
+- UNGEPRÜFT: Task-Manager-Registerkarten (können sich ändern)
+- UNGEPRÜFT: Dienst-Starttypen und Abhängigkeiten – in Lab verifizieren
+- UNGEPRÜFT: Event-IDs für Boot-Dauer – in Microsoft-Docs verifizieren

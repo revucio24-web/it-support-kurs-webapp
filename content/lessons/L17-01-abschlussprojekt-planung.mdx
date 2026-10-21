@@ -1,0 +1,162 @@
+---
+title: "Modul 17 – Lektion 1: Abschlussprojekt – Szenario und Planung"
+level: 2
+module: 17
+slug: "modul-17-abschluss-01-projekt-planung"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100) + Windows Server 2022"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "https://www.peoplecert.org/browse-certifications/it-governance-and-service-management/ITIL-1/itil-4-foundation-2565 (Abruf 2026-10-19)"
+---
+
+# Modul 17 – Lektion 1: Abschlussprojekt – Szenario und Planung
+
+## 1. Lernziele
+- Du kannst ein komplexes IT-Support-Szenario planen und durchführen.
+- Du kannst alle gelernten Fähigkeiten (Level 1 + 2) integrieren.
+- Du kannst ein Projekt dokumentieren und präsentieren.
+- Du kannst einen Abschlussbericht erstellen.
+
+## 2. Theorie kompakt
+
+**Abschlussprojekt-Szenario:**
+
+Du bist IT-Supporter in einer kleinen Firma (50 Mitarbeiter). Die Firma hat:
+- Windows 11 PCs (Mischung Home/Pro).
+- Einen Windows Server (AD, DNS, DHCP, File Server).
+- Microsoft 365 (Exchange, Teams, SharePoint).
+- Ein Netzwerk mit VLANs (User, Server, Management).
+- VPN für Homeoffice.
+
+**Aufgabe:** Ein neuer Mitarbeiter startet am Montag. Du musst:
+1. **User-Provisioning:** M365-Konto erstellen, Lizenz zuweisen, Gruppen.
+2. **Geräte-Provisioning:** PC bereitstellen (Intune/Autopilot oder manuell), in Domain joinen.
+3. **Zugriffe:** Freigaben, Drucker, Anwendungen.
+4. **Kommunikation:** User informieren, Anleitung bereitstellen.
+5. **Dokumentation:** Ticket, KB-Artikel, Checkliste.
+
+**Zusätzlich (Störungssimulation):**
+- Am Dienstag meldet der User: "Mein Outlook startet nicht."
+- Du musst: Incident erstellen, diagnostizieren, lösen, dokumentieren.
+- Am Mittwoch: "Ich kann nicht auf die Freigabe zugreifen."
+- Du musst: Incident erstellen, Berechtigungen prüfen, lösen.
+
+**Projektplan (Meilensteine):**
+1. Planung (Szenario verstehen, Checkliste erstellen).
+2. User-Provisioning (M365, AD).
+3. Geräte-Provisioning (PC, Domain Join, Intune).
+4. Zugriffe (Freigaben, Drucker, Apps).
+5. Kommunikation (User informieren).
+6. Störungssimulation 1 (Outlook).
+7. Störungssimulation 2 (Freigabe).
+8. Dokumentation (Ticket, KB, Abschlussbericht).
+9. Präsentation/Review.
+
+**Bewertungskriterien:**
+- Vollständigkeit (alle Schritte durchgeführt).
+- Dokumentation (Tickets, KB-Artikel, Checkliste).
+- Kommunikation (User informiert).
+- Troubleshooting (Probleme gelöst).
+- Best Practices (Security, Backup, Least Privilege).
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Abschlussprojekt durchführen.
+
+Schritte (in deinem Homelab):
+1. **Planung:** Checkliste erstellen (Onboarding-Checkliste).
+2. **User-Provisioning:** AD-User erstellen (in Server-VM), M365 simulieren (Dokumentation).
+3. **Geräte-Provisioning:** Client-VM in Domain joinen, GPO anwenden.
+4. **Zugriffe:** Freigabe erstellen, Berechtigungen setzen, Drucker hinzufügen.
+5. **Kommunikation:** Willkommens-E-Mail (Simulation), Anleitung erstellen.
+6. **Störungssimulation 1:** Outlook-Profil beschädigen → diagnostizieren → lösen → dokumentieren.
+7. **Störungssimulation 2:** Berechtigung entfernen → diagnostizieren → lösen → dokumentieren.
+8. **Dokumentation:** Tickets erstellen, KB-Artikel, Abschlussbericht.
+9. **Review:** Checkliste prüfen; was war gut? Was verbessern?
+
+**Erwartetes Ergebnis:** Abschlussprojekt durchgeführt; Dokumentation vollständig; Review.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Onboarding unvollständig – User kann nicht arbeiten"**
+- Symptom: User startet, aber hat keinen Zugriff auf Ressourcen.
+- Ursache: Schritte übersprungen; Checkliste nicht genutzt.
+- Diagnose: Checkliste prüfen.
+- Lösung: Fehlende Schritte nachholen.
+- Prävention: Checkliste nutzen; Review vor Start.
+
+**Fehler 2: "Störung nicht dokumentiert – kein Nachvollzug"**
+- Symptom: Störung gelöst, aber keine Dokumentation.
+- Ursache: Supporter hat nicht dokumentiert.
+- Diagnose: Ticket-Inhalt prüfen.
+- Lösung: Ticket nachträglich ergänzen.
+- Prävention: Dokumentation als Pflicht; Template.
+
+**Fehler 3: "User nicht informiert – Verwirrung"**
+- Symptom: User weiß nicht, was passiert.
+- Ursache: Keine Kommunikation.
+- Diagnose: User-Feedback.
+- Lösung: User informieren; Anleitung bereitstellen.
+- Prävention: Kommunikation als Pflichtschritt.
+
+**Fehler 4: "Best Practices nicht befolgt – Sicherheitsrisiko"**
+- Symptom: User ist Administrator; keine MFA; kein Backup.
+- Ursache: Best Practices ignoriert.
+- Diagnose: System prüfen.
+- Lösung: Best Practices nachträglich umsetzen.
+- Prävention: Checkliste mit Best Practices; Review.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist das Ziel des Abschlussprojekts?
+   a) Nur Theorie lernen
+   b) Alle gelernten Fähigkeiten (Level 1 + 2) integrieren ✓
+   c) Nur ein Ticket erstellen
+   d) Nur eine VM installieren
+
+2. Was gehört zum Onboarding eines neuen Mitarbeiters?
+   a) Nur Konto erstellen
+   b) Konto, Gerät, Zugriffe, Software, Kommunikation, Dokumentation ✓
+   c) Nur Gerät bereitstellen
+   d) Nur Software installieren
+
+3. Warum ist Dokumentation im Projekt wichtig?
+   a) Nur für Compliance
+   b) Nachvollziehbarkeit, Wissensbewahrung, Review ✓
+   c) Nur für Management
+   d) Nicht wichtig
+
+4. Was ist eine Störungssimulation?
+   a) Ein echter Ausfall
+   b) Ein geplanter Test, um Troubleshooting zu üben ✓
+   c) Ein Backup
+   d) Eine Installation
+
+5. Was gehört zum Abschlussbericht?
+   a) Nur "fertig"
+   b) Durchgeführte Schritte, Ergebnisse, Lessons Learned, Verbesserungen ✓
+   c) Nur Ticket-Nummern
+   d) Nur Screenshots
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #18001:** "Du bist IT-Supporter. Ein neuer Mitarbeiter startet am Montag. Plane das Onboarding."
+
+**Lösung (aufklappbar):**
+1. Checkliste erstellen (Onboarding).
+2. User-Provisioning (AD, M365, Lizenzen, Gruppen).
+3. Geräte-Provisioning (PC, Domain Join, Intune, Apps).
+4. Zugriffe (Freigaben, Drucker, VPN).
+5. Kommunikation (Willkommens-E-Mail, Anleitung).
+6. Störungssimulation (Outlook, Freigabe).
+7. Dokumentation (Tickets, KB, Abschlussbericht).
+8. Review (Checkliste, Lessons Learned).
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100) + Windows Server 2022
+- Quellen: Microsoft Learn Windows 11 Overview; ITIL 4 Foundation (PeopleCert/AXELOS)
+- UNGEPRÜFT: Projekt-Szenario – aus allgemeiner Praxis
+- UNGEPRÜFT: Bewertungskriterien – aus allgemeiner Praxis
+- UNGEPRÜFT: Onboarding-Checkliste – aus allgemeiner Praxis

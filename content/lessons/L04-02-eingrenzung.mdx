@@ -1,0 +1,152 @@
+---
+title: "Modul 4 – Lektion 2: Problem eingrenzen (Isolation)"
+level: 1
+module: 4
+slug: "modul-4-troubleshooting-02-eingrenzung"
+last_verified: "2026-10-19"
+windows_version: "Allgemein (kein OS-spezifisch)"
+sources:
+  - "https://assets.ctfassets.net/82ripq7fjls2/6I8WL66IBa1AUovioDGrnM/f74a7eca336fd4e4c8e723a1f893086d/CompTIA-A-220-1202-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 4 – Lektion 2: Problem eingrenzen (Isolation)
+
+## 1. Lernziele
+- Du kannst ein Problem systematisch eingrenzen (Isolation).
+- Du kannst "Divide and Conquer" anwenden.
+- Du kannst zwischen Hardware/Software/Netzwerk unterscheiden.
+- Du kannst Scope (ein User vs. viele) bestimmen.
+
+## 2. Theorie kompakt
+
+**Isolation = das Problem auf die kleinste mögliche Ursache eingrenzen.**
+
+**Divide and Conquer (Teile und Herrsche):**
+- Problem in kleinere Teile zerlegen; jeden Teil einzeln testen.
+- Beispiel: "Internet funktioniert nicht" → Ist es der PC, der Switch, der Router oder der ISP?
+  - PC an anderem Port testen → Switch?
+  - Anderer PC am gleichen Port → PC?
+  - Router anpingen → Router/ISP?
+
+**Eingrenzungs-Dimensionen:**
+
+| Dimension | Frage | Test |
+|---|---|---|
+| **Physisch vs. Logisch** | Kabel/Port oder Konfiguration? | Kabel tauschen, Port wechseln, anderes Gerät |
+| **Hardware vs. Software** | Defektes Gerät oder fehlerhafte Software? | Anderes Gerät, Safe Mode, Neuinstallation |
+| **Lokal vs. Netzwerk** | Nur dieser PC oder mehrere? | Anderen PC testen, Server prüfen |
+| **User vs. System** | Nur dieser User oder alle? | Anderen User anmelden, Profil testen |
+| **Zeitlich** | Seit wann? Nach welcher Änderung? | Letzte Änderungen rückgängig machen |
+
+**Scope bestimmen (Impact):**
+- **1 User, 1 PC:** Lokales Problem (Profil, Treiber, Hardware).
+- **Mehrere User, 1 PC:** Shared-Resource-Problem (Drucker, Netzwerkshare).
+- **Mehrere PCs, 1 Abteilung:** Netzwerk-Segment, Server, GPO.
+- **Gesamtes Unternehmen:** Infrastruktur (DC, DNS, DHCP, Internet).
+
+**"Good, Better, Best" (Teststrategie):**
+- **Good:** Problem reproduzieren (kann ich es nachstellen?).
+- **Better:** Minimalen Testfall finden (was ist die kleinste Aktion, die das Problem auslöst?).
+- **Best:** Root Cause identifizieren (warum passiert das?).
+
+**Häufige Isolationstechniken:**
+- **Safe Mode / Clean Boot:** Nur Minimaldienste → isoliert Software-Konflikte.
+- **Neues User-Profil:** Testet, ob Problem profil-spezifisch ist.
+- **Anderer PC/User:** Testet, ob Problem hardware-/user-spezifisch ist.
+- **Netzwerk-Isolation:** PC vom Netzwerk trennen → lokales vs. Netzwerkproblem.
+- **Hardware-Swap:** Komponente tauschen → Hardware-Defekt bestätigen.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Problem eingrenzen (Simulation).
+
+Szenario: "User meldet: 'Ich kann nicht drucken. Andere können drucken.'"
+
+Schritte (Isolation):
+1. **Scope:** Nur dieser User? → Ja (andere können drucken). → User-/PC-spezifisch.
+2. **Physisch vs. Logisch:** Drucker physisch OK (andere drucken). → Logisch (Treiber, Profil, Berechtigung).
+3. **Hardware vs. Software:** Anderer PC des gleichen Users? → Testen. Wenn dort druckt → Software/Profil auf erstem PC.
+4. **User vs. System:** Anderen User auf dem gleichen PC anmelden → kann der drucken? Wenn ja → Profil-Problem.
+5. **Ergebnis:** Problem ist profil-spezifisch → neues Profil oder Treiber-Neuinstallation.
+
+**Erwartetes Ergebnis:** Problem eingegrenzt auf User-Profil/Treiber; Lösungsweg klar.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Problem nicht eingegrenzt – Lösung am falschen Ort"**
+- Symptom: Stundenlange Fehlersuche am falschen System.
+- Ursache: Scope nicht bestimmt (z. B. Netzwerkproblem als lokales Problem behandelt).
+- Diagnose: Impact prüfen (wie viele User/PCs betroffen?).
+- Lösung: Von vorne mit Isolation beginnen.
+- Prävention: Scope als ersten Schritt; "Wie viele sind betroffen?".
+
+**Fehler 2: "Zu viele Variablen gleichzeitig geändert"**
+- Symptom: Problem gelöst, aber unklar welche Änderung half; Problem kehrt zurück.
+- Ursache: Mehrere Änderungen gleichzeitig; keine Isolation.
+- Diagnose: Änderungshistorie.
+- Lösung: Änderungen einzeln rückgängig machen; systematisch testen.
+- Prävention: "One change at a time"; dokumentieren.
+
+**Fehler 3: "Annahme statt Test"**
+- Symptom: Lösung basiert auf Annahme, nicht auf Test; falsch.
+- Ursache: "Ich denke, es ist X" ohne Verifikation.
+- Diagnose: Testergebnisse prüfen.
+- Lösung: Hypothese testen; Daten sammeln.
+- Prävention: "Trust but verify"; Daten vor Annahmen.
+
+**Fehler 4: "Problem repliziert, aber nicht isoliert"**
+- Symptom: Problem tritt auf, aber Ursache unklar (zu viele mögliche Faktoren).
+- Ursache: Testumgebung nicht kontrolliert.
+- Diagnose: Variablen reduzieren.
+- Lösung: Minimalen Testfall finden; eine Variable ändern.
+- Prävention: Kontrollierte Tests; Dokumentation.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist "Divide and Conquer"?
+   a) Problem ignorieren
+   b) Problem in kleinere Teile zerlegen und einzeln testen ✓
+   c) Alle Änderungen gleichzeitig
+   d) Problem an Management eskalieren
+
+2. Wie bestimmt man den Scope eines Problems?
+   a) Nur nach Fehlermeldung
+   b) Nach Anzahl betroffener User/PCs/Systeme ✓
+   c) Nach Priorität
+   d) Nach Ticket-Nummer
+
+3. Was testet der "Safe Mode"?
+   a) Hardware-Defekte
+   b) Software-Konflikte (nur Minimaldienste) ✓
+   c) Netzwerkprobleme
+   d) Benutzerkonten
+
+4. Was ist ein "minimaler Testfall"?
+   a) Der komplexeste Test
+   b) Die kleinste Aktion, die das Problem auslöst ✓
+   c) Ein Stresstest
+   d) Ein Backup-Test
+
+5. Was sollte man zuerst prüfen bei "Internet funktioniert nicht"?
+   a) ISP anrufen
+   b) Ist der PC mit dem Netzwerk verbunden? (Kabel/WLAN) ✓
+   c) Router neu starten
+   d) Windows neu installieren
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #5002:** "User: 'Meine Anwendung X stürzt ab, aber nur bei mir. Kollegen haben kein Problem.'"
+
+**Lösung (aufklappbar):**
+1. Scope: Nur dieser User → User-spezifisch (Profil, Berechtigungen, lokale Einstellungen).
+2. Isolation: Neues User-Profil testen → funktioniert dort? → Profil-Problem.
+3. Wenn neues Profil OK: Altes Profil reparieren oder neu erstellen.
+4. Wenn neues Profil auch abstürzt: Lokale Software/Installation prüfen → Neuinstallation.
+5. Weitere Tests: Anwendung in anderem User-Kontext; Event Viewer (Application-Log).
+6. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Allgemein (kein OS-spezifisch)
+- Quellen: CompTIA A+ V15 Exam Objectives (Core 2) – Troubleshooting
+- UNGEPRÜFT: Isolationstechniken – aus allgemeiner Troubleshooting-Praxis

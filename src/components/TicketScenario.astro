@@ -1,0 +1,16 @@
+---
+interface Props { title?: string; }
+const { title = 'Ticket-Szenario' } = Astro.props;
+---
+<div class="ticket my-4 border border-amber-200 dark:border-amber-800 rounded p-4 bg-amber-50 dark:bg-amber-950/30">
+  <h3 class="font-semibold mb-2">{title}</h3>
+  <div class="text-sm mb-3">
+    <slot name="scenario" />
+  </div>
+  <details>
+    <summary class="cursor-pointer text-sm font-medium text-amber-800 dark:text-amber-300">Lösung aufklappen</summary>
+    <div class="mt-2 text-sm">
+      <slot name="solution" />
+    </div>
+  </details>
+</div>

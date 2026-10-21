@@ -1,0 +1,151 @@
+---
+title: "Modul 5 – Lektion 3: WLAN und Netzwerk-Grundlagen"
+level: 1
+module: 5
+slug: "modul-5-netzwerk-03-wlan"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100)"
+sources:
+  - "https://assets.ctfassets.net/82ripq7fjls2/1oSdlyujpaX3GrM0rir6Ge/91afb2be72785281e8fb4c0d9a70c6f4/CompTIA-A-220-1201-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+---
+
+# Modul 5 – Lektion 3: WLAN und Netzwerk-Grundlagen
+
+## 1. Lernziele
+- Du kennst die WLAN-Standards (802.11a/b/g/n/ac/ax) und Frequenzen.
+- Du kannst WLAN-Probleme diagnostizieren.
+- Du kannst WLAN-Profile verwalten (vergessen, neu verbinden).
+- Du kennst Sicherheitsprotokolle (WPA2/WPA3).
+
+## 2. Theorie kompakt
+
+**WLAN-Standards (IEEE 802.11):**
+
+| Standard | Frequenz | Max. Speed (theor.) | Reichweite | Einsatz |
+|---|---|---|---|---|
+| 802.11b | 2,4 GHz | 11 Mbps | ~35 m | Legacy |
+| 802.11g | 2,4 GHz | 54 Mbps | ~35 m | Legacy |
+| 802.11n (Wi-Fi 4) | 2,4/5 GHz | 600 Mbps | ~70 m | Ältere Geräte |
+| 802.11ac (Wi-Fi 5) | 5 GHz | 3,5 Gbps | ~35 m | Standard (2014-2019) |
+| 802.11ax (Wi-Fi 6/6E) | 2,4/5/6 GHz | 9,6 Gbps | ~35 m | Aktueller Standard |
+| 802.11be (Wi-Fi 7) | 2,4/5/6 GHz | 46 Gbps | ~35 m | Neueste (2024+) |
+
+**Frequenzen:**
+- **2,4 GHz:** Größere Reichweite, durchdringt Wände besser, aber stärker gestört (Mikrowelle, Bluetooth, Nachbar-WLANs). Nur 3 nicht-überlappende Kanäle (1, 6, 11).
+- **5 GHz:** Schneller, weniger Störung, aber geringere Reichweite und schlechtere Wanddurchdringung. Mehr Kanäle.
+- **6 GHz (Wi-Fi 6E/7):** Noch schneller, noch weniger Störung, aber geringste Reichweite.
+
+**Sicherheitsprotokolle:**
+- **WEP:** Veraltet, unsicher (geknackt in Minuten).
+- **WPA:** Verbesserung, aber veraltet.
+- **WPA2 (802.11i):** Aktueller Standard; AES-Verschlüsselung; Personal (PSK) oder Enterprise (802.1X/RADIUS).
+- **WPA3:** Neuester Standard; SAE (Simultaneous Authentication of Equals); bessere Sicherheit.
+- **Open (kein Passwort):** Unverschlüsselt (Gefahr).
+
+**WLAN-Profile in Windows:**
+- Gespeicherte WLAN-Netzwerke: Einstellungen → Netzwerk → WLAN → Bekannte Netzwerke.
+- `netsh wlan show profiles` → gespeicherte Profile.
+- `netsh wlan show profile <Name> key=clear` → Passwort anzeigen (Admin).
+- `netsh wlan delete profile name=<Name>` → Profil löschen.
+
+**WLAN-Diagnose:**
+- `netsh wlan show interfaces` → Status, SSID, Signal, Kanal.
+- `netsh wlan show networks` → verfügbare Netzwerke.
+- Windows Troubleshooter: Einstellungen → System → Problembehandlung → Internetverbindungen.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: WLAN diagnostizieren und verwalten.
+
+Schritte:
+1. `netsh wlan show interfaces` → SSID, Signal, Kanal, BSSID notieren.
+2. `netsh wlan show networks` → verfügbare Netzwerke + Signalstärke.
+3. `netsh wlan show profiles` → gespeicherte Profile.
+4. Einstellungen → Netzwerk → WLAN → "Bekannte Netzwerke verwalten" → Profil löschen (Test) → neu verbinden.
+5. WLAN-Treiber prüfen: Geräte-Manager → Netzwerkadapter → WLAN-Adapter → Treiber.
+6. Optional: Wi-Fi Analyzer (App) → Kanal-Überlappung prüfen.
+
+**Erwartetes Ergebnis:** WLAN-Status bekannt; Profile verwaltet; Verbindung stabil.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "WLAN verbunden, aber kein Internet"**
+- Symptom: WLAN-Symbol zeigt "Verbunden", aber Browser lädt nichts.
+- Ursache: IP-Problem (APIPA, falscher DNS), Captive Portal (Hotel-WLAN), oder Gateway nicht erreichbar.
+- Diagnose: `ipconfig` → IP/DNS/Gateway; `ping 8.8.8.8`; Browser → Captive Portal?
+- Lösung: `ipconfig /release` + `/renew`; DNS ändern; Captive Portal akzeptieren.
+- Prävention: WLAN-Profil prüfen; DHCP nutzen.
+
+**Fehler 2: "WLAN nicht in der Liste"**
+- Symptom: Bekanntes WLAN erscheint nicht in der Liste.
+- Ursache: WLAN-Adapter deaktiviert; Treiber fehlt; Router sendet SSID nicht (Hidden SSID); Reichweite.
+- Diagnose: `netsh wlan show interfaces` → Adapter-Status; Geräte-Manager.
+- Lösung: Adapter aktivieren; Treiber installieren; SSID manuell hinzufügen (Einstellungen → WLAN → "Verborgenes Netzwerk").
+- Prävention: Treiber aktuell halten; SSID broadcast aktivieren.
+
+**Fehler 3: "Langsame WLAN-Verbindung"**
+- Symptom: WLAN verbunden, aber langsam (z. B. 10 Mbps statt 100+).
+- Ursache: Schwaches Signal; Interferenz (2,4 GHz); alter Standard (802.11g); Kanal-Überlappung.
+- Diagnose: `netsh wlan show interfaces` → Signal, Kanal, Radio Type.
+- Lösung: Näher zum Router; 5 GHz nutzen; Kanal wechseln (Router); Treiber aktualisieren.
+- Prävention: Router zentral platzieren; 5 GHz für schnelle Geräte.
+
+**Fehler 4: "WLAN-Passwort vergessen / falsch"**
+- Symptom: Verbindung schlägt fehl; "Passwort falsch".
+- Ursache: Falsches Passwort; Tastaturlayout (DE vs. US); Caps Lock.
+- Diagnose: `netsh wlan show profile <SSID> key=clear` → Passwort anzeigen (Admin).
+- Lösung: Passwort erneut eingeben; Tastaturlayout prüfen; Router-Passwort zurücksetzen.
+- Prävention: Passwort-Manager; Router-Passwort dokumentieren.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Welche Frequenz hat weniger Störung, aber geringere Reichweite?
+   a) 2,4 GHz
+   b) 5 GHz ✓
+   c) 6 GHz (am wenigsten, aber kürzeste Reichweite)
+   d) 900 MHz
+
+2. Welches Sicherheitsprotokoll ist der aktuelle Standard?
+   a) WEP
+   b) WPA
+   c) WPA2/WPA3 ✓
+   d) Open
+
+3. Wie viele nicht-überlappende Kanäle gibt es bei 2,4 GHz?
+   a) 1
+   b) 3 (1, 6, 11) ✓
+   c) 11
+   d) 13
+
+4. Welcher Befehl zeigt WLAN-Profile?
+   a) `ipconfig`
+   b) `netsh wlan show profiles` ✓
+   c) `netstat`
+   d) `ping`
+
+5. Was ist ein Captive Portal?
+   a) Ein VPN
+   b) Eine Anmeldeseite (z. B. Hotel-WLAN) vor Internetzugang ✓
+   c) Ein Firewall
+   d) Ein DNS-Server
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #6003:** "User: 'Mein WLAN ist sehr langsam. Ich sitze 2 Meter vom Router entfernt.'"
+
+**Lösung (aufklappbar):**
+1. `netsh wlan show interfaces` → Signal, Kanal, Radio Type prüfen.
+2. Wenn 2,4 GHz mit schwachem Signal → Interferenz oder alter Standard.
+3. Lösungen: Auf 5 GHz wechseln; Kanal am Router ändern (1, 6, 11 für 2,4 GHz); Treiber aktualisieren.
+4. Weitere Prüfung: Andere Geräte im gleichen WLAN → langsam? → Router-Problem.
+5. Speedtest (speedtest.net) → Vergleich mit kabelgebundenem PC.
+6. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100)
+- Quellen: CompTIA A+ V15 Exam Objectives (Core 1) – Networking (Wireless); Microsoft Learn Windows 11 Overview
+- UNGEPRÜFT: WLAN-Standard-Geschwindigkeiten (theoretisch) – aus allgemeinem Wissen
+- UNGEPRÜFT: netsh wlan Befehle – in Lab verifizieren
+- UNGEPRÜFT: Wi-Fi 7 Details – aus allgemeinem Wissen (2024)

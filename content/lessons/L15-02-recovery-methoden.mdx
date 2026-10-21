@@ -1,0 +1,154 @@
+---
+title: "Modul 15 – Lektion 2: Recovery-Methoden (Wiederherstellung)"
+level: 2
+module: 15
+slug: "modul-15-backup-recovery-02-recovery-methoden"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100)"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "https://assets.ctfassets.net/82ripq7fjls2/6I8WL66IBa1AUovioDGrnM/f74a7eca336fd4e4c8e723a1f893086d/CompTIA-A-220-1202-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 15 – Lektion 2: Recovery-Methoden (Wiederherstellung)
+
+## 1. Lernziele
+- Du kannst verschiedene Recovery-Methoden erklären und anwenden.
+- Du kannst Dateien aus Backup wiederherstellen.
+- Du kannst Systemabbild wiederherstellen.
+- Du kannst Wiederherstellungspunkte nutzen.
+
+## 2. Theorie kompakt
+
+**Recovery-Methoden (Übersicht):**
+
+| Methode | Was wird wiederhergestellt | Wann nutzen |
+|---|---|---|
+| **Papierkorb** | Gelöschte Dateien | Sofort nach Löschung |
+| **Dateiversionsverlauf** | Dateiversionen (Bibliotheken) | Datei verändert/gelöscht |
+| **Shadow Copies (VSS)** | Ordner-/Dateiversionen | Datei verändert/gelöscht |
+| **OneDrive Papierkorb** | Gelöschte Cloud-Dateien | Datei in OneDrive gelöscht |
+| **Systemwiederherstellung** | Systemdateien/Registry (Wiederherstellungspunkt) | Systemproblem nach Update/Treiber |
+| **Systemabbild** | Komplette Systempartition | Festplattendefekt, System nicht bootbar |
+| **In-Place-Upgrade** | Windows neu installieren (Daten behalten) | Systemdateien beschädigt |
+| **Neuinstallation** | Alles (Daten sichern vorher!) | Letzte Option |
+
+**Shadow Copies (VSS – Volume Shadow Copy Service):**
+- Windows erstellt automatisch Schattenkopien (z. B. bei Updates, manuell).
+- Zugriff: Rechtsklick auf Datei/Ordner → "Vorgängerversionen".
+- `vssadmin list shadows` → Shadow Copies auflisten (CMD, Admin).
+- `vssadmin delete shadows /all` → alle Shadow Copies löschen (Speicherplatz).
+
+**Dateiversionsverlauf – Wiederherstellung:**
+- Einstellungen → System → Speicher → "Erweiterte Speichereinstellungen" → "Sicherungsoptionen" → "Dateien wiederherstellen".
+- Oder: Rechtsklick auf Datei → "Vorgängerversionen" → Version auswählen → "Wiederherstellen".
+
+**Systemabbild-Wiederherstellung:**
+- WinRE → "System Image Recovery" → Systemabbild auswählen → Wiederherstellen.
+- Dauer: 30-60 Min; System wird auf Abbild-Zustand zurückgesetzt.
+
+**Wiederherstellungsreihenfolge (von schnell nach aufwändig):**
+1. Papierkorb / Vorgängerversionen (Sekunden).
+2. Dateiversionsverlauf / OneDrive (Minuten).
+3. Systemwiederherstellung (Minuten).
+4. Systemabbild (Stunden).
+5. In-Place-Upgrade (Stunden).
+6. Neuinstallation (Stunden + manuelle Konfiguration).
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Verschiedene Recovery-Methoden anwenden.
+
+Schritte:
+1. Testdatei erstellen: `C:\Lab\test.txt` mit Inhalt "Version 1".
+2. Datei ändern: "Version 2" → speichern.
+3. Shadow Copy erstellen: `wmic shadowcopy call create Volume=C:\` (UNGEPRÜFT) oder Systemwiederherstellungspunkt.
+4. Datei ändern: "Version 3" → speichern.
+5. Vorgängerversion wiederherstellen: Rechtsklick auf Datei → "Vorgängerversionen" → "Version 1" oder "Version 2" wiederherstellen.
+6. Systemwiederherstellungspunkt erstellen: `rstrui.exe` → "Schutz konfigurieren" → "Erstellen".
+7. Systemwiederherstellung testen: `rstrui.exe` → Punkt auswählen → Wiederherstellen (Simulation, kann abgebrochen werden).
+
+**Erwartetes Ergebnis:** Recovery-Methoden verstanden und angewendet.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Shadow Copies nicht verfügbar"**
+- Symptom: "Vorgängerversionen" zeigt keine Versionen.
+- Ursache: Shadow Copy deaktiviert; Speicherplatz voll; Systemwiederherstellung deaktiviert.
+- Diagnose: `vssadmin list shadows`; Systemschutz-Einstellungen.
+- Lösung: Systemschutz aktivieren (Systemeigenschaften → Systemschutz → "Schutz konfigurieren" → "Systemschutz aktivieren"); Speicherplatz freigeben.
+- Prävention: Systemschutz aktivieren; Speicherplatz-Monitoring.
+
+**Fehler 2: "Systemwiederherstellung schlägt fehl"**
+- Symptom: "Systemwiederherstellung konnte nicht abgeschlossen werden."
+- Ursache: Beschädigte Wiederherstellungspunkte; Antivirus blockiert; Speicherplatz.
+- Diagnose: Fehlercode; Antivirus-Status.
+- Lösung: Anderen Wiederherstellungspunkt versuchen; Antivirus deaktivieren; Speicherplatz freigeben.
+- Prävention: Regelmäßige Wiederherstellungspunkte; Antivirus-Ausschlüsse.
+
+**Fehler 3: "Systemabbild-Wiederherstellung auf falscher Hardware"**
+- Symptom: Systemabbild-Wiederherstellung schlägt fehl (Treiber-Inkompatibilität).
+- Ursache: Hardware-Unterschiede (CPU, Chipsatz, Storage-Controller).
+- Diagnose: Fehlercode; Hardware-Vergleich.
+- Lösung: Treiber einbinden (DISM); oder Windows neu installieren + Daten aus Backup.
+- Prävention: Hardware-Dokumentation; regelmäßige Systemabbilder.
+
+**Fehler 4: "OneDrive-Wiederherstellung – Datei nicht im Papierkorb"**
+- Symptom: Datei in OneDrive gelöscht, aber nicht im Papierkorb.
+- Ursache: Papierkorb geleert; Datei älter als 30 Tage (OneDrive-Papierkorb behält 30 Tage).
+- Diagnose: OneDrive-Papierkorb prüfen; Versionierung.
+- Lösung: OneDrive-Versionierung nutzen (Rechtsklick → "Versionsverlauf"); oder Admin-Wiederherstellung.
+- Prävention: Versionierung aktivieren; Papierkorb regelmäßig prüfen.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist VSS (Volume Shadow Copy Service)?
+   a) Ein Backup-Tool
+   b) Ein Dienst, der Schattenkopien (Snapshots) von Volumes erstellt ✓
+   c) Ein Antivirus
+   d) Ein Netzwerk-Protokoll
+
+2. Was stellt Systemwiederherstellung wieder her?
+   a) User-Daten
+   b) Systemdateien und Registry (Wiederherstellungspunkt) ✓
+   c) Festplatte
+   d) Netzwerk
+
+3. Wie lange behält OneDrive gelöschte Dateien?
+   a) 7 Tage
+   b) 30 Tage ✓
+   c) 90 Tage
+   d) 1 Jahr
+
+4. Was ist der schnellste Recovery-Weg?
+   a) Neuinstallation
+   b) Systemabbild
+   c) Papierkorb / Vorgängerversionen ✓
+   d) In-Place-Upgrade
+
+5. Was macht `vssadmin list shadows`?
+   a) Listet Shadow Copies (Schattenkopien) auf ✓
+   b) Erstellt Shadow Copies
+   c) Löscht Shadow Copies
+   d) Prüft Festplatte
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #16002:** "User: 'Ich habe eine wichtige Präsentation überschrieben. Die alte Version war besser. Kann ich die alte Version wiederherstellen?'"
+
+**Lösung (aufklappbar):**
+1. Rechtsklick auf Datei → "Vorgängerversionen" → verfügbare Versionen prüfen.
+2. Wenn verfügbar: Version auswählen → "Wiederherstellen" oder "Kopieren".
+3. Wenn nicht (Shadow Copies deaktiviert): Dateiversionsverlauf prüfen (Einstellungen → Speicher → Sicherungsoptionen).
+4. OneDrive: Versionsverlauf in OneDrive (Rechtsklick → "Versionsverlauf").
+5. Wenn nichts: Datenrettung (Recuva) – Chancen gering.
+6. Prävention: Dateiversionsverlauf/OneDrive aktivieren; manuelle Backups.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100)
+- Quellen: Microsoft Learn Windows 11 Overview; CompTIA A+ V15 Exam Objectives (Core 2)
+- UNGEPRÜFT: Shadow Copy-Erstellung (wmic) – in Lab verifizieren
+- UNGEPRÜFT: vssadmin-Syntax – in Lab verifizieren
+- UNGEPRÜFT: OneDrive-Papierkorb-Aufbewahrung (30 Tage) – in Microsoft-Docs verifizieren
+- UNGEPRÜFT: Systemwiederherstellung-Details – in Lab verifizieren

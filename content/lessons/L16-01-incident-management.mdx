@@ -1,0 +1,161 @@
+---
+title: "Modul 16 – Lektion 1: Incident Management (ITIL 4)"
+level: 2
+module: 16
+slug: "modul-16-itil-01-incident-management"
+last_verified: "2026-10-19"
+windows_version: "Allgemein (ITSM)"
+sources:
+  - "https://www.peoplecert.org/browse-certifications/it-governance-and-service-management/ITIL-1/itil-4-foundation-2565 (Abruf 2026-10-19)"
+  - "https://nistcsf.com/wp-content/uploads/2019/02/ITIl-V4-Foundation-Syllabus.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 16 – Lektion 1: Incident Management (ITIL 4)
+
+## 1. Lernziele
+- Du kannst Incident Management nach ITIL 4 erklären.
+- Du kannst den Incident-Lebenszyklus beschreiben.
+- Du kannst Incidents klassifizieren und priorisieren.
+- Du kannst Major Incidents handhaben.
+
+## 2. Theorie kompakt
+
+**Incident Management (ITIL 4):** Ziel: Störungen so schnell wie möglich beheben und Service wiederherstellen. Fokus: Service-Restoration, nicht Root-Cause-Analyse.
+
+**Incident-Lebenszyklus:**
+1. **Detection & Recording:** Incident erkannt (User, Monitoring) → Ticket erstellen.
+2. **Classification & Initial Support:** Klassifizieren (Kategorie, Impact, Urgency) → Level 1 versucht Lösung.
+3. **Investigation & Diagnosis:** Diagnose (Level 1/2/3).
+4. **Resolution & Recovery:** Lösung implementieren → Service wiederherstellen.
+5. **Closure:** Ticket schließen (User-Bestätigung, Dokumentation).
+
+**Major Incident (Großstörung):**
+- Hoher Impact (Unternehmen/Abteilung betroffen).
+- Erfordert sofortige Eskalation und dedizierte Ressourcen.
+- **Major Incident Process:**
+  - Sofortige Eskalation an Major Incident Manager.
+  - Kommunikation (Stakeholder informieren).
+  - Dediziertes Team (War Room).
+  - Schnelle Workaround-Lösung (nicht perfekte Lösung).
+  - Post-Incident Review (PIR) nach Behebung.
+
+**Incident vs. Problem (Wiederholung):**
+- Incident = Symptom (sofort beheben).
+- Problem = Ursache (langfristig beheben).
+
+**Incident-Kategorien:**
+- Hardware, Software, Netzwerk, Security, Account, Drucker, etc.
+- Subkategorien für genauere Zuordnung.
+
+**Incident-Priorität (Impact × Urgency):**
+- Bereits in Modul 1 (L01-02) behandelt.
+- P1 (Critical) → sofortige Reaktion; P5 (Planning) → Routine.
+
+**Kommunikation bei Incidents:**
+- User informieren über Status (regelmäßige Updates).
+- Bei Major Incidents: Stakeholder-Benachrichtigung (E-Mail, Status-Page).
+- Transparent und proaktiv.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Incident-Management-Prozess durchspielen.
+
+Szenario: "E-Mail-Server ist down. 500 User betroffen. P1-Incident."
+
+Schritte:
+1. Ticket erstellen: Titel "E-Mail-Service down", Kategorie "E-Mail/Exchange", Typ "Incident", Impact 1 (Unternehmen), Urgency 1 (sofort) → P1.
+2. Major Incident deklarieren: Major Incident Manager informieren.
+3. Kommunikation: Stakeholder benachrichtigen ("E-Mail-Service down, Team arbeitet an Lösung").
+4. Diagnose: Server-Status, Netzwerk, Dienste.
+5. Workaround: Alternative E-Mail-Lösung (z. B. Webmail) bereitstellen.
+6. Lösung: Server reparieren/neu starten.
+7. Verifikation: E-Mail-Service funktioniert; User bestätigen.
+8. Closure: Ticket schließen; Dokumentation.
+9. Post-Incident Review (PIR) planen.
+
+**Erwartetes Ergebnis:** Major Incident durchgespielt; Kommunikation und Dokumentation vollständig.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Incident nicht als Major deklariert – zu spät"**
+- Symptom: Großstörung wird als normales Ticket behandelt; Lösung zu spät.
+- Ursache: Major-Incident-Kriterien nicht bekannt; keine Eskalation.
+- Diagnose: Ticket-Priorität und Impact prüfen.
+- Lösung: Nachträglich als Major deklarieren; Ressourcen mobilisieren.
+- Prävention: Major-Incident-Kriterien definieren; Schulung.
+
+**Fehler 2: "Keine Kommunikation bei Major Incident"**
+- Symptom: User wissen nicht, was passiert; Beschwerden; Eskalation an Management.
+- Ursache: Kein Kommunikationsplan.
+- Diagnose: Kommunikations-Logs prüfen.
+- Lösung: Sofort kommunizieren; regelmäßige Updates.
+- Prävention: Kommunikationsplan; Status-Page; Templates.
+
+**Fehler 3: "Incident geschlossen ohne Root-Cause-Analyse"**
+- Symptom: Gleiches Incident tritt erneut auf.
+- Ursache: Kein Problem-Ticket erstellt; keine Root-Cause-Analyse.
+- Diagnose: Ticket-Historie; Problem-Tickets.
+- Lösung: Problem-Ticket erstellen; Root-Cause-Analyse durchführen.
+- Prävention: Bei wiederkehrenden Incidents automatisch Problem-Ticket.
+
+**Fehler 4: "Workaround nicht dokumentiert"**
+- Symptom: Workaround geht verloren; bei nächstem Incident wieder von vorne.
+- Ursache: Workaround nicht im Ticket/KB dokumentiert.
+- Diagnose: Ticket-Inhalt prüfen.
+- Lösung: Workaround nachträglich dokumentieren.
+- Prävention: Workaround als Pflichtfeld; KB-Artikel.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist das Ziel von Incident Management?
+   a) Root-Cause-Analyse
+   b) Störungen so schnell wie möglich beheben und Service wiederherstellen ✓
+   c) Prozesse verbessern
+   d) Dokumentation erstellen
+
+2. Was ist ein Major Incident?
+   a) Ein kleines Problem
+   b) Eine Großstörung mit hohem Impact, die sofortige Eskalation erfordert ✓
+   c) Ein Service Request
+   d) Ein Problem
+
+3. Was ist ein Workaround?
+   a) Die endgültige Lösung
+   b) Eine temporäre Lösung zur Wiederherstellung des Service ✓
+   c) Eine Dokumentation
+   d) Eine Eskalation
+
+4. Was ist ein Post-Incident Review (PIR)?
+   a) Eine Ticket-Schließung
+   b) Eine Analyse nach einem Major Incident (Lessons Learned) ✓
+   c) Eine Eskalation
+   d) Eine Dokumentation
+
+5. Wann wird ein Incident zu einem Problem?
+   a) Immer
+   b) Wenn die Ursache analysiert werden soll (Root-Cause) ✓
+   c) Nie
+   d) Nur bei P1
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #17001:** "Monitoring: 'Exchange-Server nicht erreichbar. 500 User betroffen.' Du bist Level 1."
+
+**Lösung (aufklappbar):**
+1. Ticket als P1 (Critical) erstellen; Major Incident deklarieren.
+2. Major Incident Manager informieren.
+3. Kommunikation: Stakeholder benachrichtigen (E-Mail, Status-Page).
+4. Diagnose: Server-Status, Netzwerk, Dienste (Exchange).
+5. Workaround: Webmail bereitstellen (falls möglich).
+6. Lösung: Server reparieren/neu starten.
+7. Verifikation: E-Mail-Service funktioniert.
+8. Closure: Ticket schließen; Dokumentation.
+9. PIR planen; Problem-Ticket erstellen (Root-Cause-Analyse).
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Allgemein (ITSM)
+- Quellen: ITIL 4 Foundation (PeopleCert/AXELOS); ITIL 4 Syllabus (nistcsf.com PDF)
+- UNGEPRÜFT: Exakte ITIL 4 Incident-Management-Definitionen (Wortlaut) – aus Syllabus, nicht Primärtext
+- UNGEPRÜFT: Major Incident Process Details – aus allgemeiner Praxis
+- UNGEPRÜFT: PIR (Post-Incident Review) Details – aus allgemeiner Praxis

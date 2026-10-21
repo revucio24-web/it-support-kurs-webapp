@@ -1,0 +1,158 @@
+---
+title: "Modul 10 – Lektion 1: Boot-Prozess und Boot-Probleme"
+level: 2
+module: 10
+slug: "modul-10-boot-recovery-01-boot-prozess"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100)"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "https://assets.ctfassets.net/82ripq7fjls2/6I8WL66IBa1AUovioDGrnM/f74a7eca336fd4e4c8e723a1f893086d/CompTIA-A-220-1202-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 10 – Lektion 1: Boot-Prozess und Boot-Probleme
+
+## 1. Lernziele
+- Du kannst den Windows 11 Boot-Prozess erklären (UEFI → Bootloader → Kernel → Logon).
+- Du kannst häufige Boot-Probleme diagnostizieren.
+- Du kannst den abgesicherten Modus (Safe Mode) nutzen.
+- Du kennst die Boot-Konfiguration (BCD).
+
+## 2. Theorie kompakt
+
+**Windows 11 Boot-Prozess:**
+
+1. **UEFI/BIOS:** Power-On Self Test (POST); Hardware-Initialisierung; Boot-Device-Auswahl.
+2. **Boot Manager (bootmgfw.efi):** Lädt Windows Boot Loader.
+3. **Windows Boot Loader (winload.efi):** Lädt Kernel (ntoskrnl.exe) und Boot-Treiber.
+4. **Kernel-Initialisierung:** Kernel startet; Treiber laden; Registry (SYSTEM Hive) laden.
+5. **Session Manager (smss.exe):** Startet Subsysteme (Win32, etc.).
+6. **Logon (winlogon.exe):** Anmeldebildschirm; User-Authentifizierung.
+7. **Explorer:** Desktop, Taskleiste, Shell.
+
+**Boot-Konfiguration (BCD – Boot Configuration Data):**
+- Speichert Boot-Einstellungen (Boot-Reihenfolge, Safe Mode, etc.).
+- Bearbeitung: `bcdedit` (CMD, Admin) oder Systemkonfiguration (`msconfig`).
+- `bcdedit /enum` → Boot-Einträge anzeigen.
+- `bcdedit /set {current} safeboot minimal` → Safe Mode aktivieren.
+- `bcdedit /deletevalue {current} safeboot` → Safe Mode deaktivieren.
+
+**Abgesicherter Modus (Safe Mode):**
+- Startet Windows mit minimalen Treibern/Diensten.
+- Varianten:
+  - **Minimal:** Nur Basis-Treiber/Dienste (kein Netzwerk).
+  - **Mit Netzwerktreibern:** + Netzwerk.
+  - **Eingabeaufforderung:** + CMD statt Explorer.
+- Aktivierung: `msconfig` → Start → "Abgesicherter Start" → Minimal/Netzwerk/Eingabeaufforderung.
+- Oder: Shift + Neustart → Problembehandlung → Erweiterte Optionen → Starteinstellungen → Safe Mode.
+- Oder: `bcdedit /set {current} safeboot minimal`.
+
+**Häufige Boot-Probleme:**
+
+| Problem | Symptom | Ursache |
+|---|---|---|
+| **BSOD (Blue Screen)** | Blauer Bildschirm mit Stop-Code | Treiber, Hardware, Systemdateien |
+| **Boot Loop** | PC startet neu, ohne Windows zu laden | Beschädigte Systemdateien, Boot-Konfiguration |
+| **"Operating System not found"** | Kein OS erkannt | Boot-Reihenfolge falsch, Disk nicht erkannt |
+| **"INACCESSIBLE_BOOT_DEVICE"** | BSOD mit diesem Stop-Code | Storage-Treiber, Disk-Problem |
+| **"CRITICAL_PROCESS_DIED"** | BSOD | Kritischer Prozess (csrss, smss, lsass) beendet |
+| **"SYSTEM_THREAD_EXCEPTION_NOT_HANDLED"** | BSOD | Treiber-Problem |
+
+**Stop-Codes (BSOD):** Jeder BSOD hat einen Stop-Code (z. B. `CRITICAL_PROCESS_DIED`, `IRQL_NOT_LESS_OR_EQUAL`). Diese helfen bei der Diagnose.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Boot-Prozess verstehen und Safe Mode nutzen.
+
+Schritte:
+1. `msconfig` → Start → "Abgesicherter Start" → Minimal → OK → Neustart.
+2. Im Safe Mode: Prüfen, welche Dienste/Treiber geladen sind (Task-Manager, services.msc).
+3. Safe Mode beenden: `msconfig` → Start → "Normaler Start" → Neustart.
+4. `bcdedit /enum` → Boot-Einträge anzeigen.
+5. Boot-Logs: `eventvwr.msc` → System-Log → Boot-Events (Event-ID 12 = Systemstart, 13 = Herunterfahren).
+6. Optional: `msconfig` → Start → "Boot-Protokollierung" aktivieren → `C:\Windows\ntbtlog.txt` prüfen.
+
+**Erwartetes Ergebnis:** Safe Mode erfolgreich; Boot-Prozess verstanden.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Boot Loop – PC startet immer neu"**
+- Symptom: Windows startet, aber landet im Boot Loop (Neustart statt Desktop).
+- Ursache: Beschädigte Systemdateien, falscher Treiber, Boot-Konfiguration.
+- Diagnose: Safe Mode versuchen; Event Viewer (wenn zugänglich).
+- Lösung: Safe Mode → SFC/DISM; oder WinRE → "Startup Repair"; oder Systemwiederherstellung.
+- Prävention: Regelmäßige Updates; Systemwiederherstellungspunkte.
+
+**Fehler 2: "Operating System not found"**
+- Symptom: BIOS/UEFI meldet "No bootable device" oder "Operating System not found".
+- Ursache: Boot-Reihenfolge falsch; Disk nicht erkannt; MBR/GPT beschädigt.
+- Diagnose: BIOS → Boot-Reihenfolge; Disk erkannt?
+- Lösung: Boot-Reihenfolge korrigieren; Disk prüfen (Kabel); MBR/GPT reparieren (WinRE → `bootrec /fixmbr`, `/fixboot`, `/rebuildbcd`).
+- Prävention: Boot-Reihenfolge dokumentieren; Disk-Health prüfen.
+
+**Fehler 3: "BSOD beim Start (INACCESSIBLE_BOOT_DEVICE)"**
+- Symptom: BSOD mit Stop-Code "INACCESSIBLE_BOOT_DEVICE".
+- Ursache: Storage-Treiber fehlt/beschädigt; Disk-Problem; Controller-Modus (AHCI/RAID) geändert.
+- Diagnose: BIOS → Storage-Modus (AHCI?); Disk erkannt?
+- Lösung: BIOS → Storage-Modus auf AHCI setzen; WinRE → Treiber laden; SFC/DISM.
+- Prävention: Storage-Modus nicht ändern ohne Vorbereitung.
+
+**Fehler 4: "Safe Mode startet nicht"**
+- Symptom: Safe Mode bricht ab oder startet nicht.
+- Ursache: Beschädigte Systemdateien; Boot-Konfiguration fehlerhaft.
+- Diagnose: `bcdedit /enum` → Safe Boot aktiv?
+- Lösung: WinRE → "Startup Repair"; oder BCD neu erstellen (`bcdboot C:\Windows`).
+- Prävention: Systemwiederherstellungspunkte; regelmäßige Backups.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist der erste Schritt im Boot-Prozess?
+   a) Kernel-Initialisierung
+   b) UEFI/BIOS (POST) ✓
+   c) Logon
+   d) Explorer
+
+2. Was ist BCD?
+   a) Boot Configuration Data – speichert Boot-Einstellungen ✓
+   b) Boot Control Driver
+   c) Basic Computer Data
+   d) Binary Code Definition
+
+3. Wie aktiviert man Safe Mode (minimal)?
+   a) `msconfig` → Start → "Abgesicherter Start" → Minimal ✓
+   b) `bcdedit /set safeboot off`
+   c) `sfc /scannow`
+   d) `chkdsk`
+
+4. Was bedeutet Stop-Code "INACCESSIBLE_BOOT_DEVICE"?
+   a) CPU-Fehler
+   b) Storage-Treiber/Disk-Problem ✓
+   c) RAM-Fehler
+   d) Netzwerkproblem
+
+5. Welcher Befehl repariert den MBR?
+   a) `sfc /scannow`
+   b) `bootrec /fixmbr` ✓
+   c) `chkdsk`
+   d) `dism`
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #11001:** "User: 'Mein PC startet nicht mehr. Er zeigt nur einen blauen Bildschirm mit einem Fehlercode.'"
+
+**Lösung (aufklappbar):**
+1. Stop-Code notieren (z. B. CRITICAL_PROCESS_DIED, INACCESSIBLE_BOOT_DEVICE).
+2. Safe Mode versuchen (Shift + Neustart → Problembehandlung → Starteinstellungen → Safe Mode).
+3. Wenn Safe Mode funktioniert: SFC/DISM; Treiber aktualisieren; letztes Update rückgängig machen.
+4. Wenn Safe Mode nicht funktioniert: WinRE → "Startup Repair"; oder Systemwiederherstellung.
+5. Wenn nichts hilft: Windows neu installieren (Daten sichern vorher).
+6. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100)
+- Quellen: Microsoft Learn Windows 11 Overview; CompTIA A+ V15 Exam Objectives (Core 2)
+- UNGEPRÜFT: Boot-Prozess-Details (bootmgfw.efi, winload.efi) – aus allgemeinem Wissen
+- UNGEPRÜFT: bootrec-Befehle (/fixmbr, /fixboot, /rebuildbcd) – in Lab verifizieren
+- UNGEPRÜFT: Event-IDs für Boot (12, 13) – in Microsoft-Docs verifizieren
+- UNGEPRÜFT: BSOD Stop-Codes – in Microsoft-Docs verifizieren

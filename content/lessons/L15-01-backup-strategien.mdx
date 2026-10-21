@@ -1,0 +1,147 @@
+---
+title: "Modul 15 – Lektion 1: Backup-Strategien und Windows-Backup"
+level: 2
+module: 15
+slug: "modul-15-backup-recovery-01-backup-strategien"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100)"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "https://assets.ctfassets.net/82ripq7fjls2/6I8WL66IBa1AUovioDGrnM/f74a7eca336fd4e4c8e723a1f893086d/CompTIA-A-220-1202-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 15 – Lektion 1: Backup-Strategien und Windows-Backup
+
+## 1. Lernziele
+- Du kannst Backup-Strategien (3-2-1, RPO/RTO) erklären.
+- Du kannst Windows-Backup-Tools nutzen (Dateiversionsverlauf, Systemabbild).
+- Du kannst Backups planen und testen.
+- Du kannst Backup-Probleme diagnostizieren.
+
+## 2. Theorie kompakt
+
+**Backup-Strategien:**
+- **3-2-1-Regel:** 3 Kopien, 2 verschiedene Medien, 1 offsite.
+- **RPO (Recovery Point Objective):** Maximaler Datenverlust (z. B. 1 h → stündliche Backups).
+- **RTO (Recovery Time Objective):** Zeit bis System wieder läuft (z. B. 4 h).
+- **Backup-Typen:**
+  - **Vollbackup:** Komplette Kopie.
+  - **Inkrementell:** Änderungen seit letztem Backup (schnell, Wiederherstellung komplex).
+  - **Differentiell:** Änderungen seit letztem Vollbackup.
+
+**Windows-Backup-Tools:**
+- **Dateiversionsverlauf:** Einstellungen → System → Speicher → "Erweiterte Speichereinstellungen" → "Sicherungsoptionen" (Dateiversionsverlauf). Sichert Dateien in Bibliotheken (Dokumente, Desktop, etc.) auf externe Disk/Netzwerk.
+- **Systemabbild (System Image):** Systemsteuerung → Sichern und Wiederherstellen (Windows 7) → Systemabbild erstellen. Komplette Kopie der Systempartition.
+- **Systemwiederherstellung:** Wiederherstellungspunkte (nicht Backup, aber Rollback).
+- **OneDrive:** Cloud-Backup für Dateien (Known Folder Move).
+
+**Backup-Best-Practices:**
+1. **Regelmäßig:** Automatische Backups (täglich/stündlich).
+2. **Testen:** Backup-Wiederherstellung regelmäßig testen.
+3. **Offsite:** Mindestens eine Kopie extern (Cloud, anderer Standort).
+4. **Verschlüsselt:** Backup-Medium verschlüsseln (BitLocker).
+5. **Dokumentiert:** Backup-Plan dokumentieren (was, wann, wo, wie).
+6. **Versionierung:** Mehrere Versionen behalten (nicht nur letzte).
+
+**Backup-Überwachung:**
+- Backup-Status prüfen (Ereignisanzeige, Backup-Software).
+- Alerts bei fehlgeschlagenem Backup.
+- Regelmäßige Restore-Tests.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Windows-Backup einrichten und testen.
+
+Schritte:
+1. Dateiversionsverlauf: Einstellungen → System → Speicher → "Erweiterte Speichereinstellungen" → "Sicherungsoptionen" → "Dateiversionsverlauf aktivieren" → Laufwerk auswählen.
+2. Backup starten → warten.
+3. Datei ändern/löschen → Version wiederherstellen (Rechtsklick → "Vorgängerversionen").
+4. Systemabbild: Systemsteuerung → "Sichern und Wiederherstellen (Windows 7)" → "Systemabbild erstellen" → Ziel auswählen.
+5. OneDrive: OneDrive einrichten → "Known Folder Move" aktivieren (Dokumente, Desktop, Bilder).
+6. Backup-Status prüfen: Ereignisanzeige → "Microsoft-Windows-FileHistory" oder Backup-Software.
+
+**Erwartetes Ergebnis:** Backup eingerichtet; Wiederherstellung getestet.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Backup schlägt fehl – nicht genug Speicherplatz"**
+- Symptom: Backup bricht ab mit "Nicht genug Speicherplatz".
+- Ursache: Backup-Medium voll.
+- Diagnose: Speicherplatz auf Backup-Medium prüfen.
+- Lösung: Alte Backups löschen; größeres Medium; Backup-Umfang reduzieren.
+- Prävention: Speicherplatz-Monitoring; Backup-Rotation.
+
+**Fehler 2: "Backup nicht getestet – Wiederherstellung schlägt fehl"**
+- Symptom: Backup vorhanden, aber Wiederherstellung funktioniert nicht.
+- Ursache: Beschädigtes Backup; inkompatibles Medium; fehlende Software.
+- Diagnose: Restore-Test durchführen.
+- Lösung: Backup neu erstellen; Medium prüfen; Software installieren.
+- Prävention: Regelmäßige Restore-Tests; Dokumentation.
+
+**Fehler 3: "Dateiversionsverlauf sichert nicht alle Dateien"**
+- Symptom: Bestimmte Dateien nicht im Backup.
+- Ursache: Datei nicht in Bibliothek; Dateityp ausgeschlossen; Pfad nicht überwacht.
+- Diagnose: Dateiversionsverlauf-Einstellungen prüfen.
+- Lösung: Datei zur Bibliothek hinzufügen; Ausschlüsse prüfen.
+- Prävention: Backup-Umfang dokumentieren; regelmäßige Prüfung.
+
+**Fehler 4: "Systemabbild veraltet – Wiederherstellung auf neuere Hardware"**
+- Symptom: Systemabbild-Wiederherstellung schlägt auf neuer Hardware fehl.
+- Ursache: Treiber-Inkompatibilität; Hardware-Unterschiede.
+- Diagnose: Fehlercode bei Wiederherstellung.
+- Lösung: Treiber einbinden (DISM); oder Windows neu installieren + Daten aus Backup.
+- Prävention: Regelmäßige Systemabbilder; Hardware-Dokumentation.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist die 3-2-1-Regel?
+   a) 3 Backups, 2 Medien, 1 offsite ✓
+   b) 3 Tage, 2 Stunden, 1 Minute
+   c) 3 User, 2 Admins, 1 Gast
+   d) 3 Updates, 2 Neustarts, 1 Backup
+
+2. Was ist RPO?
+   a) Recovery Point Objective – max. Datenverlust ✓
+   b) Recovery Time Objective
+   c) Restore Point Operation
+   d) Remote Power Off
+
+3. Was ist RTO?
+   a) Recovery Time Objective – Zeit bis System wieder läuft ✓
+   b) Recovery Point Objective
+   c) Restore Time Operation
+   d) Remote Terminal Operation
+
+4. Was sichert der Dateiversionsverlauf?
+   a) Nur Systemdateien
+   b) Dateien in Bibliotheken (Dokumente, Desktop, etc.) ✓
+   c) Nur Registry
+   d) Nur Programme
+
+5. Was ist ein Systemabbild?
+   a) Eine Datei-Sicherung
+   b) Eine komplette Kopie der Systempartition ✓
+   c) Ein Wiederherstellungspunkt
+   d) Ein Backup der Registry
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #16001:** "User: 'Ich habe aus Versehen eine wichtige Excel-Datei gelöscht. Ich habe kein Backup.'"
+
+**Lösung (aufklappbar):**
+1. Papierkorb prüfen → wiederherstellen (falls vorhanden).
+2. Dateiversionsverlauf: Rechtsklick auf Ordner → "Vorgängerversionen" → wiederherstellen.
+3. OneDrive: Papierkorb in OneDrive prüfen.
+4. Shadow Copies: `vssadmin list shadows` → Shadow Copy wiederherstellen.
+5. Wenn nichts: Datenrettung (Recuva) – Chancen gering bei SSD.
+6. Prävention: Dateiversionsverlauf/OneDrive aktivieren; User schulen.
+7. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100)
+- Quellen: Microsoft Learn Windows 11 Overview; CompTIA A+ V15 Exam Objectives (Core 2)
+- UNGEPRÜFT: Dateiversionsverlauf-Details – in Lab verifizieren
+- UNGEPRÜFT: Systemabbild-Erstellung (Windows 7 Backup) – in Lab verifizieren
+- UNGEPRÜFT: OneDrive Known Folder Move – in Microsoft-Docs verifizieren
+- UNGEPRÜFT: RPO/RTO-Beispiele – Branchenüblich, nicht aus spezifischer Quelle

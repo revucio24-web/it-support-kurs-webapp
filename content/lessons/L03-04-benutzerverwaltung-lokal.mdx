@@ -1,0 +1,165 @@
+---
+title: "Modul 3 – Lektion 4: Benutzerverwaltung (lokal)"
+level: 1
+module: 3
+slug: "modul-3-windows11-04-benutzerverwaltung-lokal"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100)"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "https://assets.ctfassets.net/82ripq7fjls2/6I8WL66IBa1AUovioDGrnM/f74a7eca336fd4e4c8e723a1f893086d/CompTIA-A-220-1202-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 3 – Lektion 4: Benutzerverwaltung (lokal)
+
+## 1. Lernziele
+- Du kannst lokale Benutzer und Gruppen verwalten (CMD/PowerShell/GUI).
+- Du kannst Passwörter zurücksetzen und Konten sperren/entsperren.
+- Du kannst Gruppen (Administratoren, Benutzer, Gäste) verwalten.
+- Du kennst die wichtigsten CMD-Befehle für User-Management.
+
+## 2. Theorie kompakt
+
+**Befehle für Benutzerverwaltung (CMD, Admin):**
+
+| Befehl | Funktion |
+|---|---|
+| `net user` | Alle lokalen Benutzer auflisten |
+| `net user <Name>` | Details zu einem Benutzer |
+| `net user <Name> <Passwort> /add` | Benutzer erstellen |
+| `net user <Name> /delete` | Benutzer löschen |
+| `net user <Name> <NeuesPasswort>` | Passwort ändern |
+| `net user <Name> /active:no` | Konto deaktivieren |
+| `net user <Name> /active:yes` | Konto aktivieren |
+| `net localgroup` | Alle lokalen Gruppen auflisten |
+| `net localgroup <Gruppe>` | Mitglieder einer Gruppe anzeigen |
+| `net localgroup <Gruppe> <User> /add` | User zur Gruppe hinzufügen |
+| `net localgroup <Gruppe> <User> /delete` | User aus Gruppe entfernen |
+
+**Wichtige lokale Gruppen:**
+- **Administratoren:** Vollzugriff.
+- **Benutzer:** Standard (eingeschränkt).
+- **Gäste:** Sehr eingeschränkt (deprecated).
+- **Remote Desktop-Benutzer:** RDP-Zugriff (nur Pro/Enterprise).
+- **Backup-Operatoren:** Backup/Restore-Rechte.
+
+**PowerShell (modernere Alternative):**
+- `Get-LocalUser` – Benutzer auflisten.
+- `New-LocalUser -Name "Test" -Password (ConvertTo-SecureString "Pw123!" -AsPlainText -Force)` – erstellen.
+- `Set-LocalUser -Name "Test" -Password ...` – Passwort ändern.
+- `Disable-LocalUser -Name "Test"` / `Enable-LocalUser`.
+- `Remove-LocalUser -Name "Test"`.
+- `Get-LocalGroup` / `Add-LocalGroupMember -Group "Administrators" -Member "Test"`.
+
+**Passwort-Reset-Szenarien:**
+1. **User kennt altes Passwort:** Einstellungen → Konten → Anmeldeoptionen → Passwort ändern.
+2. **User vergisst Passwort (Admin vorhanden):** Admin setzt neues Passwort (`net user <Name> <Neu>`).
+3. **Kein Admin-Zugriff:** Offline-Reparatur (WinRE → CMD → `net user administrator /active:yes` → Neustart → als Administrator anmelden → Passwort setzen).
+4. **Microsoft-Konto:** Online-Reset (account.live.com) oder lokales Konto als Fallback.
+
+**Kontosperrung (Lockout):**
+- Nach X fehlgeschlagenen Anmeldeversuchen wird Konto gesperrt (Standard: 10 Versuche, 30 Min Sperre – konfigurierbar via `secpol.msc` → Kontorichtlinien → Kontosperrung).
+- Entsperren: `net user <Name> /active:yes` oder warten.
+
+**Profil-Management:**
+- Profilordner: `C:\Users\<Name>`.
+- Bei beschädigtem Profil: Ordner umbenennen → neu anmelden → Profil neu erstellen → Daten zurückkopieren.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Benutzerverwaltung via CMD/PowerShell.
+
+Schritte:
+1. CMD (Admin): `net user` → User auflisten.
+2. `net user TestUser TestPass123 /add` → User erstellen.
+3. `net localgroup users TestUser /add` → zur Benutzer-Gruppe hinzufügen (Standard).
+4. `net user TestUser` → Details prüfen.
+5. Passwort ändern: `net user TestUser NewPass456`.
+6. Konto deaktivieren: `net user TestUser /active:no`; prüfen (Anmeldung fehlschlägt); reaktivieren: `/active:yes`.
+7. Admin-Rechte vergeben: `net localgroup administrators TestUser /add`.
+8. Aufräumen: `net user TestUser /delete`.
+9. PowerShell-Alternative: `Get-LocalUser`, `New-LocalUser`, etc.
+
+**Erwartetes Ergebnis:** User erstellt, verwaltet, gelöscht; Gruppenzuordnung funktioniert.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Passwort vergessen – kein Admin-Zugriff"**
+- Symptom: User kann sich nicht anmelden; kein Admin-Konto verfügbar.
+- Ursache: Passwort vergessen; kein Backup-Admin.
+- Diagnose: Anmeldebildschirm → "Passwort vergessen" (nur Microsoft-Konto).
+- Lösung (lokal): WinRE → CMD → `net user administrator /active:yes` → Neustart → als Administrator anmelden → Passwort setzen.
+- Prävention: Backup-Admin-Konto; Passwort-Manager; Recovery-Fragen.
+
+**Fehler 2: "Konto gesperrt nach fehlgeschlagenen Anmeldungen"**
+- Symptom: "Konto ist gesperrt" / "Referenced account is currently locked out".
+- Ursache: Zu viele falsche Passwortversuche.
+- Diagnose: `net user <Name>` → "Account active: No" oder Lockout.
+- Lösung: Warten (Auto-Unlock nach 30 Min) oder Admin: `net user <Name> /active:yes` (entsperrt nicht immer) → `net user <Name> <NeuPasswort>` (setzt Lockout zurück).
+- Prävention: Lockout-Policy anpassen (secpol.msc); User schulen.
+
+**Fehler 3: "Profil beschädigt – temporäres Profil"**
+- Symptom: "Sie sind mit einem temporären Profil angemeldet".
+- Ursache: Profilordner beschädigt; Registry ProfileList fehlerhaft.
+- Diagnose: Ereignisanzeige → User Profile Service; `C:\Users\<User>` prüfen.
+- Lösung: Profilordner umbenennen → neu anmelden → Daten zurückkopieren. Oder Registry: ProfileList → .bak entfernen.
+- Prävention: Regelmäßige Backups; Profil nicht manuell verschieben.
+
+**Fehler 4: "User aus Administratoren-Gruppe entfernt – kein Admin-Zugriff"**
+- Symptom: Admin-Rechte weg; kann keine Systemänderungen durchführen.
+- Ursache: User aus Administratoren-Gruppe entfernt (versehentlich oder Policy).
+- Diagnose: `net localgroup administrators` → User fehlt.
+- Lösung: Anderes Admin-Konto → `net localgroup administrators <User> /add`. Kein Admin: WinRE-Methode.
+- Prävention: Mindestens 2 Admin-Konten; Änderungen dokumentieren.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Welcher Befehl erstellt einen neuen lokalen Benutzer?
+   a) `net user <Name> /add` (ohne Passwort – geht nicht)
+   b) `net user <Name> <Passwort> /add` ✓
+   c) `useradd <Name>`
+   d) `adduser <Name>`
+
+2. Wie deaktiviert man ein Konto?
+   a) `net user <Name> /delete`
+   b) `net user <Name> /active:no` ✓
+   c) `net user <Name> /lock`
+   d) `disable user <Name>`
+
+3. Welches PowerShell-Cmdlet listet lokale Benutzer?
+   a) `Get-Users`
+   b) `Get-LocalUser` ✓
+   c) `List-LocalUser`
+   d) `Show-Users`
+
+4. Was ist das Standard-Lockout nach fehlgeschlagenen Anmeldungen (Windows Default)?
+   a) 3 Versuche, 15 Min
+   b) 10 Versuche, 30 Min ✓ (UNGEPRÜFT – Default variiert)
+   c) 5 Versuche, 60 Min
+   d) Kein Lockout
+
+5. Wo konfiguriert man die Kontosperrungsrichtlinie?
+   a) Einstellungen → Konten
+   b) secpol.msc → Kontorichtlinien → Kontosperrung ✓
+   c) regedit
+   d) gpedit.msc (nur Pro)
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #4004:** "User: 'Ich kann mich nicht mehr anmelden. Meldung: Konto ist gesperrt. Ich habe gestern mehrmals das falsche Passwort eingegeben.'"
+
+**Lösung (aufklappbar):**
+1. Informationen: Wie viele Versuche? Ist es ein Microsoft-Konto oder lokales Konto?
+2. Lokales Konto: Als Admin anmelden → `net user <Name> <NeuesPasswort>` (setzt Lockout zurück).
+3. Microsoft-Konto: Online-Reset (account.live.com) oder "Passwort vergessen" auf Anmeldebildschirm.
+4. Falls kein Admin-Zugriff: WinRE-Methode (Offline-Reparatur).
+5. Prävention: Passwort-Manager; Lockout-Policy anpassen (secpol.msc); User schulen.
+6. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100)
+- Quellen: Microsoft Learn Windows 11 Overview; CompTIA A+ V15 Exam Objectives (Core 2) – OS Security
+- UNGEPRÜFT: Standard-Lockout-Werte (10 Versuche, 30 Min) – in secpol.msc verifizieren
+- UNGEPRÜFT: Exakte CMD/PowerShell-Syntax – in Lab verifizieren
+- UNGEPRÜFT: WinRE-Offline-Reparatur Befehle – in Lab verifizieren

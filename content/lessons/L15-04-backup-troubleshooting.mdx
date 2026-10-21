@@ -1,0 +1,150 @@
+---
+title: "Modul 15 – Lektion 4: Backup-Troubleshooting"
+level: 2
+module: 15
+slug: "modul-15-backup-recovery-04-backup-troubleshooting"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100)"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "https://assets.ctfassets.net/82ripq7fjls2/6I8WL66IBa1AUovioDGrnM/f74a7eca336fd4e4c8e723a1f893086d/CompTIA-A-220-1202-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 15 – Lektion 4: Backup-Troubleshooting
+
+## 1. Lernziele
+- Du kannst Backup-Probleme systematisch diagnostizieren.
+- Du kannst Backup-Fehler beheben.
+- Du kannst Backup-Überwachung einrichten.
+- Du kannst Wiederherstellungsprobleme lösen.
+
+## 2. Theorie kompakt
+
+**Backup-Troubleshooting-Workflow:**
+1. **Symptom:** Backup schlägt fehl oder Daten nicht wiederherstellbar.
+2. **Diagnose:** Fehlercode/Log prüfen; Speicherplatz; Berechtigungen; Netzwerk.
+3. **Isolation:** Ist es das Backup-Medium, die Software oder die Daten?
+4. **Lösung:** Speicherplatz freigeben; Berechtigungen korrigieren; Backup neu erstellen.
+5. **Verifikation:** Backup erfolgreich; Restore-Test durchführen.
+
+**Häufige Backup-Probleme:**
+
+| Problem | Ursache | Lösung |
+|---|---|---|
+| Backup schlägt fehl (Speicherplatz) | Backup-Medium voll | Speicherplatz freigeben; alte Backups löschen |
+| Backup schlägt fehl (Berechtigung) | Keine Schreibrechte auf Ziel | Berechtigungen korrigieren |
+| Backup schlägt fehl (Netzwerk) | Netzwerkpfad nicht erreichbar | Netzwerk prüfen; Pfad korrigieren |
+| Wiederherstellung schlägt fehl | Beschädigtes Backup | Backup neu erstellen; anderes Backup nutzen |
+| Backup zu langsam | Netzwerk/USB langsam; viele Dateien | Backup-Fenster anpassen; inkrementell nutzen |
+| Shadow Copy fehlgeschlagen | VSS-Dienst gestoppt; Speicherplatz | VSS-Dienst neu starten; Speicherplatz freigeben |
+
+**Backup-Überwachung:**
+- **Ereignisanzeige:** Microsoft-Windows-FileHistory, Backup-Logs.
+- **Task Scheduler:** Backup-Tasks prüfen (Status, letzte Ausführung).
+- **Backup-Software:** Status-Dashboard (z. B. Intune, Azure Backup).
+- **Alerts:** E-Mail-Benachrichtigung bei fehlgeschlagenem Backup.
+
+**VSS (Volume Shadow Copy Service) Troubleshooting:**
+- `vssadmin list writers` → VSS-Writer-Status (müssen "Stable" sein).
+- `vssadmin list shadows` → Shadow Copies auflisten.
+- `vssadmin delete shadows /all` → alle Shadow Copies löschen (Speicherplatz).
+- VSS-Dienst neu starten: `net stop vss` + `net start vss`.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Backup-Troubleshooting durchführen.
+
+Schritte:
+1. Dateiversionsverlauf: Backup-Status prüfen (Einstellungen → Speicher → Sicherungsoptionen).
+2. `vssadmin list writers` → VSS-Writer-Status prüfen.
+3. `vssadmin list shadows` → Shadow Copies auflisten.
+4. Task Scheduler → "Microsoft\Windows\FileHistory" → Task-Status prüfen.
+5. Ereignisanzeige → "Microsoft-Windows-FileHistory" → Fehler prüfen.
+6. Backup-Fehler simulieren: Backup-Ziel entfernen → Backup starten → Fehler beobachten → Ziel wiederherstellen → Backup erneut starten.
+
+**Erwartetes Ergebnis:** Backup-Troubleshooting durchgeführt; Probleme identifiziert und gelöst.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "VSS-Writer fehlerhaft – Backup schlägt fehl"**
+- Symptom: Backup bricht ab; Event-ID 8193/8194 (VSS).
+- Ursache: VSS-Writer in "Failed" oder "Waiting for completion"-Status.
+- Diagnose: `vssadmin list writers` → Status prüfen.
+- Lösung: VSS-Dienst neu starten; betroffenen Dienst (z. B. SQL, Exchange) neu starten; VSS-Writer neu registrieren.
+- Prävention: Regelmäßige VSS-Prüfung; Dienste-Monitoring.
+
+**Fehler 2: "Backup-Datei beschädigt – Wiederherstellung schlägt fehl"**
+- Symptom: Wiederherstellung bricht ab; "Datei beschädigt".
+- Ursache: Backup-Medium fehlerhaft; Übertragungsfehler.
+- Diagnose: Backup-Datei prüfen (Prüfsumme); Medium testen.
+- Lösung: Anderes Backup nutzen; Backup neu erstellen; Medium ersetzen.
+- Prävention: Regelmäßige Restore-Tests; Prüfsummen; redundante Backups.
+
+**Fehler 3: "Backup zu langsam – Zeitfenster überschritten"**
+- Symptom: Backup dauert zu lange; überlappt mit Arbeitszeiten.
+- Ursache: Zu viele Daten; langsame Verbindung; volle Backup.
+- Diagnose: Backup-Dauer prüfen; Datenmenge.
+- Lösung: Inkrementelles Backup nutzen; Backup-Fenster anpassen (nachts); Bandbreite erhöhen.
+- Prävention: Backup-Planung; inkrementelle Backups.
+
+**Fehler 4: "Shadow Copy Speicher voll – alte Copies gelöscht"**
+- Symptom: "Shadow Copy Speicher ist voll"; alte Shadow Copies werden gelöscht.
+- Ursache: Shadow Copy Speicher zu klein.
+- Diagnose: `vssadmin list shadowstorage` → Speicher prüfen.
+- Lösung: Shadow Copy Speicher erhöhen: `vssadmin resize shadowstorage /For=C: /On=C: /MaxSize=10GB`.
+- Prävention: Speicherplatz-Monitoring; Shadow Copy Speicher anpassen.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist VSS?
+   a) Ein Antivirus
+   b) Volume Shadow Copy Service – erstellt Schattenkopien ✓
+   c) Ein Backup-Tool
+   d) Ein Netzwerk-Protokoll
+
+2. Was macht `vssadmin list writers`?
+   a) Listet Shadow Copies
+   b) Listet VSS-Writer und deren Status ✓
+   c) Löscht Shadow Copies
+   d) Erstellt Shadow Copies
+
+3. Was ist ein VSS-Writer?
+   a) Ein Dienst, der Daten für Shadow Copies bereitstellt ✓
+   b) Ein Backup-Tool
+   c) Ein Antivirus
+   d) Ein Netzwerk-Protokoll
+
+4. Was bedeutet "Stable"-Status bei VSS-Writern?
+   a) Writer ist fehlerhaft
+   b) Writer ist bereit und funktioniert ✓
+   c) Writer ist deaktiviert
+   d) Writer wartet
+
+5. Wie erhöht man den Shadow Copy Speicher?
+   a) `vssadmin resize shadowstorage` ✓
+   b) `vssadmin list shadows`
+   c) `vssadmin delete shadows`
+   d) `vssadmin create shadow`
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #16004:** "User: 'Mein Backup schlägt seit 3 Tagen fehl. Fehlermeldung: Nicht genug Speicherplatz.'"
+
+**Lösung (aufklappbar):**
+1. Backup-Medium prüfen (Speicherplatz).
+2. Alte Backups löschen (Backup-Rotation).
+3. Backup-Umfang prüfen (zu viele Dateien?).
+4. Wenn inkrementell: Vollbackup + neue inkrementelle.
+5. Speicherplatz freigeben (Temp-Dateien, Logs).
+6. Backup neu starten.
+7. Backup-Überwachung einrichten (Alert bei Fehler).
+8. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100)
+- Quellen: Microsoft Learn Windows 11 Overview; CompTIA A+ V15 Exam Objectives (Core 2)
+- UNGEPRÜFT: VSS-Befehle (vssadmin) – in Lab verifizieren
+- UNGEPRÜFT: Backup-Überwachung (Task Scheduler, Ereignisanzeige) – in Lab verifizieren
+- UNGEPRÜFT: Backup-Fehlercodes – in Microsoft-Docs verifizieren
+- UNGEPRÜFT: Shadow Copy Speicher-Details – in Microsoft-Docs verifizieren

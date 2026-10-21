@@ -1,0 +1,159 @@
+---
+title: "Modul 11 – Lektion 2: Gruppenrichtlinien (GPO)"
+level: 2
+module: 11
+slug: "modul-11-ad-gpo-02-gruppenrichtlinien"
+last_verified: "2026-10-19"
+windows_version: "Windows Server 2022 (Evaluation) + Windows 11 24H2 (Client)"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "https://assets.ctfassets.net/82ripq7fjls2/6I8WL66IBa1AUovioDGrnM/f74a7eca336fd4e4c8e723a1f893086d/CompTIA-A-220-1202-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 11 – Lektion 2: Gruppenrichtlinien (GPO)
+
+## 1. Lernziele
+- Du kannst erklären, was GPOs sind und wie sie angewendet werden.
+- Du kannst GPOs erstellen, verknüpfen und verwalten (GPMC).
+- Du kannst die GPO-Verarbeitungsreihenfolge (LSDOU) erklären.
+- Du kannst GPO-Probleme diagnostizieren.
+
+## 2. Theorie kompakt
+
+**GPO (Group Policy Object):** Sammlung von Einstellungen, die auf User/Computer in AD angewendet werden. Steuert Sicherheit, Desktop, Software, Skripte, etc.
+
+**GPO-Verwaltung:**
+- **GPMC (Group Policy Management Console):** `gpmc.msc` – GPOs erstellen, bearbeiten, verknüpfen, sichern.
+- **GPO-Editor:** `gpedit.msc` – einzelne GPO bearbeiten (Computer- und User-Konfiguration).
+- **GPO-Speicher:** SYSVOL-Share auf DC (`\\domain\SYSVOL\domain\Policies\`).
+
+**GPO-Struktur:**
+- **Computer Configuration:** Einstellungen für Computer (Registry, Software, Skripte, Sicherheit).
+- **User Configuration:** Einstellungen für User (Desktop, Software, Skripte, Ordnerumleitung).
+
+**GPO-Verarbeitungsreihenfolge (LSDOU):**
+1. **L**ocal (lokale GPO auf dem PC).
+2. **S**ite (GPOs der Site).
+3. **D**omain (GPOs der Domain).
+4. **OU (Organizational Unit)** (GPOs der OU, von oben nach unten).
+- Spätere GPOs überschreiben frühere (bei Konflikt).
+- **Enforced (Erzwingen):** GPO wird nicht überschrieben (auch von späteren).
+- **Block Inheritance (Vererbung blockieren):** OU ignoriert übergeordnete GPOs (außer Enforced).
+
+**GPO-Aktualisierung:**
+- Automatisch: alle 90 Min (±30 Min) + beim Boot/Anmeldung.
+- Manuell: `gpupdate /force` (sofortige Aktualisierung).
+
+**Wichtige GPO-Einstellungen:**
+- **Passwort-Richtlinie:** Mindestlänge, Komplexität, Ablauf, Sperre.
+- **Kontosperrung:** Anzahl Versuche, Sperdauer.
+- **Desktop-Einstellungen:** Hintergrund, Taskleiste, Startmenü.
+- **Software-Installation:** MSI-Pakete bereitstellen.
+- **Skripte:** Logon/Logoff, Startup/Shutdown.
+- **Ordnerumleitung:** Dokumente, Desktop auf Server umleiten.
+- **Sicherheitsoptionen:** UAC, Firewall, BitLocker.
+
+**GPO-Diagnose:**
+- `gpresult /r` – angewendete GPOs anzeigen (CMD).
+- `gpresult /h C:\gpreport.html` – HTML-Bericht.
+- `rsop.msc` – Resultant Set of Policy (grafisch).
+- Event Viewer → GroupPolicy-Log.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: GPO erstellen und verknüpfen.
+
+Schritte (in DC-VM):
+1. `gpmc.msc` öffnen.
+2. Rechtsklick auf "Group Policy Objects" → "Neu" → Name "Lab-Password-Policy".
+3. GPO bearbeiten: Rechtsklick → "Bearbeiten" → Computer Configuration → Policies → Windows Settings → Security Settings → Account Policies → Password Policy.
+4. Einstellungen: Mindestpasswortlänge 12, Komplexität aktivieren, Max. Alter 90 Tage.
+5. GPO verknüpfen: Rechtsklick auf Domain `lab.local` → "Vorhandenes GPO verknüpfen" → "Lab-Password-Policy".
+6. Client-VM: `gpupdate /force` → Passwort-Richtlinie prüfen (`net accounts`).
+7. `gpresult /r` → angewendete GPOs prüfen.
+
+**Erwartetes Ergebnis:** GPO erstellt und verknüpft; Passwort-Richtlinie auf Client angewendet.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "GPO wird nicht angewendet"**
+- Symptom: Einstellung nicht wirksam; `gpresult /r` zeigt GPO nicht.
+- Ursache: GPO nicht verknüpft; Sicherheitsfilterung (keine Berechtigung); WMI-Filter; Block Inheritance.
+- Diagnose: `gpresult /r`; GPMC → Verknüpfung prüfen; Sicherheitsfilterung prüfen.
+- Lösung: GPO verknüpfen; Berechtigung hinzufügen (Authenticated Users); WMI-Filter prüfen.
+- Prävention: Vor Verknüpfung prüfen; Test-OU nutzen.
+
+**Fehler 2: "GPO-Konflikt – falsche Einstellung gewinnt"**
+- Symptom: Erwartete Einstellung nicht wirksam; andere GPO überschreibt.
+- Ursache: LSDOU-Reihenfolge; spätere GPO überschreibt.
+- Diagnose: `gpresult /r` → Reihenfolge prüfen; `rsop.msc`.
+- Lösung: Enforced setzen; oder GPO-Reihenfolge ändern; oder Konflikt auflösen.
+- Prävention: GPO-Design planen; Enforced sparsam nutzen.
+
+**Fehler 3: "GPO-Verarbeitung langsam – Boot/Anmeldung verzögert"**
+- Symptom: Client braucht lange zum Booten/Anmelden.
+- Ursache: Zu viele GPOs; große Skripte; langsame Netzwerkverbindung.
+- Diagnose: `gpresult /h` → Verarbeitungszeit; Event Viewer (GroupPolicy).
+- Lösung: GPOs konsolidieren; Skripte optimieren; WMI-Filter prüfen.
+- Prävention: GPO-Anzahl minimieren; regelmäßige Review.
+
+**Fehler 4: "GPO nicht repliziert – SYSVOL-Problem"**
+- Symptom: GPO auf einem DC vorhanden, auf anderem nicht.
+- Ursache: SYSVOL-Replikation fehlgeschlagen (DFSR).
+- Diagnose: `repadmin /showrepl`; Event Viewer (DFSR).
+- Lösung: Replikation erzwingen; DFSR-Reparatur.
+- Prävention: Replikations-Monitoring; SYSVOL-Backup.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist die GPO-Verarbeitungsreihenfolge (LSDOU)?
+   a) Local → Site → Domain → OU ✓
+   b) OU → Domain → Site → Local
+   c) Domain → Site → OU → Local
+   d) Site → Domain → OU → Local
+
+2. Was bedeutet "Enforced" bei einer GPO?
+   a) GPO wird nicht angewendet
+   b) GPO wird nicht überschrieben (auch von späteren) ✓
+   c) GPO wird gelöscht
+   d) GPO wird blockiert
+
+3. Wie aktualisiert man GPOs sofort?
+   a) Neustart
+   b) `gpupdate /force` ✓
+   c) `gpresult /r`
+   d) `gpedit.msc`
+
+4. Welches Tool verwaltet GPOs?
+   a) `dsa.msc`
+   b) `gpmc.msc` (Group Policy Management Console) ✓
+   c) `services.msc`
+   d) `diskmgmt.msc`
+
+5. Wo werden GPOs gespeichert?
+   a) In der Registry
+   b) Im SYSVOL-Share auf dem DC ✓
+   c) In der AD-Datenbank
+   d) Auf dem Client
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #12002:** "User: 'Mein Desktop-Hintergrund ändert sich nicht, obwohl IT gesagt hat, dass sie eine neue Richtlinie ausgerollt haben.'"
+
+**Lösung (aufklappbar):**
+1. `gpresult /r` → ist die GPO angewendet?
+2. Wenn nicht: GPO-Verknüpfung prüfen (GPMC); Sicherheitsfilterung (Authenticated Users?).
+3. `gpupdate /force` → GPO aktualisieren.
+4. Wenn immer noch nicht: Block Inheritance? WMI-Filter?
+5. Event Viewer → GroupPolicy-Log → Fehler?
+6. GPO-Einstellung prüfen (richtiger Pfad?).
+7. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows Server 2022 (Evaluation) + Windows 11 24H2 (Client)
+- Quellen: Microsoft Learn Windows 11 Overview; CompTIA A+ V15 Exam Objectives (Core 2)
+- UNGEPRÜFT: GPO-Verarbeitungsreihenfolge (LSDOU) – aus allgemeinem Wissen
+- UNGEPRÜFT: GPO-Aktualisierungsintervall (90 Min ±30) – aus allgemeinem Wissen
+- UNGEPRÜFT: gpresult/gpupdate/rsop-Syntax – in Lab verifizieren
+- UNGEPRÜFT: SYSVOL/DFSR-Details – in Microsoft-Docs verifizieren

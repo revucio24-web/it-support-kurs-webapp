@@ -1,0 +1,160 @@
+---
+title: "Modul 3 – Lektion 2: Windows 11 Updates und Treiber"
+level: 1
+module: 3
+slug: "modul-3-windows11-02-updates-treiber"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100)"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "https://learn.microsoft.com/en-us/windows/release-health/supported-versions-windows-client (Abruf 2026-10-19)"
+---
+
+# Modul 3 – Lektion 2: Windows 11 Updates und Treiber
+
+## 1. Lernziele
+- Du kennst die Windows 11 Update-Typen (Feature, Quality, Driver, Definition).
+- Du kannst Updates manuell prüfen/installieren/pausieren.
+- Du kannst Treiber verwalten (installieren, aktualisieren, zurückrollen).
+- Du kannst Update-Probleme diagnostizieren.
+
+## 2. Theorie kompakt
+
+**Windows 11 Update-Typen:**
+
+| Typ | Beschreibung | Häufigkeit |
+|---|---|---|
+| **Feature Update** | Neue Windows-Version (z. B. 23H2 → 24H2) | 1×/Jahr (Herbst) |
+| **Quality Update** (Cumulative) | Sicherheits- + Bugfixes | Monatlich (Patch Tuesday, 2. Dienstag) |
+| **Out-of-band (OOB)** | Dringende Fixes außerhalb des Zyklus | Bei Bedarf |
+| **Driver Update** | Treiber über Windows Update | Bei Bedarf |
+| **Definition Update** | Defender-Signaturen | Mehrmals täglich |
+| **.NET / andere** | Framework-Updates | Bei Bedarf |
+
+**Windows Update-Einstellungen:**
+- Einstellungen → Windows Update.
+- "Nach Updates suchen", "Updates pausieren" (max. 5 Wochen), "Erweiterte Optionen" (optionale Updates, Lieferoptimierung).
+- "Windows Update for Business" (Pro/Enterprise): Deferral, Rings, WSUS/Intune.
+
+**Treiber-Verwaltung:**
+- **Windows Update:** Liefert generische/kompatible Treiber (ausreichend für die meisten).
+- **Geräte-Manager:** Treiber aktualisieren/zurückrollen/deinstallieren.
+- **Hersteller:** Spezifische Treiber (GPU: NVIDIA/AMD/Intel; Audio: Realtek).
+- **pnputil:** CMD-Tool für Treiber-Pakete (`pnputil /enum-drivers`, `pnputil /add-driver`).
+
+**Treiber-Modell:**
+- **WDDM** (Windows Display Driver Model): Grafiktreiber (WDDM 3.1 für Win11).
+- **UMDF/KMDF:** User/Kernel Mode Driver Framework.
+- **V4-Treiber:** Modernes, isoliertes Treibermodell.
+
+**Update-Probleme (häufig):**
+- Windows Update-Dienst (`wuauserv`) gestoppt/deaktiviert.
+- Beschädigte Update-Komponenten (SoftwareDistribution-Ordner).
+- Nicht genug Speicherplatz.
+- Inkompatible Treiber/Software.
+- Netzwerk/Firewall blockiert (WSUS/Proxy).
+
+**Troubleshooting-Befehle (UNGEPRÜFT – in Lab verifizieren):**
+- `net stop wuauserv` + `net stop bits` → `ren C:\Windows\SoftwareDistribution SoftwareDistribution.old` → `net start wuauserv` + `net start bits`.
+- `sfc /scannow` → Systemdateien prüfen.
+- `DISM /Online /Cleanup-Image /RestoreHealth` → Image reparieren.
+- `wuauclt /detectnow` (alt) / `UsoClient StartScan` (neu).
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Updates prüfen und Treiber verwalten.
+
+Schritte:
+1. Einstellungen → Windows Update → "Nach Updates suchen" → verfügbare Updates installieren.
+2. "Erweiterte Optionen" → "Optionale Updates" → Treiber prüfen/installieren.
+3. Geräte-Manager → Display-Adapter → Rechtsklick → "Treiber aktualisieren" → "Automatisch suchen".
+4. Treiber zurückrollen: Geräte-Manager → Gerät → Eigenschaften → Treiber → "Vorherigen Treiber" (falls verfügbar).
+5. PowerShell: `Get-WindowsUpdateLog` (generiert Log-Datei) – UNGEPRÜFT.
+6. `pnputil /enum-drivers` → installierte Treiberpakete auflisten.
+
+**Erwartetes Ergebnis:** Updates installiert, Treiber verwaltet, System aktuell.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Windows Update schlägt fehl – Fehler 0x80070005 / 0x800f081f"**
+- Symptom: Update-Installation fehlschlägt mit Fehlercode.
+- Ursache: Berechtigungsproblem (0x80070005) oder beschädigte Komponenten (0x800f081f).
+- Diagnose: Fehlercode in Microsoft-Docs nachschlagen; `C:\Windows\Logs\CBS\CBS.log`.
+- Lösung: Als Admin ausführen; SoftwareDistribution-Ordner umbenennen; SFC/DISM; Windows Update Troubleshooter.
+- Prävention: Regelmäßige Updates; Speicherplatz prüfen.
+
+**Fehler 2: "Update hängt bei 0% oder 100%"**
+- Symptom: Update-Download/Installation bleibt hängen.
+- Ursache: BITS-Dienst gestoppt; Netzwerkproblem; beschädigte Dateien.
+- Diagnose: `services.msc` → BITS, wuauserv Status; Event Viewer.
+- Lösung: Dienste neu starten; SoftwareDistribution leeren; `bitsadmin /reset`.
+- Prävention: Netzwerk stabil; keine VPN während Update.
+
+**Fehler 3: "Treiber-Update verursacht Bluescreen"**
+- Symptom: Nach Treiber-Update BSOD oder Gerät funktioniert nicht.
+- Ursache: Inkompatibler Treiber; beschädigte Installation.
+- Diagnose: Geräte-Manager → Treiber-Version; Ereignisanzeige.
+- Lösung: Treiber zurückrollen (Geräte-Manager → Vorherigen Treiber); im Abgesicherten Modus deinstallieren + neu installieren.
+- Prävention: Vor Treiber-Update Snapshot; Hersteller-Treiber prüfen.
+
+**Fehler 4: "Feature Update bricht ab – nicht genug Speicherplatz"**
+- Symptom: Feature Update (z. B. 24H2) schlägt fehl mit "Nicht genug Speicherplatz".
+- Ursache: Zu wenig freier Speicher (< 20-30 GB für Feature Update).
+- Diagnose: `cleanmgr` / Speicherplatz prüfen.
+- Lösung: Speicherplatz freigeben (Disk Cleanup, Temp-Dateien); externe USB für Update nutzen (Media Creation Tool).
+- Prävention: Regelmäßige Bereinigung; min. 30 GB frei halten.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Wie oft erscheinen Quality Updates (Cumulative)?
+   a) Täglich
+   b) Monatlich (Patch Tuesday) ✓
+   c) Jährlich
+   d) Wöchentlich
+
+2. Welcher Dienst ist für Windows Update zuständig?
+   a) BITS (Background Intelligent Transfer Service) – unterstützt
+   b) wuauserv (Windows Update) ✓
+   c) spoolsv
+   d) lsass
+
+3. Wie rollt man einen Treiber zurück?
+   a) Windows neu installieren
+   b) Geräte-Manager → Gerät → Eigenschaften → Treiber → Vorherigen Treiber ✓
+   c) Registrierung bearbeiten
+   d) Treiber löschen
+
+4. Was ist ein Feature Update?
+   a) Ein Sicherheitspatch
+   b) Eine neue Windows-Version (z. B. 23H2 → 24H2) ✓
+   c) Ein Treiber-Update
+   d) Ein Defender-Update
+
+5. Welcher Befehl prüft Systemdateien?
+   a) chkdsk
+   b) sfc /scannow ✓
+   c) ipconfig
+   d) netstat
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #4002:** "User: 'Mein PC hat gestern ein Update installiert und seitdem startet ein Programm nicht mehr. Ich brauche es dringend.'"
+
+**Lösung (aufklappbar):**
+1. Informationen: Welches Programm? Welches Update? Fehlermeldung?
+2. Prüfen: Event Viewer → Application-Log → Fehler des Programms.
+3. Lösungsversuche:
+   a) Programm als Admin starten.
+   b) Kompatibilitätsmodus (Rechtsklick → Eigenschaften → Kompatibilität).
+   c) Programm neu installieren.
+   d) Update deinstallieren (Einstellungen → Windows Update → Update-Verlauf → Deinstallieren) – nur als letzte Option.
+4. Falls Update das Problem ist: Update pausieren, Problem an Microsoft melden.
+5. Dokumentieren; User informieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100)
+- Quellen: Microsoft Learn Windows 11 Overview; Windows Release Health (supported versions)
+- UNGEPRÜFT: Exakte Befehle (wuauclt, UsoClient, bitsadmin) – in Lab verifizieren
+- UNGEPRÜFT: Fehlercodes (0x80070005, 0x800f081f) – in Microsoft-Docs verifizieren
+- UNGEPRÜFT: Speicherplatz-Anforderungen für Feature Updates – variabel

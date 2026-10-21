@@ -1,0 +1,155 @@
+---
+title: "Modul 7 – Lektion 4: Sicherheits-Basics (Zero Trust, Backup, Patching)"
+level: 1
+module: 7
+slug: "modul-7-sicherheit-04-basics-zusammenfassung"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100)"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "https://assets.ctfassets.net/82ripq7fjls2/6I8WL66IBa1AUovioDGrnM/f74a7eca336fd4e4c8e723a1f893086d/CompTIA-A-220-1202-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 7 – Lektion 4: Sicherheits-Basics (Zero Trust, Backup, Patching)
+
+## 1. Lernziele
+- Du kannst die Zero-Trust-Prinzipien erklären.
+- Du kennst Backup-Strategien (3-2-1-Regel).
+- Du kannst Patch-Management-Grundlagen erklären.
+- Du kannst Sicherheits-Best-Practices für Endpoints zusammenfassen.
+
+## 2. Theorie kompakt
+
+**Zero Trust (NIST):**
+- "Never trust, always verify" – kein implizites Vertrauen, auch nicht im internen Netzwerk.
+- **Prinzipien:**
+  1. **Verify explicitly:** Jede Anfrage authentifizieren und autorisieren (MFA, Device Compliance).
+  2. **Least Privilege:** Minimale Rechte (Just-in-Time, Just-Enough-Access).
+  3. **Assume Breach:** Angenommen, das Netzwerk ist kompromittiert → Segmentierung, Verschlüsselung, Monitoring.
+- **Umsetzung:** Conditional Access, MFA, Device Compliance (Intune), Network Segmentation, Verschlüsselung.
+
+**Backup-Strategien:**
+- **3-2-1-Regel:** 3 Kopien der Daten, auf 2 verschiedenen Medien, 1 Kopie offsite (extern).
+- **Backup-Typen:**
+  - **Vollbackup:** Komplette Kopie.
+  - **Inkrementell:** Nur Änderungen seit letztem Backup (schnell, aber Wiederherstellung komplex).
+  - **Differentiell:** Änderungen seit letztem Vollbackup.
+- **RPO (Recovery Point Objective):** Wie viel Datenverlust ist akzeptabel (z. B. 1 h → stündliche Backups).
+- **RTO (Recovery Time Objective):** Wie schnell muss das System wieder laufen (z. B. 4 h).
+- **Windows-Backup:** Dateiversionsverlauf, Systemwiederherstellung, Systemabbild (Backup and Restore).
+- **Cloud-Backup:** OneDrive, Azure Backup, Drittanbieter.
+
+**Patch-Management:**
+- **Patch Tuesday:** Microsoft veröffentlicht Updates am 2. Dienstag des Monats.
+- **Patch-Zyklus:** Testen → Pilot-Gruppe → Rollout → Monitoring.
+- **WSUS/Intune:** Zentrale Patch-Verwaltung (Unternehmen).
+- **Automatische Updates:** Für Enduser (Windows Update).
+- **Patch-Prioritäten:** Critical/Security sofort; Feature Updates nach Test.
+
+**Endpoint-Sicherheits-Best-Practices (Zusammenfassung):**
+1. **Updates:** OS + Software aktuell (Windows Update, Treiber, Apps).
+2. **Antivirus:** Defender aktiv + Echtzeitschutz.
+3. **Firewall:** Windows Defender Firewall aktiv.
+4. **MFA:** Für alle Konten (besonders Admin).
+5. **Least Privilege:** Standardbenutzer statt Administrator.
+6. **Verschlüsselung:** BitLocker (Pro/Enterprise) für Festplatten.
+7. **Backup:** 3-2-1-Regel; regelmäßig testen.
+8. **Phishing-Schulung:** User sensibilisieren.
+9. **Monitoring:** Logs prüfen; Alerts bei Anomalien.
+10. **Netzwerk:** VPN für Remote-Zugriff; RDP nicht exponieren.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Backup und Patch-Status prüfen.
+
+Schritte:
+1. Windows-Sicherung: Einstellungen → System → Speicher → "Erweiterte Speichereinstellungen" → "Sicherungsoptionen" (Dateiversionsverlauf).
+2. Systemwiederherstellung: `rstrui.exe` → Wiederherstellungspunkte prüfen.
+3. BitLocker-Status: `manage-bde -status C:` (nur Pro/Enterprise).
+4. Windows Update: Einstellungen → Windows Update → "Updateverlauf" → installierte Updates prüfen.
+5. Defender-Status: Windows-Sicherheit → Viren- & Bedrohungsschutz.
+6. Firewall: Windows-Sicherheit → Firewall & Netzwerkschutz.
+
+**Erwartetes Ergebnis:** Backup/Patch/Sicherheitsstatus bekannt; Maßnahmen bei Bedarf.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Kein Backup – Datenverlust bei Festplattendefekt"**
+- Symptom: Festplatte defekt; keine Datenrettung möglich.
+- Ursache: Kein Backup.
+- Diagnose: Backup-Status prüfen.
+- Lösung: Datenrettung (teuer, nicht garantiert); aus Backup wiederherstellen (falls vorhanden).
+- Prävention: 3-2-1-Regel; regelmäßige Backup-Tests.
+
+**Fehler 2: "Updates nicht installiert – Sicherheitslücke"**
+- Symptom: System verwundbar für bekannte Exploits.
+- Ursache: Windows Update deaktiviert oder fehlgeschlagen.
+- Diagnose: Updateverlauf prüfen; `sfc /scannow`.
+- Lösung: Updates installieren; Windows Update Troubleshooter.
+- Prävention: Automatische Updates; Monitoring.
+
+**Fehler 3: "BitLocker-Recovery-Key verloren"**
+- Symptom: PC startet nicht; Recovery-Key unbekannt.
+- Ursache: Key nicht gesichert (AD/Entra/Azure oder Datei).
+- Diagnose: `manage-bde -protectors -get C:`; Entra ID/Azure prüfen.
+- Lösung: Recovery-Key in Entra ID/Azure suchen; falls nicht vorhanden → Datenverlust.
+- Prävention: Key in Entra ID/Azure/AD sichern; Backup-Key.
+
+**Fehler 4: "Zu viele Admin-Rechte – Sicherheitsrisiko"**
+- Symptom: Jeder User ist Administrator; Malware kann System beschädigen.
+- Ursache: Kein Least-Privilege-Konzept.
+- Diagnose: `net localgroup administrators`.
+- Lösung: Standardbenutzer-Konten erstellen; Admin-Konto nur für Admin-Aufgaben.
+- Prävention: Least Privilege; regelmäßige Review.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist die 3-2-1-Regel?
+   a) 3 Updates, 2 Neustarts, 1 Backup
+   b) 3 Kopien, 2 Medien, 1 offsite ✓
+   c) 3 User, 2 Admins, 1 Gast
+   d) 3 Tage, 2 Stunden, 1 Minute
+
+2. Was bedeutet Zero Trust?
+   a) Kein Vertrauen in externe User
+   b) Never trust, always verify – kein implizites Vertrauen ✓
+   c) Keine Passwörter
+   d) Keine Verschlüsselung
+
+3. Was ist RPO?
+   a) Recovery Point Objective – akzeptabler Datenverlust ✓
+   b) Recovery Time Objective
+   c) Restore Point Operation
+   d) Remote Power Off
+
+4. Was ist RTO?
+   a) Recovery Time Objective – Zeit bis System wieder läuft ✓
+   b) Recovery Point Objective
+   c) Restore Time Operation
+   d) Remote Terminal Operation
+
+5. Wann erscheinen Patch Tuesday Updates?
+   a) Jeden Montag
+   b) Am 2. Dienstag des Monats ✓
+   c) Jeden Freitag
+   d) Am 1. des Monats
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #8004:** "User: 'Ich habe aus Versehen eine wichtige Datei gelöscht. Ich habe kein Backup. Können Sie helfen?'"
+
+**Lösung (aufklappbar):**
+1. Sofort: Papierkorb prüfen → wiederherstellen (falls vorhanden).
+2. Dateiversionsverlauf: Einstellungen → Speicher → Dateiversionsverlauf → Version wiederherstellen.
+3. Shadow Copies: Rechtsklick auf Ordner → "Vorgängerversionen" → wiederherstellen.
+4. Wenn nichts: Datenrettung (Recuva, etc.) – Chancen gering, besonders bei SSD.
+5. Prävention: Backup einrichten (3-2-1); Dateiversionsverlauf aktivieren; User schulen.
+6. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100)
+- Quellen: Microsoft Learn Windows 11 Overview; CompTIA A+ V15 Exam Objectives (Core 2) – Security
+- UNGEPRÜFT: Zero Trust Details (NIST) – aus allgemeinem Wissen
+- UNGEPRÜFT: Backup-Tools (Dateiversionsverlauf, Systemwiederherstellung) – in Lab verifizieren
+- UNGEPRÜFT: RPO/RTO-Beispiele – Branchenüblich, nicht aus spezifischer Quelle

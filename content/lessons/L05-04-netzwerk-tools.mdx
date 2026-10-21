@@ -1,0 +1,168 @@
+---
+title: "Modul 5 – Lektion 4: Netzwerk-Tools (ping, tracert, nslookup, netstat)"
+level: 1
+module: 5
+slug: "modul-5-netzwerk-04-tools"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100)"
+sources:
+  - "https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/clean (Abruf 2026-10-19)"
+  - "https://assets.ctfassets.net/82ripq7fjls2/6I8WL66IBa1AUovioDGrnM/f74a7eca336fd4e4c8e723a1f893086d/CompTIA-A-220-1202-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 5 – Lektion 4: Netzwerk-Tools (ping, tracert, nslookup, netstat)
+
+## 1. Lernziele
+- Du kannst ping, tracert, nslookup, netstat anwenden und interpretieren.
+- Du kannst Netzwerkprobleme systematisch mit Tools diagnostizieren.
+- Du kennst erweiterte Tools (pathping, telnet, PowerShell Test-NetConnection).
+- Du kannst einen Troubleshooting-Workflow für Netzwerkprobleme anwenden.
+
+## 2. Theorie kompakt
+
+**ping:**
+- Testet Erreichbarkeit (ICMP Echo Request/Reply).
+- `ping <Ziel>` – Standard 4 Pakete.
+- `ping -t <Ziel>` – kontinuierlich (Ctrl+C zum Stoppen).
+- `ping -n 10 <Ziel>` – 10 Pakete.
+- `ping -l 1400 <Ziel>` – Paketgröße ändern.
+- Ausgabe: Antwortzeit (ms), TTL, Paketverlust (%).
+
+**tracert (traceroute):**
+- Zeigt die Route (Hops) zu einem Ziel.
+- `tracert <Ziel>` – Standard.
+- `tracert -d <Ziel>` – keine DNS-Auflösung (schneller).
+- `tracert -h 20 <Ziel>` – max. 20 Hops.
+- Ausgabe: Hop-Nummer, 3 RTT-Messungen, IP/Hostname.
+
+**nslookup:**
+- DNS-Abfragen testen.
+- `nslookup <Domain>` – Standard-DNS-Server.
+- `nslookup <Domain> 8.8.8.8` – spezifischen DNS-Server nutzen.
+- `nslookup -type=MX <Domain>` – Mail-Server.
+- `nslookup -type=NS <Domain>` – Namensserver.
+- Interaktiver Modus: `nslookup` → Eingabe.
+
+**netstat:**
+- Zeigt Netzwerkverbindungen, Ports, Routing-Tabelle.
+- `netstat -a` – alle Verbindungen und Ports.
+- `netstat -n` – numerisch (keine DNS-Auflösung).
+- `netstat -o` – mit PID (Prozess-ID).
+- `netstat -b` – mit Programmname (Admin nötig).
+- `netstat -r` – Routing-Tabelle.
+- `netstat -e` – Ethernet-Statistiken.
+
+**Erweiterte Tools:**
+- **pathping:** Kombiniert ping + tracert; zeigt Paketverlust pro Hop. `pathping <Ziel>`.
+- **telnet:** Port-Test (muss aktiviert werden: `dism /online /Enable-Feature /FeatureName:TelnetClient`). `telnet <Host> <Port>`.
+- **PowerShell `Test-NetConnection`:** `Test-NetConnection google.com -Port 443` – Port-Test mit detaillierter Ausgabe.
+- **PowerShell `Resolve-DnsName`:** DNS-Auflösung mit Details.
+- **arp:** `arp -a` – ARP-Tabelle (IP → MAC).
+
+**Netzwerk-Troubleshooting-Workflow:**
+1. **Layer 1 (Physisch):** Kabel, Link-LED, Port.
+2. **Layer 2 (Data Link):** MAC, Switch, VLAN.
+3. **Layer 3 (Network):** IP, Subnetz, Gateway, Routing.
+4. **Layer 4 (Transport):** Ports, Firewall.
+5. **Layer 7 (Application):** DNS, HTTP/HTTPS, Anwendung.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Netzwerk-Tools anwenden.
+
+Schritte:
+1. `ping 127.0.0.1` → Loopback (lokaler Stack).
+2. `ping 192.168.1.1` (Gateway) → lokales Netzwerk.
+3. `ping 8.8.8.8` → Internet (IP).
+4. `ping google.com` → DNS + Internet.
+5. `tracert google.com` → Route analysieren.
+6. `nslookup google.com` → DNS-Server und IP.
+7. `netstat -ano | findstr :443` → HTTPS-Verbindungen.
+8. `Test-NetConnection google.com -Port 443` (PowerShell) → Port-Test.
+
+**Erwartetes Ergebnis:** Netzwerkstatus verstanden; Tools angewendet.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "ping zu 8.8.8.8 funktioniert, aber nicht zu google.com"**
+- Symptom: IP-Erreichbarkeit OK, aber DNS-Auflösung fehlschlägt.
+- Ursache: DNS-Problem.
+- Diagnose: `nslookup google.com` → DNS-Server prüfen.
+- Lösung: DNS-Server ändern; `ipconfig /flushdns`.
+- Prävention: Zuverlässige DNS-Server.
+
+**Fehler 2: "tracert zeigt * * * (Timeout) bei einem Hop"**
+- Symptom: Einzelne Hops antworten nicht.
+- Ursache: Router blockiert ICMP (häufig); kein echtes Problem.
+- Diagnose: Folgende Hops antworten? → Route OK.
+- Lösung: Keine – wenn finale Destination erreichbar, ist alles OK.
+- Prävention: Nicht überreagieren; `tracert -d` für schnellere Ergebnisse.
+
+**Fehler 3: "netstat zeigt viele TIME_WAIT-Verbindungen"**
+- Symptom: Viele Verbindungen im TIME_WAIT-Status.
+- Ursache: Normales TCP-Verhalten (Verbindungen werden geschlossen, aber Socket bleibt kurz).
+- Diagnose: Anzahl prüfen; bei extrem vielen → Port-Exhaustion.
+- Lösung: Keine Maßnahme bei normaler Anzahl; bei Port-Exhaustion: `netsh int ipv4 set dynamicport tcp start=1025 num=64511`.
+- Prävention: Anwendungsverhalten prüfen; Connection-Pooling.
+
+**Fehler 4: "telnet nicht verfügbar"**
+- Symptom: "telnet ist nicht als interner oder externer Befehl erkannt".
+- Ursache: Telnet-Client nicht installiert (Standard in Win11 deaktiviert).
+- Diagnose: Feature-Status prüfen.
+- Lösung: `dism /online /Enable-Feature /FeatureName:TelnetClient` oder PowerShell `Enable-WindowsOptionalFeature -Online -FeatureName TelnetClient`.
+- Alternative: PowerShell `Test-NetConnection <Host> -Port <Port>`.
+- Prävention: PowerShell Test-NetConnection nutzen (moderner, keine Installation).
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was testet `ping`?
+   a) DNS-Auflösung
+   b) Erreichbarkeit (ICMP Echo) ✓
+   c) Offene Ports
+   d) Routing
+
+2. Was zeigt `tracert`?
+   a) IP-Adresse
+   b) Die Route (Hops) zu einem Ziel ✓
+   c) Offene Ports
+   d) DNS-Einträge
+
+3. Was ist `netstat -ano`?
+   a) Netzwerkadapter-Info
+   b) Alle Verbindungen/Ports mit PID (numerisch) ✓
+   c) Routing-Tabelle
+   d) ARP-Tabelle
+
+4. Was macht `Test-NetConnection` in PowerShell?
+   a) DNS-Auflösung
+   b) Port-Test mit detaillierter Ausgabe ✓
+   c) Ping
+   d) Traceroute
+
+5. Was ist `pathping`?
+   a) Ein Ping-Tool
+   b) Kombination aus ping + tracert (Paketverlust pro Hop) ✓
+   c) Ein Port-Scanner
+   d) Ein DNS-Tool
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #6004:** "User: 'Ich kann den Server (192.168.1.100) nicht erreichen. Andere können ihn erreichen.'"
+
+**Lösung (aufklappbar):**
+1. `ping 192.168.1.100` vom User-PC → Timeout?
+2. Wenn Timeout: `tracert 192.168.1.100` → wo bricht es ab?
+3. `ipconfig` → User-PC im gleichen Subnetz? (192.168.1.x/24?)
+4. Wenn anderes Subnetz: Routing-Problem.
+5. Wenn gleiches Subnetz: Firewall auf User-PC? (ausgehende Verbindungen blockiert?)
+6. `Test-NetConnection 192.168.1.100 -Port 445` (SMB) → Port erreichbar?
+7. DNS: `nslookup servername` → korrekte IP?
+8. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100)
+- Quellen: Microsoft Learn (Windows Commands); CompTIA A+ V15 Exam Objectives (Core 1/2)
+- UNGEPRÜFT: pathping/telnet/netstat Befehle – in Lab verifizieren
+- UNGEPRÜFT: PowerShell Test-NetConnection Syntax – in Lab verifizieren
+- UNGEPRÜFT: Event-IDs – in Microsoft-Docs verifizieren

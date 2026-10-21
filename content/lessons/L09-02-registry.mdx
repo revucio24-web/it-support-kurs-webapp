@@ -1,0 +1,162 @@
+---
+title: "Modul 9 – Lektion 2: Registry (Struktur, Bearbeitung, Backup)"
+level: 2
+module: 9
+slug: "modul-9-windows-tiefe-02-registry"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100)"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "https://assets.ctfassets.net/82ripq7fjls2/6I8WL66IBa1AUovioDGrnM/f74a7eca336fd4e4c8e723a1f893086d/CompTIA-A-220-1202-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 9 – Lektion 2: Registry (Struktur, Bearbeitung, Backup)
+
+## 1. Lernziele
+- Du kannst die Registry-Struktur (Hives, Keys, Values) erklären.
+- Du kannst die Registry sicher bearbeiten (regedit).
+- Du kannst Registry-Backups erstellen und wiederherstellen.
+- Du kennst die Risiken und Best Practices.
+
+## 2. Theorie kompakt
+
+**Registry:** Zentrale Datenbank für Windows-Konfiguration (Hardware, Software, User-Einstellungen, System).
+
+**Struktur:**
+- **Hives (Stammverzeichnisse):**
+  - `HKEY_CLASSES_ROOT (HKCR)`: Dateizuordnungen, COM-Objekte (merged aus HKLM\Software\Classes + HKCU\Software\Classes).
+  - `HKEY_CURRENT_USER (HKCU)`: Einstellungen des angemeldeten Users.
+  - `HKEY_LOCAL_MACHINE (HKLM)`: Systemweite Einstellungen (Hardware, Software, System).
+  - `HKEY_USERS (HKU)`: Alle geladenen User-Profile.
+  - `HKEY_CURRENT_CONFIG (HKCC)`: Aktuelle Hardware-Konfiguration (merged aus HKLM\SYSTEM\CurrentControlSet\Hardware Profiles).
+- **Keys:** Ordner (wie Verzeichnisse).
+- **Values:** Daten (Name + Typ + Wert).
+  - `REG_SZ`: Zeichenkette.
+  - `REG_DWORD`: 32-Bit-Zahl.
+  - `REG_QWORD`: 64-Bit-Zahl.
+  - `REG_BINARY`: Binärdaten.
+  - `REG_MULTI_SZ`: Mehrere Zeichenketten.
+  - `REG_EXPAND_SZ`: Erweiterbare Zeichenkette (mit Umgebungsvariablen).
+
+**regedit (Registry-Editor):**
+- `Win + R` → `regedit` (Admin nötig für HKLM).
+- Navigation: Hives → Keys → Values.
+- Bearbeiten: Rechtsklick → Neu → Key/Value; Wert ändern.
+- Suchen: Bearbeiten → Suchen (Strg+F).
+
+**Registry-Backup:**
+- **Export:** Rechtsklick auf Key → Exportieren → .reg-Datei.
+- **Import:** Doppelklick auf .reg-Datei → Merge.
+- **Systemwiederherstellung:** Erstellt Registry-Backup (Wiederherstellungspunkt).
+- **reg save:** `reg save HKLM\Software C:\backup\software.hiv` (Admin).
+
+**Risiken:**
+- Falsche Änderungen können Windows beschädigen (Boot-Fehler, Systeminstabilität).
+- Immer Backup vor Änderung.
+- Nur ändern, wenn man weiß, was man tut (Dokumentation prüfen).
+
+**Häufige Registry-Pfade (Beispiele):**
+- `HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run` – Autostart (systemweit).
+- `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` – Autostart (User).
+- `HKLM\SYSTEM\CurrentControlSet\Services` – Dienste.
+- `HKCU\Control Panel\Desktop` – Desktop-Einstellungen.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Registry sicher bearbeiten und backupen.
+
+Schritte:
+1. `regedit` öffnen (als Admin).
+2. Navigiere zu `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`.
+3. Exportiere den Key (Backup): Rechtsklick → Exportieren → `C:\Lab\run-backup.reg`.
+4. Erstelle einen Test-Key: Rechtsklick → Neu → Zeichenfolge → Name "TestValue", Wert "Hello".
+5. Prüfe: Wert vorhanden?
+6. Lösche den Test-Key (Aufräumen).
+7. Importiere das Backup (Doppelklick auf .reg) → Merge.
+8. Optional: `reg query HKCU\Software\Microsoft\Windows\CurrentVersion\Run` (CMD).
+
+**Erwartetes Ergebnis:** Registry bearbeitet; Backup erstellt und wiederhergestellt.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Registry-Änderung hat Windows beschädigt – Boot-Fehler"**
+- Symptom: Windows startet nicht mehr; BSOD oder "Registry fehlerhaft".
+- Ursache: Falsche Änderung an kritischem Key (z. B. Services, Boot).
+- Diagnose: Boot-Fehler; Event Viewer (wenn zugänglich).
+- Lösung: Systemwiederherstellung (Wiederherstellungspunkt); oder WinRE → `regedit` (Offline) → Änderung rückgängig.
+- Prävention: Immer Backup; nur dokumentierte Änderungen; Snapshot vor Änderung (VM).
+
+**Fehler 2: "Falscher Datentyp – Wert funktioniert nicht"**
+- Symptom: Registry-Wert gesetzt, aber keine Wirkung.
+- Ursache: Falscher Datentyp (z. B. REG_SZ statt REG_DWORD).
+- Diagnose: Wert-Typ prüfen.
+- Lösung: Richtigen Datentyp verwenden; Wert neu erstellen.
+- Prävention: Dokumentation prüfen (welcher Typ?).
+
+**Fehler 3: "Registry-Import überschreibt falsche Werte"**
+- Symptom: Nach Import sind Einstellungen falsch.
+- Ursache: .reg-Datei enthält falsche Werte oder zu viele Keys.
+- Diagnose: .reg-Datei in Editor prüfen.
+- Lösung: Backup wiederherstellen; .reg-Datei korrigieren.
+- Prävention: .reg-Datei vor Import prüfen; nur spezifische Keys exportieren.
+
+**Fehler 4: "Registry-Berechtigungen falsch – Zugriff verweigert"**
+- Symptom: "Zugriff verweigert" beim Bearbeiten eines Keys.
+- Ursache: Key hat eingeschränkte Berechtigungen (z. B. TrustedInstaller).
+- Diagnose: Rechtsklick → Berechtigungen.
+- Lösung: Besitz übernehmen (Rechtsklick → Berechtigungen → Erweitert → Besitzer ändern); dann bearbeiten.
+- Prävention: Nur bei Bedarf; Berechtigungen zurücksetzen.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist HKLM?
+   a) Einstellungen des aktuellen Users
+   b) Systemweite Einstellungen (Hardware, Software, System) ✓
+   c) Dateizuordnungen
+   d) Aktuelle Hardware-Konfiguration
+
+2. Welcher Datentyp speichert eine 32-Bit-Zahl?
+   a) REG_SZ
+   b) REG_DWORD ✓
+   c) REG_BINARY
+   d) REG_MULTI_SZ
+
+3. Wie sichert man einen Registry-Key?
+   a) Kopieren
+   b) Rechtsklick → Exportieren → .reg-Datei ✓
+   c) Speichern unter
+   d) Backup-Tool
+
+4. Wie importiert man eine .reg-Datei?
+   a) Doppelklick → Merge ✓
+   b) Kopieren
+   c) Einfügen
+   d) Drag & Drop
+
+5. Was ist der sichere Weg, Registry-Änderungen zu testen?
+   a) Direkt auf Produktionssystem
+   b) In VM mit Snapshot ✓
+   c) In der Registry ohne Backup
+   d) Ohne Dokumentation
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #10002:** "User: 'Ich habe in der Registry etwas geändert und jetzt startet Windows nicht mehr.'"
+
+**Lösung (aufklappbar):**
+1. WinRE booten (Shift + Neustart oder Installationsmedium).
+2. Troubleshoot → Advanced Options → Command Prompt.
+3. Registry offline bearbeiten: `reg load HKLM\Offline C:\Windows\System32\config\SOFTWARE` (oder SYSTEM).
+4. Änderung rückgängig machen (Wert zurücksetzen oder Key löschen).
+5. `reg unload HKLM\Offline`.
+6. Neustart.
+7. Alternative: Systemwiederherstellung (Wiederherstellungspunkt).
+8. Dokumentieren; User schulen (Registry nur mit Backup ändern).
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100)
+- Quellen: Microsoft Learn Windows 11 Overview; CompTIA A+ V15 Exam Objectives (Core 2)
+- UNGEPRÜFT: Registry-Pfade (Run, Services, etc.) – in Microsoft-Docs verifizieren
+- UNGEPRÜFT: Offline-Registry-Bearbeitung (WinRE) – in Lab verifizieren
+- UNGEPRÜFT: reg save/load Syntax – in Lab verifizieren

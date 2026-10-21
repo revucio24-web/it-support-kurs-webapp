@@ -1,0 +1,133 @@
+---
+title: "Modul 0 – Lektion 4: VMware Workstation Pro installieren"
+level: 1
+module: 0
+slug: "modul-0-homelab-04-vmware-install"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100) – Host"
+sources:
+  - "https://pureinfotech.com/download-install-vmware-workstation-pro-free-windows (Abruf 2026-10-19)"
+  - "https://www.techspot.com/downloads/189-vmware-workstation-for-linux.html (Abruf 2026-10-19)"
+---
+
+# Modul 0 – Lektion 4: VMware Workstation Pro installieren
+
+## 1. Lernziele
+- Du kannst VMware Workstation Pro herunterladen und installieren.
+- Du kannst die Installation verifizieren (Version, Lizenzstatus).
+- Du kennst die ersten Einstellungen (Default VM Location, Memory).
+- Du kannst eine Test-VM erstellen (ohne Start).
+
+## 2. Theorie kompakt
+
+**VMware Workstation Pro** ist ein Typ-2-Hypervisor für Windows/Linux-Hosts. Seit November 2024 (Broadcom) kostenlos für personal, educational und commercial use. Kein Lizenzschlüssel nötig. Download erfordert kostenlosen Broadcom-Account.
+
+**Systemanforderungen (Host):**
+- 64-Bit x86/x64 CPU mit VT-x/AMD-V
+- Windows 10/11 (64-Bit) oder Linux
+- Min. 4 GB RAM (empfohlen 8+ für Workstation selbst)
+- ~1.5 GB Disk für Installation
+
+**Wichtige Einstellungen nach Installation:**
+- **Edit → Preferences → Workspace** → "Default virtual machine location" setzen (z. B. `D:\VMs` auf SSD, nicht Systemdisk).
+- **Memory** → "Allow most virtual machine memory to be swapped" (Default ok).
+- **Hardware Compatibility** → bei neuen VMs "Latest" wählen, für Portabilität "Workstation 17.x".
+
+**VMware Tools:** In jeder Gast-VM installieren (Treiber, Shared Folders, Drag&Drop, Zeit-Sync). Ohne Tools: schlechte Performance, keine Shared Folders.
+
+**Virtuelles TPM:** Für Windows 11 Guests aktivieren (VM Settings → Hardware → Add → Trusted Platform Module). Erforderlich für Windows 11 Installation/Boot.
+
+## 3. Praxis-Übung im Homelab
+
+Schritte:
+1. Broadcom-Account anlegen: https://www.broadcom.com/ (kostenlos registrieren).
+2. Download: VMware Workstation Pro für Windows (aktuelle Version, z. B. 25H2 oder 17.6.x). Datei: `VMware-workstation-full-*.exe`.
+3. Installer als Administrator ausführen.
+4. Lizenzvereinbarung akzeptieren; Installationstyp "Typical" (oder "Custom" → Pfad wählen).
+5. "Enhanced Keyboard Driver" installieren (empfohlen).
+6. Neustart nach Installation.
+7. Starten: "Help → About VMware Workstation" → Version prüfen; "License: Free for personal/commercial use" (oder ähnlich).
+8. Preferences → Default VM Location setzen.
+9. Test-VM erstellen (ohne Start): "File → New Virtual Machine → Typical → Installer disc image (ISO) → [beliebige ISO] → Next → Name/Location → Disk size → Finish". Wizard muss durchlaufen.
+
+**Erwartetes Ergebnis:** Workstation Pro installiert, Version sichtbar, Test-VM erstellt (Status "Powered Off"), keine Lizenzfehler.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Installer verlangt Lizenzschlüssel"**
+- Symptom: Setup fragt nach Key.
+- Ursache: Ältere Version (pre-17.6.3) oder falscher Installer (Player statt Pro).
+- Diagnose: Version prüfen; "Help → About".
+- Lösung: Neueste Pro-Version von Broadcom laden (kostenlos, kein Key). Player wurde eingestellt und in Pro integriert.
+- Prävention: Immer von Broadcom-Portal laden, nicht von Drittanbietern.
+
+**Fehler 2: "VMware Tools Installation schlägt fehl / grau"**
+- Symptom: Menü "Install VMware Tools" ausgegraut.
+- Ursache: VM nicht gestartet oder ISO nicht eingebunden; oder Gast-OS nicht unterstützt.
+- Diagnose: VM-Status "Powered On"; CD/DVD-Laufwerk prüfen.
+- Lösung: VM starten → "VM → Install VMware Tools" → in Gast: Setup ausführen (Windows: Autorun oder `setup64.exe` von CD). Neustart.
+- Prävention: Tools nach jeder OS-Installation installieren; bei Update der Workstation Tools aktualisieren.
+
+**Fehler 3: "Shared Folders funktionieren nicht"**
+- Symptom: Z:\ (Shared Folders) nicht sichtbar im Gast.
+- Ursache: VMware Tools nicht installiert oder Shared Folders nicht aktiviert.
+- Diagnose: VM Settings → Options → Shared Folders → "Always enabled" prüfen; Tools installiert?
+- Lösung: Tools installieren; Shared Folders aktivieren; Gast neu starten; ggf. `net use Z: \\vmware-host\Shared Folders`.
+- Prävention: Standard-Template mit Tools + Shared Folders.
+
+**Fehler 4: "VM startet mit 'This virtual machine requires a newer version of VMware Workstation'"**
+- Symptom: Fehler beim Öffnen einer VM.
+- Ursache: VM wurde mit neuerer Workstation-Version erstellt/geöffnet.
+- Diagnose: .vmx-Datei → `virtualHW.version` prüfen.
+- Lösung: VM mit passender Workstation-Version öffnen oder "Downgrade" der virtualHW.version (nicht empfohlen). Besser: Workstation aktualisieren.
+- Prävention: Alle Lab-Rechner auf gleicher Workstation-Version halten.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Wo wird VMware Workstation Pro heruntergeladen (offiziell)?
+   a) microsoft.com
+   b) broadcom.com (kostenloser Account) ✓
+   c) vmware.com (alt)
+   d) github.com
+
+2. Wofür sind "VMware Tools" im Gast nötig?
+   a) Nur für Grafik
+   b) Treiber, Shared Folders, Drag&Drop, Zeit-Sync, Performance ✓
+   c) Nur für Netzwerk
+   d) Nicht nötig
+
+3. Was muss für Windows 11 als Gast aktiviert werden?
+   a) BIOS-Legacy-Boot
+   b) Virtuelles TPM-Modul ✓
+   d) Hyper-V im Gast
+
+4. Wo setzt man den Standard-Speicherort für VMs?
+   a) Im BIOS
+   b) Edit → Preferences → Workspace ✓
+   c) Im Gast-OS
+   d) In der Registry
+
+5. Welche Hardware-Kompatibilität wählt man für Portabilität?
+   a) Latest
+   b) Workstation 17.x (oder älter) ✓
+   c) ESXi 8
+   d) Hyper-V
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #1004:** "Ein User hat VMware Workstation Pro installiert, aber 'Install VMware Tools' ist ausgegraut. Die VM läuft (Windows 11)."
+
+**Lösung (aufklappbar):**
+1. Prüfen: Ist die VM wirklich "Powered On" und vollständig gestartet (nicht im BIOS/Setup)?
+2. CD/DVD-Laufwerk der VM prüfen: VM Settings → CD/DVD → "Use ISO image" oder "Auto-detect" – muss verbunden sein.
+3. Alternative: Tools manuell herunterladen (VMware Tools ISO) und als CD einbinden.
+4. Wenn Gast-OS noch im Setup (OOBE): erst Setup abschließen, dann Tools installieren.
+5. Nach Installation: Neustart der VM; Shared Folders prüfen.
+6. Dokumentieren: Ursache + Lösung.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 Home 24H2 (Build 26100) Host
+- Quellen: research/quellen.md Abschnitt B1 (PureInfotech, TechSpot)
+- UNGEPRÜFT: Exakte Broadcom-Download-URL (Account-Pfad) – kann sich ändern
+- UNGEPRÜFT: Aktuelle VMware Workstation Pro Versionsnummer (25H2 vs 17.6.x) – beim Download prüfen

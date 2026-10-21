@@ -1,0 +1,167 @@
+---
+title: "Modul 2 – Lektion 4: Hardware-Diagnose (Tools, POST, Beep-Codes)"
+level: 1
+module: 2
+slug: "modul-2-hardware-04-diagnose"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100)"
+sources:
+  - "https://assets.ctfassets.net/82ripq7fjls2/1oSdlyujpaX3GrM0rir6Ge/91afb2be72785281e8fb4c0d9a70c6f4/CompTIA-A-220-1201-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+---
+
+# Modul 2 – Lektion 4: Hardware-Diagnose (Tools, POST, Beep-Codes)
+
+## 1. Lernziele
+- Du kennst die wichtigsten Hardware-Diagnosetools (Windows-intern + Drittanbieter).
+- Du kannst POST-Fehler und Beep-Codes interpretieren.
+- Du kannst einen systematischen Hardware-Test durchführen.
+- Du kannst defekte Komponenten isolieren.
+
+## 2. Theorie kompakt
+
+**Windows-interne Diagnosetools:**
+
+| Tool | Aufruf | Zweck |
+|---|---|---|
+| **Geräte-Manager** | `devmgmt.msc` | Hardware-Status, Treiber, deaktivierte Geräte |
+| **Ereignisanzeige** | `eventvwr.msc` | System-/Hardware-Fehler (System-Log) |
+| **Systeminformation** | `msinfo32` | Vollständige Hardware-/Software-Übersicht |
+| **DirectX-Diagnose** | `dxdiag` | GPU, Sound, DirectX-Version |
+| **Leistungsüberwachung** | `perfmon` | CPU/RAM/Disk/Netzwerk in Echtzeit |
+| **Ressourcenmonitor** | `resmon` | Prozess-/Ressourcen-Analyse |
+| **Speicherdiagnose** | `mdsched.exe` | RAM-Test (neustart erforderlich) |
+| **Chkdsk** | `chkdsk C: /f /r` | Dateisystem + Bad Sectors (Admin, Neustart) |
+| **SFC** | `sfc /scannow` | Systemdateien prüfen (siehe Modul 10) |
+| **PowerShell** | `Get-PhysicalDisk`, `Get-ComputerInfo` | Skriptbare Hardware-Abfrage |
+
+**Drittanbieter-Tools (kostenlos):**
+- **HWiNFO / CPU-Z / GPU-Z:** Detaillierte Hardware-Info, Sensoren (Temp, Volt, Clock).
+- **CrystalDiskInfo:** SSD/HDD-Gesundheit (SMART).
+- **MemTest86:** RAM-Test (bootbar, gründlich).
+- **Prime95 / OCCT:** CPU/GPU-Stresstest (Stabilität).
+- **FurMark:** GPU-Stresstest.
+
+**POST (Power-On Self Test):**
+- Beim Einschalten prüft das BIOS/UEFI: CPU → RAM → GPU → Storage → Peripherie.
+- Fehler → Beep-Codes (Lautsprecher) oder LED-Codes (Mainboard) oder POST-Codes (Debug-LED/Display).
+- **Beep-Codes (AMI BIOS, Beispiel):**
+  - 1 kurz: OK
+  - 2 kurz: Parity Error (RAM)
+  - 3 kurz: Base 64K RAM Error
+  - 5 kurz: CPU Error
+  - 7 kurz: Virtual Mode Exception
+  - 9 kurz: ROM BIOS Checksum Error
+  - 1 lang + 2 kurz: Grafikkarten-Fehler
+  - 1 lang + 3 kurz: RAM-Fehler
+  - Kontinuierlich: Power/Überhitzung
+- (UNGEPRÜFT: Beep-Codes sind herstellerabhängig (AMI, Award, Phoenix). Immer Mainboard-Manual prüfen.)
+
+**Systematischer Hardware-Test (Ablauf):**
+1. **Visual Inspection:** Kabel, Lüfter, Staub, beschädigte Komponenten.
+2. **POST-Check:** Beep-Codes, Debug-LEDs.
+3. **BIOS/UEFI:** Hardware erkannt? Temperaturen? Voltages?
+4. **Windows:** Geräte-Manager (gelbe Dreiecke?), Ereignisanzeige (Fehler?).
+5. **Stresstest:** CPU/GPU/RAM unter Last → Absturz?
+6. **Isolation:** Komponenten einzeln testen (RAM-Sticks einzeln, GPU tauschen).
+
+**SMART (Self-Monitoring, Analysis and Reporting Technology):** HDD/SSD überwacht sich selbst (Reallocated Sectors, Wear Leveling, Temperature). Tool: CrystalDiskInfo. Status: "Good" / "Caution" / "Bad".
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Hardware-Diagnose durchführen.
+
+Schritte (im Host oder VM):
+1. `msinfo32` → Systemübersicht + Komponenten (Display, Storage, Network).
+2. `devmgmt.msc` → gelbe Dreiecke? (Problemgeräte)
+3. `eventvwr.msc` → Windows-Protokolle → System → nach "Error"/"Warning" filtern (letzte 24 h).
+4. `dxdiag` → Display-Tab (GPU, Treiber, DirectX).
+5. PowerShell: `Get-PhysicalDisk | Select-Object FriendlyName, HealthStatus, Size` → SMART-Status.
+6. Optional: CrystalDiskInfo installieren → SMART-Details prüfen.
+7. Optional: `mdsched.exe` → RAM-Test (neustart, Standard-Test).
+
+**Erwartetes Ergebnis:** Hardware-Status bekannt; keine kritischen Fehler; RAM-Test (optional) bestanden.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Gerät mit gelbem Dreieck im Geräte-Manager"**
+- Symptom: Gerät funktioniert nicht; gelbes Dreieck mit Ausrufezeichen.
+- Ursache: Treiber fehlt/beschädigt; Hardware-Defekt; Konflikt.
+- Diagnose: Rechtsklick → "Eigenschaften" → "Gerätestatus" (Fehlercode).
+- Lösung: Treiber aktualisieren/neu installieren; Gerät deaktivieren/aktivieren; Hardware ersetzen.
+- Prävention: Treiber aktuell halten; vor Hardware-Wechsel Treiber deinstallieren.
+
+**Fehler 2: "Beep-Codes beim Start – kein Bild"**
+- Symptom: PC piept in bestimmter Sequenz, kein Bild.
+- Ursache: Hardware-Defekt (RAM, GPU, CPU) – je nach Beep-Code.
+- Diagnose: Beep-Code mit Mainboard-Manual abgleichen.
+- Lösung: Betroffene Komponente neu einsetzen/ersetzen; RAM einzeln testen.
+- Prävention: Anti-Statik; vorsichtiger Einbau.
+
+**Fehler 3: "Festplatte zeigt 'Caution' in CrystalDiskInfo"**
+- Symptom: SMART-Status "Caution" oder "Bad".
+- Ursache: Reallocated Sectors, hohe Temperatur, Wear (SSD).
+- Diagnose: CrystalDiskInfo → Details (welche Attribute?).
+- Lösung: Backup erstellen; Festplatte ersetzen; Daten migrieren.
+- Prävention: Regelmäßige SMART-Checks; Backup-Strategie (3-2-1).
+
+**Fehler 4: "CPU überhitzt / Thermal Throttling"**
+- Symptom: PC wird langsam bei Last; Lüfter laut; Shutdown.
+- Ursache: Kühlkörper verstaubt; Thermal Paste ausgetrocknet; Lüfter defekt.
+- Diagnose: HWiNFO → CPU-Temperatur; Lüfter prüfen.
+- Lösung: Reinigen; Thermal Paste erneuern; Lüfter ersetzen.
+- Prävention: Jährliche Reinigung; Temperatur-Monitoring.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Welches Tool prüft den RAM (neustart erforderlich)?
+   a) chkdsk
+   b) mdsched.exe (Windows-Speicherdiagnose) ✓
+   c) sfc /scannow
+   d) dxdiag
+
+2. Was bedeutet ein gelbes Dreieck im Geräte-Manager?
+   a) Gerät funktioniert perfekt
+   b) Problem mit Treiber/Hardware ✓
+   c) Gerät ist deaktiviert
+   d) Gerät ist neu
+
+3. Was ist SMART?
+   a) Ein Betriebssystem
+   b) Self-Monitoring, Analysis and Reporting Technology (HDD/SSD-Gesundheit) ✓
+   c) Ein Treiber
+   d) Ein Netzwerkprotokoll
+
+4. Wo findet man Hardware-Fehler der letzten 24 h?
+   a) Im Task-Manager
+   b) In der Ereignisanzeige (System-Log) ✓
+   c) Im Geräte-Manager
+   d) Im Explorer
+
+5. Was ist der erste Schritt bei Hardware-Diagnose?
+   a) Windows neu installieren
+   b) Visual Inspection (Kabel, Lüfter, Staub) ✓
+   c) Treiber aktualisieren
+   d) BIOS flashen
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #3004:** "User: 'Mein PC ist in letzter Zeit sehr langsam geworden und der Lüfter ist sehr laut. Manchmal stürzt er ab.'"
+
+**Lösung (aufklappbar):**
+1. Informationen: Seit wann? Unter Last oder immer? Temperatur?
+2. Temperatur prüfen: HWiNFO/CPU-Z → CPU/GPU-Temp unter Last.
+3. Wenn >90°C: Kühlung problematisch → Reinigung, Thermal Paste.
+4. SMART prüfen: CrystalDiskInfo → SSD/HDD-Gesundheit.
+5. RAM-Test: `mdsched.exe` → Neustart → Test.
+6. Ereignisanzeige: System-Log → Fehler/Warnings.
+7. Wenn alles ok: Stresstest (Prime95) → Absturz? → PSU/Overclocking prüfen.
+8. Dokumentieren; User informieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100)
+- Quellen: CompTIA A+ V15 Exam Objectives (Core 1) – Troubleshooting; Microsoft Learn Windows 11 Overview
+- UNGEPRÜFT: Beep-Code-Tabellen (AMI/Award/Phoenix) – herstellerabhängig, im Mainboard-Manual verifizieren
+- UNGEPRÜFT: Drittanbieter-Tool-URLs (HWiNFO, CrystalDiskInfo) – nicht verifiziert
+- UNGEPRÜFT: SMART-Attribute-Details – aus allgemeinem Wissen

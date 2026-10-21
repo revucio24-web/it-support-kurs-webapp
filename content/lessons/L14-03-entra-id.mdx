@@ -1,0 +1,159 @@
+---
+title: "Modul 14 – Lektion 3: Entra ID (Grundlagen, Identitäten, Gruppen)"
+level: 2
+module: 14
+slug: "modul-14-deployment-intune-03-entra-id"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100)"
+sources:
+  - "https://www.microsoft.com/en-ca/security/business/identity-access/microsoft-entra-id (Abruf 2026-10-19)"
+  - "https://learn.microsoft.com/en-us/entra/fundamentals/licensing (Abruf 2026-10-19)"
+---
+
+# Modul 14 – Lektion 3: Entra ID (Grundlagen, Identitäten, Gruppen)
+
+## 1. Lernziele
+- Du kannst Entra ID (ehemals Azure AD) erklären.
+- Du kannst Identitäten (User, Gruppen, Geräte) verwalten.
+- Du kannst Entra ID Join vs. Hybrid Join erklären.
+- Du kannst SSO (Single Sign-On) erklären.
+
+## 2. Theorie kompakt
+
+**Microsoft Entra ID (ehemals Azure Active Directory):** Cloud-basierter Identitäts- und Zugriffsmanagement-Dienst (IAM). Kern von Microsoft 365 und Azure.
+
+**Entra ID vs. AD DS (On-Prem):**
+
+| Aspekt | AD DS (On-Prem) | Entra ID (Cloud) |
+|---|---|---|
+| Protokoll | LDAP, Kerberos, NTLM | OAuth 2.0, OIDC, SAML |
+| Struktur | Forest/Domain/OU | Tenant (flach) |
+| Verwaltung | GPMC, ADUC | Entra ID Admin Center |
+| Geräte | Domain Join | Entra ID Join / Hybrid |
+| Anwendungen | On-Prem (Kerberos) | Cloud (SSO) |
+
+**Entra ID Join-Typen:**
+- **Entra ID Join:** Gerät ist nur in Entra ID (Cloud-only). Für Cloud-first-Umgebungen.
+- **Hybrid Entra ID Join:** Gerät ist in AD DS + Entra ID. Für Hybrid-Umgebungen (AD on-prem + Cloud).
+- **Entra ID Registered:** Gerät ist registriert (BYOD, MAM), aber nicht joined.
+
+**Identitäten in Entra ID:**
+- **Users:** Cloud-only oder synchronisiert (via Entra Connect/Cloud Sync).
+- **Groups:** Security Groups, Microsoft 365 Groups, Distribution Lists.
+- **Devices:** Entra ID Joined/Registered.
+- **Service Principals:** Anwendungsidentitäten.
+- **Managed Identities:** Azure-Ressourcen-Identitäten.
+
+**Entra Connect / Cloud Sync:**
+- Synchronisiert User/Gruppen von AD DS (on-prem) nach Entra ID.
+- Entra Connect: Vollständige Synchronisation (on-prem Server).
+- Cloud Sync: Leichtgewichtige Cloud-basierte Synchronisation.
+
+**SSO (Single Sign-On):**
+- User meldet sich einmal an → Zugriff auf alle verbundenen Apps.
+- Protokolle: SAML 2.0, OAuth 2.0, OpenID Connect (OIDC).
+- Anwendungen: M365, Azure, SaaS-Apps (Salesforce, ServiceNow, etc.).
+
+**Entra ID Editionen:**
+- **Free:** Basis (User/Gruppen, SSO für 10 Apps, MFA für Admins).
+- **P1:** Conditional Access, SSPR, Dynamic Groups, Hybrid Join.
+- **P2:** Identity Protection, Privileged Identity Management (PIM), Access Reviews.
+- Entra ID P1/P2 sind in M365 Business Premium / E3 / E5 enthalten.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Entra ID-Konzepte verstehen.
+
+Schritte (konzeptionell, mit Test-Tenant):
+1. Entra ID Admin Center (entra.microsoft.com) öffnen.
+2. Benutzer → "Alle Benutzer" → User prüfen (Quelle: Cloud/On-Premises).
+3. Gruppen → "Alle Gruppen" → Gruppentypen prüfen.
+4. Geräte → "Alle Geräte" → Join-Typ prüfen (Entra ID Joined/Hybrid/Registered).
+5. Anwendungen → "Enterprise Applications" → SSO-konfigurierte Apps prüfen.
+6. Entra Connect Status prüfen (falls Hybrid).
+
+**Erwartetes Ergebnis:** Entra ID-Konzepte verstanden; Admin Center navigiert.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "User nicht synchronisiert – Entra Connect Fehler"**
+- Symptom: On-Prem-User erscheint nicht in Entra ID.
+- Ursache: Entra Connect Sync-Fehler; Filterregel; Passwort-Hash-Sync deaktiviert.
+- Diagnose: Entra Connect Health; Synchronization Service Manager.
+- Lösung: Sync-Fehler beheben; Filterregeln prüfen; Passwort-Hash-Sync aktivieren.
+- Prävention: Entra Connect Monitoring; regelmäßige Sync-Prüfung.
+
+**Fehler 2: "Hybrid Join schlägt fehl"**
+- Symptom: Gerät wird nicht Hybrid Joined.
+- Ursache: SCP (Service Connection Point) nicht konfiguriert; Entra Connect nicht konfiguriert; Netzwerk.
+- Diagnose: `dsregcmd /status` auf Client; Entra ID → Geräte.
+- Lösung: SCP konfigurieren; Entra Connect Hybrid Join aktivieren; Netzwerk prüfen.
+- Prävention: Hybrid Join-Checkliste; Dokumentation.
+
+**Fehler 3: "SSO funktioniert nicht – Anmeldung bei App fehlschlägt"**
+- Symptom: User wird bei App-Anmeldung nicht automatisch angemeldet.
+- Ursache: SSO-Konfiguration fehlerhaft; Zertifikat abgelaufen; User nicht zugewiesen.
+- Diagnose: Entra ID → Enterprise Applications → SSO-Konfiguration; Sign-in Logs.
+- Lösung: SSO-Konfiguration prüfen; Zertifikat erneuern; User zuweisen.
+- Prävention: SSO-Tests bei Einrichtung; Zertifikat-Monitoring.
+
+**Fehler 4: "Zu viele Global Admins in Entra ID"**
+- Symptom: Sicherheitsrisiko; zu viele Personen mit Vollzugriff.
+- Ursache: Jeder Supporter bekommt Global Admin.
+- Diagnose: Entra ID → Rollen und Administratoren → Global Administrator.
+- Lösung: Rollen reduzieren (Least Privilege); Privileged Identity Management (PIM) nutzen.
+- Prävention: Rollen-Konzept; regelmäßige Review; PIM für Just-in-Time-Zugriff.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist Entra ID (ehemals)?
+   a) Azure Active Directory ✓
+   b) Azure DevOps
+   c) Azure SQL
+   d) Azure Storage
+
+2. Was ist der Unterschied zwischen Entra ID Join und Hybrid Join?
+   a) Keiner
+   b) Entra ID Join = Cloud-only; Hybrid Join = AD + Entra ID ✓
+   c) Hybrid Join = nur Cloud
+   d) Entra ID Join = nur on-prem
+
+3. Was ist SSO?
+   a) Single Sign-On – einmal anmelden, Zugriff auf alle Apps ✓
+   b) Secure Server Operation
+   c) System Service Object
+   d) Standard Security Option
+
+4. Was synchronisiert Entra Connect?
+   a) Dateien
+   b) User/Gruppen von AD DS (on-prem) nach Entra ID ✓
+   c) E-Mails
+   d) Drucker
+
+5. Welche Entra ID-Edition enthält Conditional Access?
+   a) Free
+   b) P1 (oder höher) ✓
+   c) Keine
+   d) Nur P2
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #15003:** "User: 'Ich kann mich nicht bei einer SaaS-App (Salesforce) anmelden. Die App nutzt SSO über Entra ID.'"
+
+**Lösung (aufklappbar):**
+1. Entra ID → Enterprise Applications → Salesforce → SSO-Konfiguration prüfen.
+2. Sign-in Logs → Fehlerdetails prüfen.
+3. User zugewiesen? (Users and groups).
+4. Zertifikat gültig? (SAML Signing Certificate).
+5. User testen: Direkter Login bei Salesforce (ohne SSO) → funktioniert?
+6. Wenn SSO-Problem: SSO-Konfiguration korrigieren; Zertifikat erneuern.
+7. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100)
+- Quellen: Microsoft Security (Entra ID); Microsoft Learn (Entra Licensing)
+- UNGEPRÜFT: Entra ID Editionen und Preise – variabel, in Microsoft-Docs verifizieren
+- UNGEPRÜFT: Entra Connect / Cloud Sync Details – in Microsoft-Docs verifizieren
+- UNGEPRÜFT: SSO-Konfigurationsschritte – in Microsoft-Docs verifizieren
+- UNGEPRÜFT: dsregcmd /status Ausgabe – in Lab verifizieren

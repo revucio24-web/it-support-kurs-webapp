@@ -1,0 +1,131 @@
+---
+import Base from '../layouts/Base.astro';
+import { errors, type ErrorEntry } from '../data/errors';
+import { url } from '../lib/lessons';
+
+const modules = [...new Set(errors.map((e: ErrorEntry) => e.module))].sort((a, b) => (a as number) - (b as number));
+const tags = [...new Set(errors.flatMap((e: ErrorEntry) => e.tags))].sort();
+---
+<Base title="Fehler & Lösungen" description="Aggregierte Fehler-Datenbank aus allen Lektionen – filterbar nach Modul, Tag und Suchbegriff.">
+  <section class="mb-6" data-pagefind-ignore>
+    <h1 class="text-2xl font-bold mb-2">Fehler & Lösungen</h1>
+    <p class="text-gray-600 dark:text-gray-400 text-sm">Aggregierte Fehler-Datenbank aus allen Lektionen. Filterbar nach Modul/Tag/Suchbegriff.</p>
+  </section>
+
+  <div class="flex flex-wrap gap-3 mb-6" data-pagefind-ignore>
+    <input
+      id="search"
+      type="text"
+      placeholder="Suche (Symptom, Ursache, Lösung)..."
+      aria-label="Fehler durchsuchen"
+      class="px-3 py-2 border rounded dark:bg-gray-800 dark:border-gray-700 flex-1 min-w-[200px] focus-visible:ring-2 focus-visible:ring-blue-600"
+    />
+    <select id="module-filter" aria-label="Nach Modul filtern" class="px-3 py-2 border rounded dark:bg-gray-800 dark:border-gray-700 focus-visible:ring-2 focus-visible:ring-blue-600">
+      <option value="">Alle Module</option>
+      {modules.map((m) => <option value={m}>Modul {m}</option>)}
+    </select>
+    <select id="tag-filter" aria-label="Nach Tag filtern" class="px-3 py-2 border rounded dark:bg-gray-800 dark:border-gray-700 focus-visible:ring-2 focus-visible:ring-blue-600">
+      <option value="">Alle Tags</option>
+      {tags.map((t: string) => <option value={t}>{t}</option>)}
+    </select>
+  </div>
+
+  <div id="count" class="text-sm text-gray-600 dark:text-gray-400 mb-4" aria-live="polite"></div>
+
+  <div id="list" class="space-y-4" data-pagefind-body>
+    {errors.map((e: ErrorEntry) => (
+      <article
+        class="error-card border border-gray-200 dark:border-gray-800 rounded-lg p-4 content-visibility-auto"
+        data-module={e.module}
+        data-tags={e.tags.join(',')}
+        data-text={(e.title + ' ' + e.symptom + ' ' + e.cause + ' ' + e.diagnosis + ' ' + e.solution + ' ' + e.prevention + ' ' + e.lessonTitle).toLowerCase()}
+      >
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="font-semibold">{e.title}</h2>
+          <span class="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-800">Modul {e.module}</span>
+        </div>
+        <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">Lektion: <a href={url(`/lesson/${e.lessonSlug}`)} class="hover:underline">{e.lessonTitle}</a></p>
+        <details>
+          <summary class="cursor-pointer text-sm font-medium focus-visible:ring-2 focus-visible:ring-blue-600">Symptom / Ursache / Diagnose / Lösung / Prävention</summary>
+          <div class="mt-2 text-sm space-y-1">
+            <p><strong>Symptom:</strong> {e.symptom}</p>
+            <p><strong>Ursache:</strong> {e.cause}</p>
+            <p><strong>Diagnose:</strong> {e.diagnosis}</p>
+            <p><strong>Lösung:</strong> {e.solution}</p>
+            <p><strong>Prävention:</strong> {e.prevention}</p>
+          </div>
+        </details>
+        <div class="mt-2 flex flex-wrap gap-1">
+          {e.tags.map((t: string) => <span class="text-xs px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">{t}</span>)}
+        </div>
+      </article>
+    ))}
+  </div>
+
+  <p id="empty" class="hidden text-center text-gray-600 dark:text-gray-400 py-8">
+    Keine Treffer für die aktuelle Auswahl.
+    <button type="button" id="reset-filters" class="ml-2 text-blue-600 hover:underline">Filter zurücksetzen</button>
+  </p>
+
+  <script is:inline>
+    (function () {
+      const search = document.getElementById('search');
+      const modSel = document.getElementById('module-filter');
+      const tagSel = document.getElementById('tag-filter');
+      const cards = Array.from(document.querySelectorAll('.error-card'));
+      const count = document.getElementById('count');
+      const empty = document.getElementById('empty');
+      const reset = document.getElementById('reset-filters');
+
+      function apply() {
+        const q = (search.value || '').toLowerCase().trim();
+        const m = modSel.value;
+        const t = tagSel.value;
+        let visible = 0;
+        cards.forEach((c) => {
+          const text = c.getAttribute('data-text') || '';
+          const mod = c.getAttribute('data-module');
+          const tags = c.getAttribute('data-tags') || '';
+          let show = true;
+          if (q && !text.includes(q)) show = false;
+          if (m && mod !== m) show = false;
+          if (t && !tags.split(',').includes(t)) show = false;
+          c.hidden = !show;
+          if (show) visible++;
+        });
+        count.textContent = visible + ' von ' + cards.length + ' Fehlern angezeigt';
+        empty.classList.toggle('hidden', visible !== 0);
+        // Filter in URL spiegeln (teilbar, Back-Button-freundlich)
+        const params = new URLSearchParams();
+        if (q) params.set('q', q);
+        if (m) params.set('module', m);
+        if (t) params.set('tag', t);
+        const qs = params.toString();
+        history.replaceState(null, '', qs ? '?' + qs : location.pathname);
+      }
+
+      function restore() {
+        const params = new URLSearchParams(location.search);
+        search.value = params.get('q') || '';
+        modSel.value = params.get('module') || '';
+        tagSel.value = params.get('tag') || '';
+      }
+
+      let timer;
+      search.addEventListener('input', () => {
+        clearTimeout(timer);
+        timer = setTimeout(apply, 150);
+      });
+      modSel.addEventListener('change', apply);
+      tagSel.addEventListener('change', apply);
+      reset.addEventListener('click', () => {
+        search.value = '';
+        modSel.value = '';
+        tagSel.value = '';
+        apply();
+      });
+      restore();
+      apply();
+    })();
+  </script>
+</Base>

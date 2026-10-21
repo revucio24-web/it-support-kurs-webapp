@@ -1,0 +1,156 @@
+---
+title: "Modul 0 – Lektion 6: VM erstellen – Windows Server Evaluation (AD/DNS/DHCP)"
+level: 1
+module: 0
+slug: "modul-0-homelab-06-windows-server-vm"
+last_verified: "2026-10-19"
+windows_version: "Windows Server 2022/2025 Evaluation (180 Tage) als Gast"
+sources:
+  - "research/quellen.md Abschnitt B2"
+---
+
+# Modul 0 – Lektion 6: VM erstellen – Windows Server Evaluation (AD/DNS/DHCP)
+
+## 1. Lernziele
+- Du kannst eine Windows Server Evaluation VM erstellen.
+- Du kennst die 180-Tage-Evaluationslimitierung.
+- Du kannst die Rollen AD DS, DNS, DHCP installieren (Grundüberblick, Details in Modul 11).
+- Du kannst den Server als Domain Controller (DC) einrichten (Basis).
+- Du weißt, warum der Server in einem isolierten Lab-Netzwerk laufen muss.
+
+## 2. Theorie kompakt
+
+**Windows Server Evaluation** = kostenlose 180-Tage-Testversion (Standard Evaluation). Enthält alle Server-Features. Ideal für AD/GPO/DNS/DHCP-Labs.
+
+**Empfohlene Version:** Windows Server 2022 (stabil, gut dokumentiert) oder Windows Server 2025 (neueste). Für Lernzwecke: 2022 (mehr Tutorials/Doku). (UNGEPRÜFT: Verfügbarkeit 2025 Eval ISO – beim Download prüfen.)
+
+**Evaluation-Laufzeit:** 180 Tage. Verlängerung: `slmgr /rearm` (max. 6x? → UNGEPRÜFT). Danach Neuinstallation oder Lizenz.
+
+**VM-Ressourcen (Server):**
+- RAM: 4 GB min (empfohlen 6-8 GB für AD + DNS + DHCP)
+- Disk: 60 GB
+- vCPU: 2
+- Netzwerk: Host-only oder Internal (isolierter Lab) – NICHT NAT mit echtem Internet für DC (Sicherheit)
+
+**Rollen (Überblick):**
+- **AD DS (Active Directory Domain Services):** Verzeichnisdienst, Benutzer/Computer/Gruppen, Authentifizierung.
+- **DNS:** Namensauflösung (für AD zwingend – AD nutzt DNS für Service Location).
+- **DHCP:** Automatische IP-Vergabe im Lab-Netz.
+
+**Wichtig:** AD-Lab muss isoliert laufen (Host-only/Internal Network), damit der DC nicht in ein echtes Netzwerk eingreift und keine DNS-Konflikte mit dem Heimrouter entstehen.
+
+## 3. Praxis-Übung im Homelab
+
+Schritte (VM erstellen):
+1. Windows Server 2022 Evaluation ISO herunterladen (Microsoft Evaluation Center – UNGEPRÜFT direkte URL).
+2. VMware: "File → New Virtual Machine → Typical" → ISO → Guest OS: "Microsoft Windows Server 2022" (oder "Windows Server 2019" wenn 2022 nicht in Liste).
+3. VM-Name: "WinSrv2022-DC01", Location: D:\VMs\WinSrv2022-DC01.
+4. Disk: 60 GB.
+5. VM Settings:
+   - Memory: 6144 MB (6 GB).
+   - Processors: 2 vCPU.
+   - Firmware: UEFI (Server 2022 unterstützt UEFI).
+   - Netzwerk: Host-only (vmnet1) oder Internal (vmnet2) – isoliert. NICHT NAT für DC.
+   - Shared Folders: optional.
+6. VM starten → Setup: Sprache/Region → "Jetzt installieren" → "Windows Server 2022 Standard Evaluation (Desktop Experience)" → Zustimmen → "Benutzerdefiniert" → Disk → Install.
+7. Administrator-Passwort setzen (stark, aber Lab-only, z. B. "LabAdmin2024!").
+8. Nach Desktop: Server Manager öffnet automatisch.
+
+Rollen installieren (Grundüberblick – Details in Modul 11):
+9. Server Manager → "Rollen und Features hinzufügen" → "Active Directory-Domänendienste" + "DNS-Server" auswählen → Installieren.
+10. Nach Installation: Benachrichtigung "Diesen Server zu einem Domänencontroller heraufstufen" → klicken.
+11. "Neue Gesamtstruktur hinzufügen" → Root-Domain: `lab.local` (nur im isolierten Lab!).
+12. DSRM-Passwort setzen → Installieren → Neustart.
+13. Nach Neustart: Anmelden als `LAB\Administrator` → AD DS + DNS laufen.
+
+DHCP (optional, für Lab-Netzwerk):
+14. Server Manager → "Rollen hinzufügen" → DHCP-Server → Installieren → DHCP-Konsole → Scope erstellen (z. B. 192.168.100.10-100, Subnetz 255.255.255.0, Gateway 192.168.100.1).
+
+Snapshot "Clean-DC" erstellen.
+
+**Erwartetes Ergebnis:** Windows Server 2022 läuft, AD DS + DNS installiert, Domain `lab.local` existiert, Anmeldung als Domain-Admin möglich.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "DNS-Server nicht erreichbar nach DC-Promotion"**
+- Symptom: Clients können Domain nicht auflösen.
+- Ursache: DNS-Rolle nicht installiert oder DC nutzt externen DNS.
+- Diagnose: `nslookup lab.local` auf Client; DC-Netzwerkeinstellungen prüfen.
+- Lösung: DC-Netzwerkadapter → DNS auf 127.0.0.1 (oder eigene IP) setzen; DNS-Dienst neu starten; Cache leeren (`ipconfig /flushdns`).
+- Prävention: Bei DC-Promotion DNS automatisch mitinstallieren; DC nutzt sich selbst als DNS.
+
+**Fehler 2: "Domain Join schlägt fehl – DNS name does not exist"**
+- Symptom: Client kann `lab.local` nicht joinen.
+- Ursache: Client nutzt falschen DNS (z. B. Router-DNS statt DC-DNS).
+- Diagnose: `ipconfig /all` auf Client → DNS-Server prüfen.
+- Lösung: Client-DNS auf DC-IP setzen (oder DHCP-Scope mit DC als DNS). `ipconfig /flushdns`, erneut joinen.
+- Prävention: DHCP-Scope mit DC als DNS-Server; oder statische IP+DNS auf Client.
+
+**Fehler 3: "AD-Lab stört echtes Netzwerk / DNS-Konflikt"**
+- Symptom: Heimnetzwerk-Geräte lösen `lab.local` nicht auf oder haben DNS-Probleme.
+- Ursache: DC im NAT/bridged Modus, DC-DNS überschreibt Heimrouter-DNS.
+- Diagnose: Netzwerkmodus der VM prüfen.
+- Lösung: VM-Netzwerk auf Host-only/Internal umstellen; VM neu starten; Heimrouter-DNS wiederherstellen.
+- Prävention: AD-VMs IMMER in isoliertem Netzwerk (Host-only/Internal), nie bridged/NAT mit echtem Internet.
+
+**Fehler 4: "Evaluation abgelaufen – Server bootet mit Warnung"**
+- Symptom: Nach 180 Tagen Aktivierungswarnung.
+- Ursache: Evaluationszeitraum abgelaufen.
+- Diagnose: `slmgr /xpr`.
+- Lösung: `slmgr /rearm` (Admin) → Neustart (begrenzt). Danach Neuinstallation aus Snapshot/Template.
+- Prävention: Snapshot "Clean-DC" behalten; Ablaufdatum dokumentieren.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Wie lange läuft die Windows Server Evaluation?
+   a) 90 Tage
+   b) 180 Tage ✓
+   c) 365 Tage
+   d) Unbegrenzt
+
+2. Welche Rolle ist für Active Directory zwingend erforderlich?
+   a) DHCP
+   b) DNS ✓
+   c) IIS
+   d) File Server
+
+3. In welchem Netzwerkmodus sollte ein DC-Lab laufen?
+   a) Bridged (echtes Netzwerk)
+   b) NAT (Internet)
+   c) Host-only oder Internal (isoliert) ✓
+   d) Kein Netzwerk
+
+4. Wie heißt die Root-Domain in unserem Lab (Beispiel)?
+   a) contoso.com
+   b) lab.local ✓
+   c) microsoft.com
+   d) home.arpa
+
+5. Welches Tool stufen einen Server zu einem Domain Controller herauf?
+   a) Server Manager → "Rollen hinzufügen" (nur AD DS Rolle)
+   b) Server Manager → nach AD DS Installation "Zu DC heraufstufen" ✓
+   c) Active Directory Users and Computers
+   d) dcpromo (alt, deprecated in 2012+)
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #1006:** "Ein Azubi hat einen Windows Server als DC eingerichtet (lab.local). Ein Client-VM kann der Domain nicht beitreten – Fehler 'DNS name does not exist'."
+
+**Lösung (aufklappbar):**
+1. Auf Client: `ipconfig /all` → DNS-Server prüfen. Muss DC-IP sein.
+2. Falls Client DNS = Router (z. B. 192.168.1.1): ändern auf DC-IP (statisch oder DHCP-Scope korrigieren).
+3. `ipconfig /flushdns` auf Client.
+4. `nslookup lab.local` auf Client → muss DC-IP zurückgeben.
+5. Falls DC-DNS nicht antwortet: auf DC `ipconfig /all` → DNS = 127.0.0.1? Falls nicht, korrigieren; DNS-Dienst neu starten.
+6. Firewall: DC muss Port 53 (DNS), 88 (Kerberos), 389 (LDAP) erlauben (Windows Firewall – Domain-Profil).
+7. Erneut Domain Join versuchen.
+8. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows Server 2022 Evaluation (180 Tage) als Gast in VMware
+- Quellen: research/quellen.md Abschnitt B2 (UNGEPRÜFT für direkte URLs)
+- UNGEPRÜFT: Microsoft Evaluation Center direkte URL für Server ISO
+- UNGEPRÜFT: Exakte Anzahl Rearms für Windows Server Evaluation
+- UNGEPRÜFT: Windows Server 2025 Eval Verfügbarkeit
+- UNGEPRÜFT: Exakte UI-Pfade im Server Manager (können sich ändern)

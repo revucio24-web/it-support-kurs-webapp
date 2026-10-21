@@ -1,0 +1,137 @@
+---
+title: "Modul 0 – Lektion 2: Windows 11 Home – was fehlt und warum"
+level: 1
+module: 0
+slug: "modul-0-homelab-02-windows-11-home-einschraenkungen"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100) – Host (Home)"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "research/quellen.md Abschnitt B3"
+---
+
+# Modul 0 – Lektion 2: Windows 11 Home – was fehlt und warum
+
+## 1. Lernziele
+- Du kennst die konkreten Einschränkungen von Windows 11 Home gegenüber Pro/Enterprise.
+- Du verstehst, warum diese Einschränkungen für IT-Support-Lernen relevant sind.
+- Du kannst den Workaround (Typ-2-Hypervisor + VMs) begründen.
+- Du erkennst, welche Features im Lab über VMs (Pro/Enterprise) verfügbar werden.
+
+## 2. Theorie kompakt
+
+**Windows 11 Home** ist die Heim-Edition. Sie enthält die für Heimanwender relevanten Features, nicht die Unternehmens-/Admin-Features. Für IT-Support-Lernen fehlen vier zentrale Dinge:
+
+| Feature | Home | Pro/Enterprise/Education | Warum für Support relevant |
+|---|---|---|---|
+| **Hyper-V** (Hypervisor) | Nein | Ja | VMs lokal hosten ohne Typ-2-Hypervisor |
+| **gpedit.msc** (Gruppenrichtlinien-Editor) | Nein | Ja | GPOs lokal testen/ändern |
+| **RDP-Host** (eingehende Remotedesktop-Verbindungen) | Nein | Ja | Remote-Support-Szenarien, Admin-Zugriff |
+| **Domain Join** (Active Directory-Beitritt) | Nein | Ja | AD/GPO-Labs, Unternehmensumgebung |
+
+**Wichtig:** Windows 11 Home kann sehr wohl *als RDP-Client* (mstsc) zu anderen Maschinen verbinden – nur das *Hosten* eingehender RDP-Sitzungen ist nicht möglich.
+
+**Workaround (unsere Lösung):** Typ-2-Hypervisor (VMware Workstation Pro oder VirtualBox) auf dem Host installieren → VMs mit Windows 11 Pro/Enterprise oder Windows Server laufen als Gast → dort sind alle vier Features verfügbar. Der Host bleibt Home, die "Arbeitsumgebung" ist die VM.
+
+**Weitere Home-Einschränkungen (für Support relevant):**
+- Kein BitLocker (nur "Geräteverschlüsselung" in Home, eingeschränkt) – BitLocker-Labs in VM mit Pro/Enterprise.
+- Kein Windows Information Protection (WIP), kein AppLocker, kein Credential Guard.
+- Kein Azure AD/Entra Join (nur Microsoft-Konto) – Entra-Labs via VM + Testtenant.
+- Keine deferred Updates / Update for Business.
+
+**Was Home KANN (nicht unterschätzen):**
+- WSL2 (Windows Subsystem for Linux) – optional für Linux-Labs.
+- Windows Sandbox (in Home verfügbar seit 24H2? UNGEPRÜFT – in Pro Standard; Home: "Virtual Machine Platform" nötig) → als Alternative für schnelle Tests.
+- Hyper-V ist NICHT nötig für VMware/VirtualBox (Typ-2).
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Die vier fehlenden Features auf dem Host verifizieren (damit klar ist, was ins Lab muss).
+
+Schritte:
+1. `Win + R` → `gpedit.msc` eingeben → Enter. Erwartung: Fehler "Windows kann gpedit.msc nicht finden" (oder Datei nicht gefunden). → Bestätigt: kein GPO-Editor in Home.
+2. Einstellungen → System → Remotedesktop. Erwartung: Option "Remotedesktop aktivieren" fehlt oder ist deaktiviert/nicht vorhanden. → Bestätigt: kein RDP-Host.
+3. Einstellungen → Konten → Auf Arbeits- oder Schulkonto zugreifen → "Verbinden". Home erlaubt Microsoft-Konto, aber kein Domain-Join über Systemeigenschaften. Systemsteuerung → System → "Domäne ändern" fehlt in Home. → Bestätigt.
+4. Optional: `optionalfeatures.exe` öffnen → "Hyper-V" fehlt in der Liste (nur "Virtual Machine Platform" / "Windows Hypervisor Platform" vorhanden). → Bestätigt.
+
+**Erwartetes Ergebnis:** Alle vier Checks bestätigen Home-Einschränkungen; VMs sind Pflicht für Admin-Labs.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "gpedit.msc nicht gefunden" auf Home**
+- Symptom: Fehlermeldung beim Aufruf.
+- Ursache: Home hat keinen Gruppenrichtlinien-Editor.
+- Diagnose: `where gpedit.msc` in CMD → nichts gefunden.
+- Lösung: GPO-Labs in einer Pro/Enterprise-VM durchführen; Alternativ Registry-Edits (regedit) auf Home, aber mit Vorsicht.
+- Prävention: Lab-VM mit Pro/Enterprise für alle GPO-Themen.
+
+**Fehler 2: "RDP-Verbindung zum Host schlägt fehl"**
+- Symptom: mstsc zu Host-IP → "Der Remotecomputer erfordert Authentifizierung auf Netzwerkebene" oder Verbindung abgelehnt.
+- Ursache: Home akzeptiert keine eingehenden RDP-Sitzungen.
+- Diagnose: Einstellungen → Remotedesktop prüfen; Dienst "TermService" (Terminaldienste) in Home nicht vorhanden/aus.
+- Lösung: RDP-Ziel muss eine Pro/Enterprise-VM oder ein Server sein; oder Alternativ Remote-Tools (Quick Assist, TeamViewer) für Host.
+- Prävention: Remote-Support-Labs auf VMs, nicht auf Host.
+
+**Fehler 3: "VM lässt sich nicht in Domäne joinen, obwohl Host Home ist"**
+- Symptom: VM (Pro/Enterprise) kann Domain joinen – das funktioniert. Problem entsteht, wenn versucht wird, den *Host* zu joinen.
+- Ursache: Host ist Home → kein Domain Join möglich.
+- Diagnose: Systemeigenschaften → "Domäne" fehlt.
+- Lösung: Nur VMs joinen; Host bleibt in Workgroup. AD-Lab läuft komplett in VMs (Host-only/Internal Network).
+- Prävention: AD-Lab-Netzwerk isoliert (kein Host-Join).
+
+**Fehler 4: "VirtualBox/VMware meldet VT-x nicht verfügbar"**
+- Symptom: VM startet nicht, "VT-x is disabled in BIOS" oder "Hyper-V conflict".
+- Ursache: VT-x im BIOS deaktiviert ODER Windows-Features (Virtual Machine Platform / WSL2) belegen VT-x.
+- Diagnose: `systeminfo` → "Hyper-V Requirements: VM Monitor Mode Extensions: Yes" prüfen; BIOS aufrufen.
+- Lösung: BIOS → VT-x/AMD-V aktivieren; Windows-Features → "Virtual Machine Platform" deaktivieren (falls nicht für WSL nötig); Neustart.
+- Prävention: Vor Lab-Setup BIOS prüfen und dokumentieren.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Welches Feature fehlt in Windows 11 Home?
+   a) Windows Update
+   b) Gruppenrichtlinien-Editor (gpedit.msc) ✓
+   c) Microsoft Defender
+   d) Task-Manager
+
+2. Kann Windows 11 Home als RDP-Client zu anderen PCs verbinden?
+   a) Nein, gar nicht
+   b) Ja, als Client schon; nur eingehende Verbindungen (Host) fehlen ✓
+   c) Nur mit Drittanbieter-Tools
+   d) Nur in der Pro-Version
+
+3. Warum nutzen wir VMs statt den Host für Admin-Labs?
+   a) Weil VMs schneller sind
+   b) Weil Pro/Enterprise-Features (GPO, RDP-Host, Domain Join, BitLocker) in VMs verfügbar sind ✓
+   c) Weil der Host kein Internet hat
+   d) Weil Snapshots auf dem Host nicht funktionieren
+
+4. Was ist "Geräteverschlüsselung" in Home im Vergleich zu BitLocker?
+   a) Identisch
+   b) Eingeschränkte Variante, automatisch, weniger konfigurierbar ✓
+   c) Besser als BitLocker
+   d) Nicht vorhanden
+
+5. Welches Windows-Feature in Home kann für schnelle Test-Isolation genutzt werden (UNGEPRÜFT)?
+   a) Hyper-V
+   b) Windows Sandbox (eingeschränkt/Pro) ✓ (UNGEPRÜFT für Home)
+   c) Domain Join
+   d) gpedit.msc
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #1002:** "Ein User meldet: 'Ich kann mich nicht per Remotedesktop mit meinem Home-PC verbinden, obwohl ich das in den Einstellungen aktiviert habe.' Der User hat Windows 11 Home."
+
+**Lösung (aufklappbar):**
+1. Edition prüfen: `winver` → "Windows 11 Home" bestätigt.
+2. Erklären: Home unterstützt keinen eingehenden RDP-Host. "Aktivieren" in Einstellungen ist in Home nicht verfügbar bzw. ohne Wirkung.
+3. Alternativen anbieten: Quick Assist (Win11 eingebaut), TeamViewer, Chrome Remote Desktop, oder Upgrade auf Pro.
+4. Falls Remote-Support regelmäßig nötig: Pro-Lizenz empfehlen oder Azure Virtual Desktop / Windows 365.
+5. Dokumentieren: Ticket mit "Edition-Limitation" schließen, User informiert.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 Home 24H2 (Build 26100)
+- Quellen: Microsoft Learn Windows 11 Overview (Abschnitt B3 quellen.md); allgemeines Windows-Editions-Wissen
+- UNGEPRÜFT: Exakte Microsoft-URL zum Editionsvergleich (Hyper-V/gpedit/RDP/Domain-Join/BitLocker) – in Lektion nachzutragen vor Veröffentlichung
+- UNGEPRÜFT: Windows Sandbox Verfügbarkeit in Home (24H2) – zu verifizieren

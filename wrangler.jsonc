@@ -1,8 +1,0 @@
-{
-  "name": "it-support-kurs",
-  "compatibility_date": "2025-01-01",
-  "assets": {
-    "directory": "./dist"
-  },
-  "observability": { "enabled": true }
-}

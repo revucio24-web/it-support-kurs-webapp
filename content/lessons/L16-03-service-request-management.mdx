@@ -1,0 +1,167 @@
+---
+title: "Modul 16 – Lektion 3: Service Request Management (ITIL 4)"
+level: 2
+module: 16
+slug: "modul-16-itil-03-service-request-management"
+last_verified: "2026-10-19"
+windows_version: "Allgemein (ITSM)"
+sources:
+  - "https://www.peoplecert.org/browse-certifications/it-governance-and-service-management/ITIL-1/itil-4-foundation-2565 (Abruf 2026-10-19)"
+  - "https://nistcsf.com/wp-content/uploads/2019/02/ITIl-V4-Foundation-Syllabus.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 16 – Lektion 3: Service Request Management (ITIL 4)
+
+## 1. Lernziele
+- Du kannst Service Request Management nach ITIL 4 erklären.
+- Du kannst Service Requests klassifizieren und bearbeiten.
+- Du kannst Service Catalog und Service Level erklären.
+- Du kannst Request Fulfillment optimieren.
+
+## 2. Theorie kompakt
+
+**Service Request Management (ITIL 4):** Ziel: Standardisierte Anfragen von Usern (keine Störungen) effizient und konsistent bearbeiten.
+
+**Service Request vs. Incident:**
+- **Incident:** Störung (etwas funktioniert nicht).
+- **Service Request:** Anfrage (User möchte etwas Neues/Änderung).
+
+**Typische Service Requests:**
+- Passwort-Reset (wenn nicht self-service).
+- Software-Installation (Standard-Software).
+- Hardware-Bestellung (Laptop, Monitor, etc.).
+- Zugriffsrechte (Ordner, Anwendung).
+- Neue E-Mail-Adresse / Verteiler.
+- Konto-Erstellung (neuer Mitarbeiter).
+
+**Service Request Lifecycle:**
+1. **Request Submission:** User reicht Anfrage ein (Portal, E-Mail, Telefon).
+2. **Triage & Qualification:** Supporter prüft (vollständig? Genehmigung nötig?).
+3. **Approval:** Genehmigung (Manager, IT-Leitung) – falls erforderlich.
+4. **Fulfillment:** Anfrage bearbeiten (Standard-Prozess, Automatisierung).
+5. **Closure:** User informieren; Ticket schließen.
+
+**Service Catalog (Servicekatalog):**
+- Liste aller IT-Services, die angeboten werden.
+- Enthält: Beschreibung, SLA, Kosten, Genehmigungsprozess, Fulfillment-Zeit.
+- Self-Service-Portal: User können Services selbst anfordern.
+
+**Service Request Models:**
+- **Standard Change:** Vordefiniert, genehmigt, dokumentiert (z. B. Standard-Software-Installation).
+- **Normal Change:** Individuelle Genehmigung nötig.
+- **Emergency Change:** Dringend, nachträgliche Genehmigung.
+
+**Automatisierung:**
+- Self-Service-Portal (User fordert selbst an).
+- Automatisierte Fulfillment (z. B. Passwort-Reset via SSPR, Software via Intune).
+- Workflow-Engine (Genehmigungen, Benachrichtigungen).
+
+**Service Level für Requests:**
+- SLA für Requests (z. B. "Software-Installation innerhalb 3 Tagen").
+- Unterschiedlich von Incident-SLA.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Service Request Management durchspielen.
+
+Szenario: "User fordert Installation von Adobe Acrobat Reader an."
+
+Schritte:
+1. Ticket erstellen: Typ "Service Request", Kategorie "Software/Installation", Titel "Adobe Acrobat Reader installieren".
+2. Triage: Vollständig? User, PC, Software-Version.
+3. Genehmigung: Manager-Genehmigung erforderlich? (falls Policy).
+4. Fulfillment: Software installieren (Intune/Winget/GPO).
+5. Verifikation: Software installiert; User kann nutzen.
+6. Closure: User informieren; Ticket schließen.
+7. Dokumentation: KB-Artikel "Software-Installation anfordern".
+
+**Erwartetes Ergebnis:** Service Request durchgespielt; Fulfillment dokumentiert.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Service Request als Incident klassifiziert"**
+- Symptom: Anfrage wird wie Störung behandelt; falsche SLA; falsche Priorität.
+- Ursache: Unklare Unterscheidung Request/Incident.
+- Diagnose: Ticket-Typ prüfen.
+- Lösung: Ticket-Typ korrigieren; SLA neu berechnen.
+- Prävention: Schulung; klare Definitionen; Ticket-Template.
+
+**Fehler 2: "Genehmigung fehlt – Request nicht bearbeitet"**
+- Symptom: Request hängt; User wartet; SLA-Verletzung.
+- Ursache: Genehmigungsprozess nicht definiert; Genehmiger nicht informiert.
+- Diagnose: Ticket-Status; Genehmigungs-Workflow.
+- Lösung: Genehmiger informieren; Workflow korrigieren.
+- Prävention: Genehmigungsprozess dokumentieren; Automatisierung.
+
+**Fehler 3: "Fulfillment manuell – ineffizient"**
+- Symptom: Jede Anfrage wird manuell bearbeitet; lange Bearbeitungszeiten.
+- Ursache: Keine Automatisierung; keine Standard-Prozesse.
+- Diagnose: Fulfillment-Zeit prüfen.
+- Lösung: Self-Service-Portal; Automatisierung (SSPR, Intune, Winget).
+- Prävention: Automatisierung priorisieren; Request Models definieren.
+
+**Fehler 4: "Service Catalog veraltet – User fordern nicht verfügbare Services an"**
+- Symptom: User fordert Service an, der nicht existiert.
+- Ursache: Service Catalog nicht aktualisiert.
+- Diagnose: Service Catalog prüfen.
+- Lösung: Catalog aktualisieren; User informieren.
+- Prävention: Regelmäßige Catalog-Reviews; User-Kommunikation.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist ein Service Request?
+   a) Eine Störung
+   b) Eine standardisierte Anfrage eines Users (kein Fehler) ✓
+   c) Ein Problem
+   d) Ein Change
+
+2. Was ist ein Service Catalog?
+   a) Eine Ticket-Liste
+   b) Eine Liste aller IT-Services mit Beschreibung, SLA, Kosten ✓
+   c) Ein Backup
+   d) Ein Netzwerk
+
+3. Was ist ein Standard Change?
+   a) Ein Change ohne Genehmigung
+   b) Ein vordefinierter, genehmigter, dokumentierter Change (z. B. Standard-Software) ✓
+   c) Ein dringender Change
+   d) Ein manueller Change
+
+4. Was ist Self-Service?
+   a) User löst Probleme selbst ohne IT ✓ (oder fordert Services selbst an)
+   b) IT löst Probleme
+   c) Automatisches Backup
+   d) Monitoring
+
+5. Was ist der Unterschied zwischen Incident und Service Request?
+   a) Keiner
+   b) Incident = Störung; Service Request = Anfrage ✓
+   c) Incident = Anfrage; Service Request = Störung
+   d) Beide sind gleich
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #17003:** "HR: 'Neuer Mitarbeiter startet am Montag. Bitte richten Sie Arbeitsplatz ein (PC, E-Mail, Zugriffe).'"
+
+**Lösung (aufklappbar):**
+1. Service Request erstellen: "Neuer Mitarbeiter – Onboarding".
+2. Triage: Vollständig? Name, Abteilung, Startdatum, benötigte Software/Zugriffe.
+3. Genehmigung: HR/Manager-Genehmigung.
+4. Fulfillment:
+   a) PC bereitstellen (Intune/Autopilot).
+   b) M365-Konto erstellen (Provisioning).
+   c) Lizenzen zuweisen.
+   d) Gruppen/Zugriffe zuweisen.
+   e) Software installieren (Standard-Set).
+5. Verifikation: User kann sich anmelden; E-Mail funktioniert; Software vorhanden.
+6. Closure: HR und User informieren.
+7. Dokumentation: Onboarding-Checkliste.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Allgemein (ITSM)
+- Quellen: ITIL 4 Foundation (PeopleCert/AXELOS); ITIL 4 Syllabus (nistcsf.com PDF)
+- UNGEPRÜFT: Exakte ITIL 4 Service Request Management Definitionen (Wortlaut) – aus Syllabus, nicht Primärtext
+- UNGEPRÜFT: Service Catalog Details – aus allgemeiner Praxis
+- UNGEPRÜFT: Standard/Normal/Emergency Change Definitionen – aus allgemeiner Praxis
+- UNGEPRÜFT: Automatisierungs-Beispiele – aus allgemeiner Praxis

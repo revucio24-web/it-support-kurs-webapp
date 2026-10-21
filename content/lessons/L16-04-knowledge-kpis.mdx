@@ -1,0 +1,168 @@
+---
+title: "Modul 16 – Lektion 4: Knowledge Management und KPIs"
+level: 2
+module: 16
+slug: "modul-16-itil-04-knowledge-kpis"
+last_verified: "2026-10-19"
+windows_version: "Allgemein (ITSM)"
+sources:
+  - "https://www.peoplecert.org/browse-certifications/it-governance-and-service-management/ITIL-1/itil-4-foundation-2565 (Abruf 2026-10-19)"
+  - "https://nistcsf.com/wp-content/uploads/2019/02/ITIl-V4-Foundation-Syllabus.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 16 – Lektion 4: Knowledge Management und KPIs
+
+## 1. Lernziele
+- Du kannst Knowledge Management nach ITIL 4 erklären.
+- Du kannst KPIs (Key Performance Indicators) für IT-Support definieren und messen.
+- Du kannst Service Improvement (CSI) erklären.
+- Du kannst Metriken für Incident/Problem/Request-Management nutzen.
+
+## 2. Theorie kompakt
+
+**Knowledge Management (ITIL 4):** Ziel: Wissen erstellen, teilen, nutzen und pflegen, um Effizienz und Qualität zu verbessern.
+
+**Knowledge Management Prozess:**
+1. **Knowledge Creation:** Wissen erfassen (aus Tickets, Erfahrung, Dokumentation).
+2. **Knowledge Sharing:** Wissen teilen (KB, Wiki, Team-Meetings).
+3. **Knowledge Utilization:** Wissen nutzen (bei Tickets, Self-Service).
+4. **Knowledge Maintenance:** Wissen aktualisieren (Reviews, Archivierung).
+
+**Knowledge Types:**
+- **Explicit Knowledge:** Dokumentiertes Wissen (KB-Artikel, Runbooks, Handbücher).
+- **Tacit Knowledge:** Erfahrungswissen (in Köpfen, schwer zu dokumentieren).
+
+**KCS (Knowledge-Centered Service):**
+- Methode: Wissen wird während der Ticketbearbeitung erstellt/genutzt.
+- Prinzipien: Nachfragegetrieben, Doppelte Nutzung (erstellen + nutzen), Review, Sammlung.
+
+**KPIs für IT-Support:**
+
+| KPI | Definition | Ziel (Beispiel) |
+|---|---|---|
+| **FCR (First Contact Resolution)** | Anteil der Tickets, die beim ersten Kontakt gelöst werden | >70% |
+| **MTTR (Mean Time To Resolve)** | Durchschnittliche Lösungszeit | &lt;4h (P3) |
+| **MTTA (Mean Time To Acknowledge)** | Durchschnittliche Reaktionszeit | &lt;15 Min (P1) |
+| **SLA Compliance** | Anteil der Tickets innerhalb SLA | >95% |
+| **CSAT (Customer Satisfaction)** | User-Zufriedenheit (Umfrage) | >4,0/5,0 |
+| **Reopen Rate** | Anteil wieder geöffneter Tickets | &lt;5% |
+| **Escalation Rate** | Anteil eskalierter Tickets | &lt;20% |
+| **Ticket Backlog** | Anzahl offener Tickets | Stabil/fallend |
+| **First Level Resolution Rate** | Anteil von Level 1 gelöster Tickets | >60% |
+| **Knowledge Usage** | Anteil der Tickets mit KB-Artikel-Nutzung | >50% |
+
+**CSI (Continual Service Improvement):**
+- ITIL-Praxis: Kontinuierliche Verbesserung der Services.
+- **CSI-Modell:** Was ist die Vision? Wo sind wir jetzt? Wo wollen wir hin? Wie kommen wir dahin? Haben wir angekommen?
+- **Verbesserungsregister:** Liste von Verbesserungsmöglichkeiten.
+- **Reviews:** Regelmäßige Service-Reviews (monatlich/quartalsweise).
+
+**Reporting:**
+- Dashboards (Power BI, ServiceNow, etc.).
+- Regelmäßige Reports (wöchentlich/monatlich).
+- Trend-Analyse (Incident-Trends, Problem-Trends).
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: KPI-Dashboard erstellen (Simulation).
+
+Schritte:
+1. 20 fiktive Tickets erstellen (mit Status, Priorität, Lösungszeit, Eskalation).
+2. KPIs berechnen:
+   - FCR = (Tickets bei erstem Kontakt gelöst) / (Gesamt) × 100.
+   - MTTR = Summe Lösungszeiten / Anzahl.
+   - SLA Compliance = (Tickets innerhalb SLA) / (Gesamt) × 100.
+   - Reopen Rate = (wieder geöffnet) / (Gesamt) × 100.
+3. Dashboard erstellen (Excel/Power BI oder Markdown-Tabelle).
+4. Trend-Analyse: Welche Kategorie hat die meisten Tickets? Welche hat die längste Lösungszeit?
+5. Verbesserungsvorschläge formulieren.
+
+**Erwartetes Ergebnis:** KPI-Dashboard erstellt; Trends identifiziert; Verbesserungsvorschläge.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "KPIs nicht gemessen – keine Verbesserung möglich"**
+- Symptom: IT-Support "weiß nicht, wie gut er ist".
+- Ursache: Keine Metriken definiert; keine Messung.
+- Diagnose: Reporting-Status prüfen.
+- Lösung: KPIs definieren; Messung implementieren; Dashboard erstellen.
+- Prävention: KPIs als Standard; regelmäßige Reviews.
+
+**Fehler 2: "Falsche KPIs – Fokus auf Quantität statt Qualität"**
+- Symptom: Tickets schnell geschlossen, aber User unzufrieden.
+- Ursache: Fokus auf MTTR statt CSAT/FCR.
+- Diagnose: KPI-Balance prüfen.
+- Lösung: Ausgewogene KPIs (FCR, CSAT, MTTR, SLA).
+- Prävention: KPI-Review; User-Feedback einbeziehen.
+
+**Fehler 3: "Knowledge Base nicht genutzt – Wissen veraltet"**
+- Symptom: KB-Artikel veraltet; Supporter lösen von vorne.
+- Ursache: Keine Pflege; keine Nutzungsmessung.
+- Diagnose: KB-Nutzungsstatistik.
+- Lösung: KB-Review-Prozess; Nutzung messen; veraltete Artikel archivieren.
+- Prävention: KCS-Methode; KB-Owner.
+
+**Fehler 4: "CSI nicht umgesetzt – keine Verbesserung"**
+- Symptom: Gleiche Probleme wiederholen sich; keine Verbesserung.
+- Ursache: CSI-Register nicht gepflegt; keine Reviews.
+- Diagnose: CSI-Register prüfen.
+- Lösung: CSI-Register erstellen; regelmäßige Reviews; Verbesserungen umsetzen.
+- Prävention: CSI als Standardprozess; Management-Unterstützung.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist FCR?
+   a) First Contact Resolution – Anteil der Tickets, die beim ersten Kontakt gelöst werden ✓
+   b) Fastest Case Resolution
+   c) Full Customer Report
+   d) Final Check Required
+
+2. Was ist MTTR?
+   a) Mean Time To Resolve – durchschnittliche Lösungszeit ✓
+   b) Mean Time To Acknowledge
+   c) Maximum Time To Repair
+   d) Minimum Time To Respond
+
+3. Was ist CSI?
+   a) Continual Service Improvement – kontinuierliche Verbesserung ✓
+   b) Customer Service Index
+   c) Critical System Incident
+   d) Central Service Integration
+
+4. Was ist KCS?
+   a) Knowledge-Centered Service – Wissen während Ticketbearbeitung erstellen/nutzen ✓
+   b) Knowledge Control System
+   c) Key Customer Service
+   d) Kernel Configuration Service
+
+5. Was misst CSAT?
+   a) Ticket-Volumen
+   b) User-Zufriedenheit (Umfrage) ✓
+   c) Lösungszeit
+   d) Eskalationsrate
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #17004:** "Management: 'Unser IT-Support hat schlechte Bewertungen. User sind unzufrieden. Wie können wir das verbessern?'"
+
+**Lösung (aufklappbar):**
+1. KPIs analysieren: FCR, MTTR, CSAT, SLA Compliance, Reopen Rate.
+2. User-Feedback einholen: Umfrage; Interviews.
+3. Schwachstellen identifizieren: Wo sind die Probleme? (z. B. lange Wartezeiten, schlechte Kommunikation).
+4. Maßnahmen:
+   a) Schulung (Kommunikation, Troubleshooting).
+   b) Knowledge Base aufbauen (KCS).
+   c) Self-Service-Portal (SSPR, KB).
+   d) Prozesse optimieren (Eskalation, Dokumentation).
+5. CSI-Register erstellen; Verbesserungen tracken.
+6. Regelmäßige Reviews; User-Feedback einholen.
+7. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Allgemein (ITSM)
+- Quellen: ITIL 4 Foundation (PeopleCert/AXELOS); ITIL 4 Syllabus (nistcsf.com PDF)
+- UNGEPRÜFT: KPI-Zielwerte (FCR >70%, etc.) – Branchenüblich, nicht aus spezifischer Quelle
+- UNGEPRÜFT: KCS-Methode Details – aus allgemeiner Praxis
+- UNGEPRÜFT: CSI-Modell Details – aus allgemeiner Praxis
+- UNGEPRÜFT: Reporting-Tools (Power BI, ServiceNow) – Drittanbieter, nicht verifiziert

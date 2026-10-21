@@ -1,0 +1,160 @@
+---
+title: "Modul 14 – Lektion 1: Software-Deployment (MSI, Winget, Intune)"
+level: 2
+module: 14
+slug: "modul-14-deployment-intune-01-software-deployment"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100)"
+sources:
+  - "https://learn.microsoft.com/en-us/mem/intune/fundamentals/what-is-intune (Abruf 2026-10-19)"
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+---
+
+# Modul 14 – Lektion 1: Software-Deployment (MSI, Winget, Intune)
+
+## 1. Lernziele
+- Du kannst Software-Deployment-Methoden erklären (MSI, Winget, Intune).
+- Du kannst MSI-Pakete installieren/deinstallieren (silent).
+- Du kannst Winget für App-Management nutzen.
+- Du kannst Intune App-Deployment erklären.
+
+## 2. Theorie kompakt
+
+**Software-Deployment-Methoden:**
+
+| Methode | Beschreibung | Einsatz |
+|---|---|---|
+| **MSI (Windows Installer)** | Standard-Installationsformat (.msi); unterstützt silent install, Rollback, Patching | Enterprise-Deployment |
+| **EXE (Setup)** | Ausführbare Setup-Datei; oft Wrapper um MSI | Einzelinstallation |
+| **Winget (Windows Package Manager)** | Kommandozeilen-Tool für App-Installation (wie apt/brew) | Automatisierung, Skripte |
+| **Intune (Win32 App)** | Cloud-basiertes App-Deployment (MSI/EXE/Script) | MDM-verwaltete Geräte |
+| **GPO Software Installation** | MSI-Pakete via GPO bereitstellen | AD-Umgebungen |
+| **SCCM/MECM** | On-Premise Deployment (legacy, wird durch Intune ersetzt) | Enterprise (legacy) |
+
+**MSI-Befehle:**
+- `msiexec /i app.msi /qn` – Silent install (keine UI).
+- `msiexec /x app.msi /qn` – Silent uninstall.
+- `msiexec /i app.msi /qb` – Basic UI (Fortschrittsbalken).
+- `msiexec /i app.msi /l*v C:\log.txt` – Logging.
+- `msiexec /p patch.msp` – Patch anwenden.
+
+**Winget:**
+- `winget search <App>` – App suchen.
+- `winget install <App>` – App installieren.
+- `winget upgrade --all` – Alle Apps aktualisieren.
+- `winget list` – Installierte Apps auflisten.
+- `winget uninstall <App>` – App deinstallieren.
+- Quelle: Microsoft Store + Community Repository.
+
+**Intune App-Deployment:**
+- **Win32 App:** .intunewin-Datei (MSI/EXE/Script verpackt).
+- **Microsoft Store App:** Aus Store bereitstellen.
+- **LOB (Line of Business):** MSI direkt hochladen.
+- **Deployment:** Zuweisung an User/Gruppe/Gerät; erforderlich/verfügbar/deinstallieren.
+- **Detection Rules:** Wie prüft Intune, ob App installiert ist (Registry, Datei, MSI-Product-Code).
+
+**Deployment-Best-Practices:**
+1. **Testen:** In Test-VM/Gerätengruppe zuerst.
+2. **Silent Install:** Keine User-Interaktion.
+3. **Logging:** Installationslogs sammeln.
+4. **Rollback:** Plan für Deinstallation.
+5. **Versionierung:** App-Versionen dokumentieren.
+6. **Pilot-Gruppe:** Kleine Gruppe zuerst, dann Rollout.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Software-Deployment mit MSI und Winget.
+
+Schritte:
+1. Winget testen: `winget search "7-Zip"` → App finden.
+2. `winget install 7zip.7zip` → 7-Zip installieren (silent).
+3. `winget list` → installierte Apps prüfen.
+4. `winget upgrade --all` → Updates prüfen/installieren.
+5. MSI-Installation (Simulation): `msiexec /i <Pfad>\app.msi /qn /l*v C:\Lab\install.log` (falls MSI vorhanden).
+6. Deinstallation: `winget uninstall 7zip.7zip` oder `msiexec /x <ProductCode> /qn`.
+
+**Erwartetes Ergebnis:** Winget und MSI verstanden; App installiert/deinstalliert.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "MSI-Installation schlägt fehl – Fehler 1603"**
+- Symptom: Installation bricht ab mit Fehler 1603.
+- Ursache: Berechtigungsproblem; beschädigter Installer; inkompatible Version.
+- Diagnose: Installationslog (`/l*v`) prüfen.
+- Lösung: Als Admin ausführen; Log analysieren; MSI reparieren (`msiexec /f`).
+- Prävention: Silent-Install-Logs immer aktivieren.
+
+**Fehler 2: "Winget findet App nicht"**
+- Symptom: `winget search` gibt keine Ergebnisse.
+- Ursache: App nicht im Repository; Winget nicht aktualisiert.
+- Diagnose: `winget source list`; `winget source update`.
+- Lösung: Quelle aktualisieren; alternative Quelle (Microsoft Store).
+- Prävention: Winget regelmäßig aktualisieren.
+
+**Fehler 3: "Intune-Deployment schlägt fehl – Detection Rule"**
+- Symptom: App wird installiert, aber Intune zeigt "Nicht installiert".
+- Ursache: Detection Rule falsch (Registry-Pfad, Datei-Pfad, Product-Code).
+- Diagnose: Intune Admin Center → App → "Installation status"; Geräte-Logs.
+- Lösung: Detection Rule korrigieren; App neu zuweisen.
+- Prävention: Detection Rules testen; Dokumentation.
+
+**Fehler 4: "GPO-Software-Installation schlägt fehl"**
+- Symptom: MSI via GPO wird nicht installiert.
+- Ursache: GPO nicht verknüpft; MSI-Pfad nicht erreichbar (UNC); Berechtigung.
+- Diagnose: `gpresult /r`; Event Viewer (Application-Log, MsiInstaller).
+- Lösung: GPO verknüpfen; UNC-Pfad prüfen; Berechtigung (Computer-Account muss lesen können).
+- Prävention: UNC-Pfad testen; Computer-Account-Berechtigung.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist Winget?
+   a) Ein Antivirus
+   b) Windows Package Manager – Kommandozeilen-Tool für App-Management ✓
+   c) Ein Backup-Tool
+   d) Ein VPN
+
+2. Welcher Befehl installiert eine App silent (MSI)?
+   a) `msiexec /i app.msi /qb`
+   b) `msiexec /i app.msi /qn` ✓
+   c) `msiexec /x app.msi`
+   d) `msiexec /p app.msi`
+
+3. Was ist eine .intunewin-Datei?
+   a) Ein MSI-Paket
+   b) Ein verpacktes App-Paket für Intune (MSI/EXE/Script) ✓
+   c) Ein Treiber
+   d) Ein Backup
+
+4. Was prüft eine Detection Rule in Intune?
+   a) Ob die App installiert ist ✓
+   b) Ob der User angemeldet ist
+   c) Ob das Gerät online ist
+   d) Ob die Lizenz gültig ist
+
+5. Welcher Befehl aktualisiert alle Apps mit Winget?
+   a) `winget update --all`
+   b) `winget upgrade --all` ✓
+   c) `winget install --all`
+   d) `winget refresh --all`
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #15001:** "Admin: 'Ich muss 7-Zip auf 50 PCs bereitstellen. Wie mache ich das automatisiert?'"
+
+**Lösung (aufklappbar):**
+1. Option A (Winget): Skript mit `winget install 7zip.7zip --silent` auf allen PCs (via PowerShell Remoting oder Intune).
+2. Option B (Intune): Win32 App erstellen (.intunewin), zuweisen an Gerätegruppe.
+3. Option C (GPO): MSI via GPO Software Installation bereitstellen.
+4. Testen auf 1-2 PCs zuerst.
+5. Rollout an alle.
+6. Verifikation: `winget list` oder Intune-Status.
+7. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100)
+- Quellen: Microsoft Learn (Intune Fundamentals, What is Intune); Microsoft Learn Windows 11 Overview
+- UNGEPRÜFT: Winget-Syntax und Befehle – in Lab verifizieren
+- UNGEPRÜFT: Intune Win32 App Deployment – in Microsoft-Docs verifizieren
+- UNGEPRÜFT: MSI-Fehlercodes (1603) – in Microsoft-Docs verifizieren
+- UNGEPRÜFT: GPO Software Installation Details – in Lab verifizieren

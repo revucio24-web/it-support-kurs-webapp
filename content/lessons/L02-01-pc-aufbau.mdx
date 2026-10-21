@@ -1,0 +1,152 @@
+---
+title: "Modul 2 – Lektion 1: PC-Aufbau (Komponenten)"
+level: 1
+module: 2
+slug: "modul-2-hardware-01-pc-aufbau"
+last_verified: "2026-10-19"
+windows_version: "Allgemein (Hardware)"
+sources:
+  - "https://www.comptia.org/en/certifications/a/core-1-and-2-v15/ (Abruf 2026-10-19)"
+  - "https://assets.ctfassets.net/82ripq7fjls2/1oSdlyujpaX3GrM0rir6Ge/91afb2be72785281e8fb4c0d9a70c6f4/CompTIA-A-220-1201-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 2 – Lektion 1: PC-Aufbau (Komponenten)
+
+## 1. Lernziele
+- Du kannst die Hauptkomponenten eines PCs benennen und deren Funktion erklären.
+- Du kennst die Formfaktoren von Mainboards und Netzteilen.
+- Du kannst RAM-Typen (DDR4/DDR5, ECC/non-ECC) unterscheiden.
+- Du kannst Speicher (SSD/HDD, NVMe/SATA) vergleichen.
+
+## 2. Theorie kompakt
+
+**Hauptkomponenten eines PCs:**
+
+| Komponente | Funktion | Hinweise |
+|---|---|---|
+| **CPU (Prozessor)** | Zentrale Recheneinheit | Intel (Core i3/i5/i7/i9), AMD (Ryzen 3/5/7/9); Sockel (LGA/AM); TDP (Wärme) |
+| **Mainboard (Motherboard)** | Verbindet alle Komponenten | Formfaktor: ATX, microATX, Mini-ITX; Chipsatz; Sockel; RAM-Slots; PCIe-Slots |
+| **RAM** | Arbeitsspeicher (flüchtig) | DDR4/DDR5; DIMM (Desktop), SODIMM (Laptop); ECC (Server) vs non-ECC; Dual-Channel |
+| **Storage** | Datenspeicher (nicht flüchtig) | HDD (mechanisch, günstig, langsam), SSD (SATA, schneller), NVMe SSD (PCIe, am schnellsten) |
+| **GPU** | Grafikprozessor | Integriert (iGPU in CPU) oder dediziert (PCIe-Karte); VRAM |
+| **PSU (Netzteil)** | Stromversorgung | Wattage, 80+ Zertifizierung, modular; 24-Pin Mainboard, 8-Pin CPU, PCIe-Power |
+| **Kühlung** | Wärmeabfuhr | Lüfter (CPU, Gehäuse), Heatpipes, Thermal Paste, AIO (Wasserkühlung) |
+| **Gehäuse** | Schutz, Kühlung, Erweiterung | ATX/mATX/ITX; Front-Panel (Power, USB, Audio) |
+
+**Formfaktoren:**
+- **ATX** (305×244 mm): Standard, viele Slots.
+- **microATX** (244×244 mm): kleiner, weniger Slots.
+- **Mini-ITX** (170×170 mm): sehr klein, 1 PCIe-Slot.
+
+**RAM-Generationen:**
+- **DDR4:** bis ~3200 MHz (Standard bis ~2024), 288 Pins (DIMM).
+- **DDR5:** ab ~4800 MHz, 288 Pins (andere Kerbe), On-Die ECC.
+- **ECC (Error-Correcting Code):** erkennt/korrigiert Speicherfehler; für Server/Workstations; nicht in Consumer-Boards.
+- **Dual-Channel:** 2 identische Module → doppelte Bandbreite.
+
+**Storage-Vergleich:**
+
+| Typ | Interface | Seq. Read | Latenz | Lebensdauer | Preis/GB |
+|---|---|---|---|---|---|
+| HDD (7200 RPM) | SATA | ~200 MB/s | ~10 ms | Hoch (mechanisch) | niedrig |
+| SSD (SATA) | SATA | ~550 MB/s | ~0,1 ms | Mittel (Write-Cycles) | mittel |
+| NVMe SSD (PCIe 4.0) | M.2/NVMe | ~7000 MB/s | ~0,02 ms | Mittel | höher |
+
+**BIOS/UEFI:** Firmware auf Mainboard; POST (Power-On Self Test); Boot-Reihenfolge; Secure Boot; TPM. UEFI ersetzt Legacy BIOS (GPT statt MBR).
+
+**POST (Power-On Self Test):** Beim Start prüft das System Hardware (CPU, RAM, GPU, Storage). Fehler → Beep-Codes oder LED-Codes (herstellerabhängig).
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Hardware-Inventar eines PCs erstellen.
+
+Schritte (im Host oder einer VM):
+1. `msinfo32` öffnen → Systemübersicht: OS, CPU, RAM, Mainboard (BaseBoard), BIOS-Version.
+2. `dxdiag` → Display-Tab: GPU, VRAM, Treiber.
+3. Geräte-Manager → "Arbeitsspeicher" / "Prozessoren" / "Datenträger" prüfen.
+4. PowerShell: `Get-ComputerInfo | Select-Object CsManufacturer, CsModel, BiosVersion, OsTotalVisibleMemorySize`.
+5. Festplatten: `Get-PhysicalDisk | Select-Object FriendlyName, MediaType, Size, HealthStatus`.
+6. Inventar dokumentieren (Tabelle): CPU, RAM (Typ+Größe), Storage (Typ+Größe), GPU, Mainboard, BIOS.
+
+**Erwartetes Ergebnis:** Vollständiges Hardware-Inventar des PCs.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "PC startet nicht – kein Bild, keine Beeps"**
+- Symptom: Lüfter drehen, aber kein Bild, keine Beep-Codes.
+- Ursache: RAM nicht richtig eingesetzt, CPU-Strom (8-Pin) nicht angeschlossen, oder GPU nicht eingesteckt.
+- Diagnose: POST-LEDs prüfen (auf Mainboard); RAM entfernen und einzeln testen; Kabel prüfen.
+- Lösung: RAM neu einsetzen (bis Klick); 8-Pin CPU-Strom anschließen; GPU neu einstecken.
+- Prävention: Bei Zusammenbau Checkliste; Anti-Statik-Maßnahmen.
+
+**Fehler 2: "Bluescreen / Absturz unter Last"**
+- Symptom: BSOD oder Neustart bei CPU/GPU-Last.
+- Ursache: Überhitzung (Thermal Throttling), instabiles Übertakten, defektes RAM, schwaches Netzteil.
+- Diagnose: Temperatur prüfen (HWiNFO, Core Temp); RAM-Test (MemTest86); PSU-Wattage prüfen.
+- Lösung: Kühlung verbessern (Thermal Paste erneuern, Lüfter reinigen); Übertaktung zurücksetzen; RAM ersetzen; stärkeres Netzteil.
+- Prävention: Temperatur-Monitoring; regelmäßige Reinigung; PSU mit Reserve.
+
+**Fehler 3: "SSD wird nicht erkannt"**
+- Symptom: Neue SSD erscheint nicht im BIOS/Windows.
+- Ursache: Kabel (SATA/Power) nicht angeschlossen; M.2-Slot deaktiviert (BIOS); inkompatibler M.2-Typ (SATA vs NVMe).
+- Diagnose: BIOS → Storage; Kabel prüfen; M.2-Slot-Spezifikation.
+- Lösung: Kabel anschließen; M.2-Slot im BIOS aktivieren; richtige SSD für Slot wählen.
+- Prävention: Vor Kauf Mainboard-Manual prüfen (M.2-Typen).
+
+**Fehler 4: "RAM nicht voll erkannt (z. B. 8 GB statt 16 GB)"**
+- Symptom: Windows zeigt weniger RAM als verbaut.
+- Ursache: 32-Bit OS; RAM-Modul nicht richtig eingesetzt; defekter Slot; Speicher für iGPU reserviert.
+- Diagnose: `msinfo32` → Installierter physischer Speicher vs. verfügbar; Geräte-Manager.
+- Lösung: 64-Bit OS; RAM neu einsetzen; Slot wechseln; iGPU-Speicher im BIOS reduzieren.
+- Prävention: 64-Bit OS; RAM-Kompatibilität prüfen.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Welcher Formfaktor ist der größte Standard-Mainboard?
+   a) Mini-ITX
+   b) microATX
+   c) ATX ✓
+   d) SODIMM
+
+2. Was ist der Unterschied zwischen SATA-SSD und NVMe-SSD?
+   a) Keiner
+   b) NVMe nutzt PCIe und ist deutlich schneller ✓
+   c) SATA ist schneller
+   d) NVMe ist nur für Laptops
+
+3. Was bedeutet ECC bei RAM?
+   a) Extra Cache Capacity
+   b) Error-Correcting Code (Fehlerkorrektur) ✓
+   c) Enhanced Clock Cycle
+   d) Extended Capacity
+
+4. Was ist POST?
+   a) Power-On Self Test – Hardware-Prüfung beim Start ✓
+   b) Post-Boot Operating System Test
+   c) Peripheral Output System Test
+   d) Power Output System Test
+
+5. Welche RAM-Generation ist aktueller Standard (2025/2026)?
+   a) DDR3
+   b) DDR4
+   c) DDR5 ✓
+   d) DDR2
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #3001:** "User: 'Mein PC startet nicht mehr. Ich habe gestern eine neue Grafikkarte eingebaut. Jetzt kommt kein Bild.'"
+
+**Lösung (aufklappbar):**
+1. Informationen sammeln: Welche GPU? Wurde alter Treiber deinstalliert? Netzteilkabel an GPU angeschlossen?
+2. Basis-Checks: Monitor an richtige GPU angeschlossen (nicht Mainboard); GPU richtig im Slot; PCIe-Power-Kabel angeschlossen.
+3. BIOS prüfen: Boot-Reihenfolge, GPU-Erkennung.
+4. Test: Alte GPU wieder einbauen → funktioniert? Dann Problem mit neuer GPU (Treiber, Defekt, Strom).
+5. Wenn alte GPU funktioniert: Neue GPU testen in anderem PC (Defekt?) oder Treiber installieren.
+6. Dokumentieren; User informieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Allgemein (Hardware)
+- Quellen: CompTIA A+ V15 Exam Objectives (Core 1) – Hardware-Domain
+- UNGEPRÜFT: Exakte TDP/Wattage-Werte, Beep-Code-Tabellen (herstellerabhängig)
+- UNGEPRÜFT: RAM-Timings/Preise (Markt variabel)

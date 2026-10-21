@@ -1,0 +1,169 @@
+---
+title: "Modul 8 – Lektion 1: Remote-Support-Workflow (Vorbereitung bis Abschluss)"
+level: 1
+module: 8
+slug: "modul-8-remote-01-workflow"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100)"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "https://assets.ctfassets.net/82ripq7fjls2/6I8WL66IBa1AUovioDGrnM/f74a7eca336fd4e4c8e723a1f893086d/CompTIA-A-220-1202-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 8 – Lektion 1: Remote-Support-Workflow (Vorbereitung bis Abschluss)
+
+## 1. Lernziele
+- Du kannst einen Remote-Support-Session von Anfang bis Ende durchführen.
+- Du kennst die Vorbereitungsschritte (Identität, Erlaubnis, Tool-Auswahl).
+- Du kannst die Session sicher und professionell durchführen.
+- Du kannst die Session dokumentieren und abschließen.
+
+## 2. Theorie kompakt
+
+**Remote-Support-Workflow (7 Phasen):**
+
+1. **Vorbereitung:**
+   - Ticket prüfen (Symptom, User, PC-Name, Standort).
+   - Tool auswählen (Quick Assist, RDP, TeamViewer, etc.).
+   - User kontaktieren (Telefon/Chat); Identität prüfen.
+   - Erlaubnis einholen ("Darf ich auf Ihren Bildschirm zugreifen?").
+
+2. **Verbindungsaufbau:**
+   - Tool starten; Code/Link an User senden.
+   - User führt Schritte aus (Code eingeben, Freigabe erteilen).
+   - Verbindung testen (Bildschirm sichtbar? Steuerung möglich?).
+
+3. **Diagnose:**
+   - User fragen, was passiert ist (nicht einfach übernehmen).
+   - Systeminfo prüfen (`msinfo32`, `ipconfig`, Event Viewer).
+   - Problem reproduzieren (User zeigen lassen).
+
+4. **Lösung:**
+   - Schritt-für-Schritt erklären, was man tut.
+   - User mitnehmen ("Ich öffne jetzt die Einstellungen...").
+   - Bei riskanten Änderungen: User fragen ("Darf ich den PC neu starten?").
+
+5. **Verifikation:**
+   - Problem gelöst? User bestätigt.
+   - Andere Funktionen prüfen (Regression).
+   - User fragen: "Funktioniert alles wie erwartet?"
+
+6. **Abschluss:**
+   - Zusammenfassung ("Wir haben X gemacht, Problem gelöst").
+   - Ticket-Nummer nennen.
+   - Rückfrage anbieten ("Bei weiteren Fragen...").
+   - Verbindung beenden.
+
+7. **Dokumentation:**
+   - Ticket aktualisieren (Schritte, Lösung, Zeitstempel).
+   - KB-Artikel erstellen (falls wiederkehrend).
+
+**Kommunikation während Remote-Support:**
+- **Erklären:** Was man tut ("Ich öffne jetzt den Geräte-Manager").
+- **Fragen:** "Was sehen Sie auf Ihrem Bildschirm?"
+- **Warten:** User Zeit geben, Schritte auszuführen.
+- **Bestätigen:** "Haben Sie das gesehen? Funktioniert es?"
+- **Nicht übernehmen ohne Erklärung:** User fühlt sich sonst ausgeschlossen.
+
+**Sicherheitsregeln:**
+- Keine Passwörter im Klartext übertragen.
+- Session nach Abschluss beenden (keine offenen Verbindungen).
+- Keine sensiblen Daten auf User-PC hinterlassen.
+- Bei Verdacht auf Kompromittierung: Session abbrechen, Incident melden.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Remote-Support-Session simulieren (Rollenspiel).
+
+Schritte:
+1. Partner (oder selbst) spielt User mit Problem (z. B. "Drucker druckt nicht").
+2. Supporter: Identität prüfen, Erlaubnis einholen, Tool auswählen.
+3. Verbindung aufbauen (Simulation: Bildschirmfreigabe oder RDP in VM).
+4. Diagnose durchführen (User zeigen lassen).
+5. Lösung implementieren (erklären, was man tut).
+6. Verifikation (User bestätigt).
+7. Abschluss (Zusammenfassung, Ticket-Nummer).
+8. Dokumentation (Ticket aktualisieren).
+
+**Erwartetes Ergebnis:** Remote-Support-Session erfolgreich durchgeführt; Dokumentation vollständig.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Remote-Support ohne Erlaubnis"**
+- Symptom: User erschrocken; Beschwerde; Vertrauensverlust.
+- Ursache: Supporter übernimmt Bildschirm ohne Vorwarnung/Erlaubnis.
+- Diagnose: User-Feedback.
+- Lösung: Entschuldigen; Erlaubnis einholen; Prozess erklären.
+- Prävention: Erlaubnis als Pflichtschritt; Schulung.
+
+**Fehler 2: "Session nicht dokumentiert"**
+- Symptom: Kein Nachvollzug; Ticket unvollständig.
+- Ursache: Supporter dokumentiert nicht während/nach Session.
+- Diagnose: Ticket-Inhalt prüfen.
+- Lösung: Ticket nachträglich ergänzen.
+- Prävention: Dokumentation als Pflicht; Template nutzen.
+
+**Fehler 3: "User nicht mitgenommen – fühlt sich ausgeschlossen"**
+- Symptom: User frustriert; versteht nicht, was passiert.
+- Ursache: Supporter arbeitet still, ohne Erklärung.
+- Diagnose: User-Feedback.
+- Lösung: Erklären, was man tut; User fragen.
+- Prävention: Kommunikationsregeln; Schulung.
+
+**Fehler 4: "Session nicht beendet – Sicherheitsrisiko"**
+- Symptom: Offene Remote-Verbindung nach Abschluss.
+- Ursache: Supporter vergisst, Session zu beenden.
+- Diagnose: Aktive Verbindungen prüfen.
+- Lösung: Session sofort beenden.
+- Prävention: Checkliste; Session-Timeout.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist der erste Schritt im Remote-Support-Workflow?
+   a) Verbindung aufbauen
+   b) Vorbereitung (Ticket prüfen, User kontaktieren, Erlaubnis einholen) ✓
+   c) Lösung implementieren
+   d) Dokumentieren
+
+2. Warum sollte man den User während der Session mitnehmen?
+   a) Um Zeit zu sparen
+   b) Um Vertrauen aufzubauen und User zu informieren ✓
+   c) Um den User zu testen
+   d) Um Fehler zu vermeiden
+
+3. Was gehört zum Abschluss einer Remote-Session?
+   a) Nur Verbindung beenden
+   b) Zusammenfassung, Ticket-Nummer, Rückfrage, Dokumentation ✓
+   c) Nur Dokumentieren
+   d) Nur User informieren
+
+4. Was ist ein Sicherheitsrisiko bei Remote-Support?
+   a) Langsame Verbindung
+   b) Offene Session nach Abschluss ✓
+   c) User-Fragen
+   d) Tool-Auswahl
+
+5. Welches Tool ist für ad-hoc Support ohne Installation geeignet?
+   a) RDP
+   b) Quick Assist ✓
+   c) TeamViewer (Installation nötig)
+   d) Intune Remote Help
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #9001:** "User (Remote, Homeoffice): 'Mein VPN verbindet nicht. Ich kann nicht auf Firmenressourcen zugreifen.'"
+
+**Lösung (aufklappbar):**
+1. Vorbereitung: Ticket prüfen; User kontaktieren; Identität prüfen.
+2. Remote-Session aufbauen (Quick Assist oder RDP über VPN).
+3. Diagnose: VPN-Client-Status; `ipconfig` (VPN-Adapter?); `ping` zu Firmenressource; Event Viewer (VPN-Logs).
+4. Lösungsversuche: VPN neu starten; Credentials prüfen; Zertifikat prüfen; VPN-Server-Status.
+5. Verifikation: VPN verbunden; Firmenressource erreichbar.
+6. Abschluss: Zusammenfassung; Dokumentation.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100)
+- Quellen: Microsoft Learn Windows 11 Overview; CompTIA A+ V15 Exam Objectives (Core 2)
+- UNGEPRÜFT: Remote-Support-Workflow – aus allgemeiner Praxis
+- UNGEPRÜFT: Quick Assist Verfügbarkeit – aus allgemeinem Wissen

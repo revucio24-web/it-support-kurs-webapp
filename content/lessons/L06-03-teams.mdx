@@ -1,0 +1,150 @@
+---
+title: "Modul 6 – Lektion 3: Microsoft Teams (Grundlagen, Troubleshooting)"
+level: 1
+module: 6
+slug: "modul-6-m365-03-teams"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100) + Teams (M365)"
+sources:
+  - "https://learn.microsoft.com/en-us/mem/intune/fundamentals/what-is-intune (Abruf 2026-10-19)"
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+---
+
+# Modul 6 – Lektion 3: Microsoft Teams (Grundlagen, Troubleshooting)
+
+## 1. Lernziele
+- Du kannst Teams-Grundfunktionen erklären (Chat, Kanäle, Meetings, Dateien).
+- Du kannst Teams-Probleme diagnostizieren (Cache, Anmeldung, Audio/Video).
+- Du kannst Teams-Cache leeren und neu installieren.
+- Du kannst Teams-Richtlinien (Admin) erklären.
+
+## 2. Theorie kompakt
+
+**Microsoft Teams – Komponenten:**
+- **Chat:** 1:1 und Gruppenchats.
+- **Kanäle:** Themenbasierte Kanäle in Teams (öffentlich/privat).
+- **Meetings:** Video-/Audio-Konferenzen, Bildschirmfreigabe, Aufzeichnung.
+- **Dateien:** SharePoint/OneDrive-basierte Dateispeicherung pro Team/Kanal.
+- **Apps:** Integration von Drittanbieter-Apps (Planner, Power BI, etc.).
+- **Telefonie:** Teams Phone (Cloud-PBX) – optional.
+
+**Teams-Clients:**
+- **Teams (neu):** Aktuelle Version (seit 2023), WebView2-basiert, schneller.
+- **Teams (klassisch):** Alte Version (wird eingestellt).
+- **Web:** teams.microsoft.com (Browser).
+- **Mobile:** iOS/Android-App.
+
+**Teams-Cache:**
+- Speicherort (UNGEPRÜFT): `%AppData%\Microsoft\Teams` (klassisch) oder `%LocalAppData%\Packages\MSTeams_8wekyb3d8bbwe\LocalCache` (neu).
+- Cache leeren: Teams schließen → Cache-Ordner löschen → Teams neu starten.
+
+**Teams-Troubleshooting:**
+- **Anmeldeproblem:** Konto prüfen (work/school); Cache leeren; Browser-Test (web).
+- **Audio/Video-Problem:** Gerät in Teams-Einstellungen prüfen; Treiber; Berechtigungen (Mikrofon/Kamera in Windows-Einstellungen).
+- **Bildschirmfreigabe:** Berechtigung (Windows: Einstellungen → Datenschutz → Bildschirmaufnahme); Teams-Einstellungen.
+- **Meeting-Beitritt fehlschlägt:** Netzwerk (Firewall/Ports); Teams-Web als Alternative.
+
+**Teams-Admin (Teams Admin Center):**
+- Teams verwalten (erstellen, löschen, Mitglieder).
+- Richtlinien (Messaging, Meeting, App-Setup).
+- Anrufqualität (Call Quality Dashboard).
+
+**Firewall/Ports für Teams:**
+- TCP 443 (HTTPS), UDP 3478-3481 (Media), TCP/UDP diverse.
+- (UNGEPRÜFT: Exakte Port-Liste in Microsoft-Docs verifizieren.)
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Teams-Cache leeren und Audio/Video prüfen.
+
+Schritte:
+1. Teams öffnen → Einstellungen → Geräte → Mikrofon/Lautsprecher/Kamera testen.
+2. Windows-Einstellungen → Datenschutz & Sicherheit → Mikrofon/Kamera → Teams-Berechtigung prüfen.
+3. Cache leeren: Teams beenden (Taskleiste → Rechtsklick → Beenden) → Cache-Ordner löschen → Teams neu starten.
+4. Anmeldeproblem simulieren: Cache löschen + Anmeldung mit work/school-Account.
+5. Web-Teams testen: teams.microsoft.com im Browser → gleiche Funktionen?
+
+**Erwartetes Ergebnis:** Teams-Cache geleert; Audio/Video funktioniert; Anmeldung erfolgreich.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Teams hängt / lädt nicht"**
+- Symptom: Teams startet nicht oder bleibt beim Ladebildschirm.
+- Ursache: Beschädigter Cache; Netzwerkproblem; veraltete Version.
+- Diagnose: Task-Manager → Teams-Prozesse; Cache-Ordner prüfen.
+- Lösung: Teams beenden; Cache löschen; neu starten; Web-Teams als Alternative.
+- Prävention: Regelmäßiger Cache-Cleanup; Teams aktualisieren.
+
+**Fehler 2: "Mikrofon/Kamera funktioniert nicht in Teams"**
+- Symptom: Andere hören/sehen mich nicht.
+- Ursache: Falsches Gerät in Teams; Windows-Berechtigung fehlt; Treiber.
+- Diagnose: Teams → Einstellungen → Geräte; Windows-Einstellungen → Datenschutz → Mikrofon/Kamera.
+- Lösung: Richtiges Gerät wählen; Berechtigung erteilen; Treiber aktualisieren.
+- Prävention: Vor Meeting Geräte testen; Standardgerät setzen.
+
+**Fehler 3: "Bildschirmfreigabe funktioniert nicht"**
+- Symptom: "Freigabe fehlgeschlagen" oder schwarzer Bildschirm.
+- Ursache: Berechtigung (Windows); Grafiktreiber; Teams-Version.
+- Diagnose: Windows-Einstellungen → Datenschutz → Bildschirmaufnahme.
+- Lösung: Berechtigung erteilen; Teams aktualisieren; Alternative: Einzelfenster statt ganzem Bildschirm teilen.
+- Prävention: Vor Meeting testen; Treiber aktuell halten.
+
+**Fehler 4: "Teams-Meeting-Beitritt schlägt fehl"**
+- Symptom: "Meeting konnte nicht beigetreten werden" / Timeout.
+- Ursache: Netzwerk (Firewall/Ports); Teams-Web als Fallback; veraltete App.
+- Diagnose: Netzwerk prüfen; teams.microsoft.com im Browser testen.
+- Lösung: Web-Teams nutzen; VPN deaktivieren (falls Interferenz); Firewall-Regeln prüfen.
+- Prävention: Netzwerk-Monitoring; Teams aktualisieren.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Wo liegt der Teams-Cache (klassisch, UNGEPRÜFT)?
+   a) C:\Windows\Teams
+   b) %AppData%\Microsoft\Teams ✓
+   c) C:\Program Files\Teams
+   d) C:\Temp\Teams
+
+2. Was ist der erste Schritt bei Teams-Problemen?
+   a) Neu installieren
+   b) Cache leeren ✓
+   c) Windows neu starten
+   d) Support kontaktieren
+
+3. Wo prüft man die Mikrofon-Berechtigung für Teams?
+   a) Nur in Teams
+   b) Windows-Einstellungen → Datenschutz & Sicherheit → Mikrofon ✓
+   c) Geräte-Manager
+   d) Registry
+
+4. Was ist ein Teams-Kanal?
+   a) Ein Chat
+   b) Ein themenbasierter Bereich in einem Team (öffentlich/privat) ✓
+   c) Eine Datei
+   d) Eine App
+
+5. Welche Alternative gibt es, wenn die Teams-App nicht funktioniert?
+   a) Keine
+   b) Teams im Browser (teams.microsoft.com) ✓
+   c) Outlook
+   d) Skype
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #7003:** "User: 'In Teams kann mich niemand hören. Mein Mikrofon funktioniert in anderen Apps.'"
+
+**Lösung (aufklappbar):**
+1. Teams → Einstellungen → Geräte → Mikrofon prüfen (richtiges Gerät ausgewählt?).
+2. Pegel-Test in Teams (Mikrofon-Symbol beim Sprechen).
+3. Windows-Einstellungen → Datenschutz → Mikrofon → Teams-Berechtigung prüfen.
+4. Wenn Teams-Berechtigung fehlt: aktivieren.
+5. Cache leeren; Teams neu starten.
+6. Wenn immer noch nicht: Teams-Web testen; Treiber aktualisieren.
+7. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100) + Teams (M365)
+- Quellen: Microsoft Learn (Intune Fundamentals); Microsoft Learn Windows 11 Overview
+- UNGEPRÜFT: Teams-Cache-Pfade (klassisch/neu) – versionssabhängig
+- UNGEPRÜFT: Teams-Firewall-Ports – in Microsoft-Docs verifizieren
+- UNGEPRÜFT: Teams Admin Center Funktionen – in Microsoft-Docs verifizieren

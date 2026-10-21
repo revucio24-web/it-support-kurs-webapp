@@ -1,0 +1,161 @@
+---
+title: "Modul 1 – Lektion 5: Eskalation"
+level: 1
+module: 1
+slug: "modul-1-grundlagen-05-eskalation"
+last_verified: "2026-10-19"
+windows_version: "Allgemein (kein OS-spezifisch)"
+sources:
+  - "https://www.peoplecert.org/browse-certifications/it-governance-and-service-management/ITIL-1/itil-4-foundation-2565 (Abruf 2026-10-19)"
+---
+
+# Modul 1 – Lektion 5: Eskalation
+
+## 1. Lernziele
+- Du kannst funktionale und hierarchische Eskalation unterscheiden.
+- Du kennst die Eskalationskriterien (wann eskalieren).
+- Du kannst eine Eskalation vollständig dokumentieren.
+- Du kannst eine Eskalation an Level 2/3 durchführen.
+
+## 2. Theorie kompakt
+
+**Eskalationstypen:**
+
+| Typ | Definition | Wann |
+|---|---|---|
+| **Funktionale Eskalation** | Weitergabe an eine andere Gruppe/Person mit mehr Expertise | Problem erfordert spezifisches Wissen (Netzwerk, DB, Anwendung), das Level 1 nicht hat |
+| **Hierarchische Eskalation** | Weitergabe an Management/Vorgesetzten | SLA-Gefahr, User-Beschwerde, Ressourcenkonflikt, politische Sensibilität |
+
+**Eskalationskriterien (wann eskalieren):**
+1. **Technisch:** Problem außerhalb der eigenen Expertise oder Tools.
+2. **SLA:** Gefahr der SLA-Verletzung (z. B. 80% der Zeit verbraucht).
+3. **Impact:** Hoher Impact (Abteilung/Unternehmen betroffen).
+4. **Wiederkehrend:** Problem tritt wiederholt auf (→ Problem-Management).
+5. **Sicherheit:** Sicherheitsvorfall (Phishing, Datenleck, Malware).
+6. **User-Druck:** User eskaliert an Management (hierarchisch).
+7. **Ressourcen:** Benötigte Ressourcen nicht verfügbar (Zugriff, Hardware).
+
+**Eskalationsprozess (Schritte):**
+1. **Erkennen:** Kriterium erfüllt? → Entscheidung eskalieren.
+2. **Dokumentieren:** Vollständige Ticket-Dokumentation (siehe unten).
+3. **Zuweisen:** Ticket an Level 2/3 oder Management zuweisen.
+4. **Informieren:** User über Eskalation und nächste Schritte informieren.
+5. **Übergabe:** Persönliche Übergabe (Telefon/Chat) bei komplexen Fällen.
+6. **Nachverfolgen:** Status prüfen; bei Bedarf nachfassen.
+7. **Schließen:** Nach Lösung durch Level 2/3: User informieren, Ticket schließen.
+
+**Eskalations-Checkliste (Dokumentation vor Übergabe):**
+- **Symptom:** Was genau passiert? (Fehlermeldung, Wortlaut)
+- **Betroffener User/System:** Name, PC-Name, Standort
+- **Zeitpunkt:** Seit wann? Nach welcher Änderung?
+- **Schritte bereits versucht:** Was hat Level 1 probiert? (mit Ergebnis)
+- **Systeminfo:** OS-Version/Build, Hardware, Netzwerk, IP
+- **Impact/Urgency/Priority:** Klassifizierung
+- **User-Kontakt:** Telefon, E-Mail
+- **SLA-Status:** Wie viel Zeit verbleibt?
+
+**Eskalationsmatrix (Beispiel):**
+
+| Priorität | Eskalation nach | Zeitrahmen |
+|---|---|---|
+| P1 (Critical) | Sofort an Level 2/3 + IT-Management | Sofort (innerhalb 15 Min) |
+| P2 (High) | Level 2 innerhalb 1 h | 1 h |
+| P3 (Medium) | Level 2 wenn Level 1 nicht löst | 4 h |
+| P4 (Low) | Level 2 bei Bedarf | 24 h |
+
+**Wichtig:** Eskalation ist KEIN Versagen. Es ist der richtige Prozess, um den User bestmöglich zu bedienen. Lieber früh eskalieren als SLA verletzen.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Eine Eskalation durchführen (Simulation).
+
+Schritte:
+1. Nimm Ticket #2004 (E-Mail down, P1) aus L01-04.
+2. Fülle die Eskalations-Checkliste aus.
+3. Simuliere die Übergabe an Level 2: "Ich übergebe Ticket #2004 an Level 2. Symptom: ... Schritte versucht: ... Systeminfo: ... SLA verbleibend: 2 h."
+4. Informiere den User: "Ich habe das an unser spezialisiertes Team weitergeleitet. Sie werden sich innerhalb von 30 Minuten melden."
+5. Dokumentiere im Ticket: Eskalation an Level 2, Zeitstempel, Grund.
+
+**Erwartetes Ergebnis:** Vollständige Eskalations-Dokumentation; User informiert; Ticket korrekt zugewiesen.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Zu spät eskaliert → SLA-Verletzung"**
+- Symptom: Ticket überschreitet SLA; Kunde unzufrieden.
+- Ursache: Supporter hat zu lange versucht, selbst zu lösen.
+- Diagnose: Ticket-Timeline prüfen.
+- Lösung: Eskalation nachholen; User informieren; Maßnahmen.
+- Prävention: Klare Eskalationskriterien; "Eskalation ist kein Versagen"; Review.
+
+**Fehler 2: "Eskalation ohne Dokumentation"**
+- Symptom: Level 2 muss von vorne anfangen; Zeitverlust.
+- Ursache: Supporter hat Ticket nur mit "Funktioniert nicht" weitergeleitet.
+- Diagnose: Ticket-Inhalt prüfen.
+- Lösung: Ticket nachträglich mit Checkliste ergänzen.
+- Prävention: Pflicht-Checkliste vor Eskalation; System erzwingt Felder.
+
+**Fehler 3: "User nicht informiert über Eskalation"**
+- Symptom: User wartet, weiß nicht, was passiert; Beschwerde.
+- Ursache: Supporter eskaliert, informiert aber User nicht.
+- Diagnose: User-Feedback.
+- Lösung: User kontaktieren, Status erklären, nächste Schritte nennen.
+- Prävention: Eskalationsprozess inkl. User-Kommunikation; Checkliste.
+
+**Fehler 4: "Hierarchische Eskalation bei technischem Problem"**
+- Symptom: Management wird eingeschaltet, obwohl technische Lösung ausreicht; Ressourcenverschwendung.
+- Ursache: Supporter verwechselt Eskalationstypen.
+- Diagnose: Eskalationsgrund prüfen.
+- Lösung: Rückstufung auf funktionale Eskalation; Management informieren.
+- Prävention: Schulung zu Eskalationstypen; klare Prozesse.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist funktionale Eskalation?
+   a) Weitergabe an Management
+   b) Weitergabe an eine Gruppe/Person mit mehr Expertise ✓
+   c) Ticket schließen
+   d) User informieren
+
+2. Was ist hierarchische Eskalation?
+   a) Weitergabe an Experten
+   b) Weitergabe an Management/Vorgesetzten ✓
+   c) Ticket löschen
+   d) User blockieren
+
+3. Wann sollte man eskalieren (Eskalationskriterium)?
+   a) Nur bei P1
+   b) Bei technischer Überforderung, SLA-Gefahr, hohem Impact, Sicherheitsvorfall, wiederkehrendem Problem ✓
+   c) Nie
+   d) Immer sofort
+
+4. Was gehört in eine Eskalations-Checkliste?
+   a) Nur Titel
+   b) Symptom, Schritte versucht, Systeminfo, User-Kontakt, SLA-Status ✓
+   c) Passwort des Users
+   d) Nichts
+
+5. Ist Eskalation ein Versagen?
+   a) Ja
+   b) Nein – es ist der richtige Prozess, um den User bestmöglich zu bedienen ✓
+   c) Nur bei P1
+   d) Nur bei Level 1
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #2005:** "User (frustriert): 'Ich habe schon dreimal angerufen und immer noch keine Lösung! Ich spreche jetzt mit Ihrem Chef!' Du bist Level 1."
+
+**Lösung (aufklappbar):**
+1. Empathie: "Ich verstehe Ihre Frustration. Lassen Sie mich das sofort klären."
+2. Ticket-Historie prüfen: Was wurde bisher versucht? Warum nicht gelöst?
+3. Hierarchische Eskalation: Vorgesetzten informieren; User über Eskalation informieren.
+4. Funktionale Eskalation: Ticket an Level 2 mit vollständiger Doku.
+5. User informieren: "Ich habe das an meinen Vorgesetzten und das spezialisierte Team weitergeleitet. Jemand meldet sich innerhalb von X Minuten."
+6. Dokumentieren: User-Verhalten, Maßnahmen, Zeitstempel.
+7. Nachverfolgen: Status prüfen; bei Bedarf nachfassen.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Allgemein (kein OS-spezifisch)
+- Quellen: ITIL 4 Foundation (PeopleCert/AXELOS) – Incident Management Praxis (Eskalation)
+- UNGEPRÜFT: Exakte ITIL 4 Eskalationsdefinitionen (Wortlaut) – aus Syllabus, nicht Primärtext
+- UNGEPRÜFT: Eskalationsmatrix (Beispiel) – organisationsabhängig

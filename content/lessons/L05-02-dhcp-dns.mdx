@@ -1,0 +1,148 @@
+---
+title: "Modul 5 – Lektion 2: DHCP und DNS"
+level: 1
+module: 5
+slug: "modul-5-netzwerk-02-dhcp-dns"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100)"
+sources:
+  - "https://assets.ctfassets.net/82ripq7fjls2/1oSdlyujpaX3GrM0rir6Ge/91afb2be72785281e8fb4c0d9a70c6f4/CompTIA-A-220-1201-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+---
+
+# Modul 5 – Lektion 2: DHCP und DNS
+
+## 1. Lernziele
+- Du kannst erklären, wie DHCP IP-Adressen vergibt (DORA-Prozess).
+- Du kannst DNS-Auflösung erklären (rekursiv/iterativ).
+- Du kannst DHCP- und DNS-Probleme diagnostizieren.
+- Du kannst DHCP/DNS in Windows prüfen und reparieren.
+
+## 2. Theorie kompakt
+
+**DHCP (Dynamic Host Configuration Protocol):**
+- Automatische Vergabe von IP-Adresse, Subnetzmaske, Gateway, DNS-Server.
+- **DORA-Prozess:**
+  1. **Discover:** Client broadcastet "Ich brauche eine IP" (DHCPDISCOVER).
+  2. **Offer:** DHCP-Server bietet IP an (DHCPOFFER).
+  3. **Request:** Client fordert die angebotene IP an (DHCPREQUEST).
+  4. **Acknowledge:** Server bestätigt (DHCPACK).
+- **Lease:** IP wird für eine bestimmte Zeit vergeben (z. B. 8 Tage). Verlängerung bei 50% der Lease-Zeit.
+- **DHCP-Server:** Router (Heimnetz) oder Windows Server (Unternehmen).
+- **DHCP-Relay:** Weiterleitung von DHCP-Requests über Router (für VLANs).
+
+**DNS (Domain Name System):**
+- Übersetzt Domainnamen (google.com) in IP-Adressen (142.250.x.x).
+- **Hierarchie:** Root (.) → TLD (.com) → Domain (google) → Subdomain (www).
+- **Namensserver-Typen:**
+  - **Rekursiver Resolver:** Fragt im Auftrag des Clients (z. B. Router, 8.8.8.8).
+  - **Autoritativer Server:** Hat die endgültige Antwort (z. B. Google's DNS).
+- **Record-Typen:**
+  - **A:** IPv4-Adresse.
+  - **AAAA:** IPv6-Adresse.
+  - **CNAME:** Alias (www → google.com).
+  - **MX:** Mail-Server.
+  - **NS:** Namensserver.
+  - **PTR:** Reverse-Lookup (IP → Name).
+  - **TXT:** Text (SPF, DKIM, etc.).
+- **TTL (Time To Live):** Wie lange ein DNS-Eintrag gecacht wird.
+
+**Windows-DNS-Cache:**
+- `ipconfig /displaydns` → Cache anzeigen.
+- `ipconfig /flushdns` → Cache leeren.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: DHCP und DNS diagnostizieren.
+
+Schritte:
+1. `ipconfig /all` → DHCP-Server, DNS-Server, Lease-Abgelauf (Lease Obtained/Expires) notieren.
+2. `ipconfig /release` → IP freigeben (Verbindung verloren).
+3. `ipconfig /renew` → neue IP anfordern; DORA beobachten (im Wireshark, optional).
+4. `nslookup google.com` → DNS-Auflösung testen; Server anzeigen.
+5. `nslookup -type=MX google.com` → Mail-Server.
+6. `ipconfig /displaydns` → Cache anzeigen.
+7. `ipconfig /flushdns` → Cache leeren; erneut `nslookup`.
+
+**Erwartetes Ergebnis:** DHCP-Lease verstanden; DNS-Auflösung funktioniert; Cache geleert.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "DHCP vergibt keine IP (APIPA)"**
+- Symptom: PC bekommt 169.254.x.x.
+- Ursache: DHCP-Server nicht erreichbar; Kabelproblem; DHCP-Dienst gestoppt.
+- Diagnose: `ipconfig /all` → DHCP-Server leer; `ping` zum Router.
+- Lösung: Kabel prüfen; Router/DHCP-Dienst neu starten; `ipconfig /renew`.
+- Prävention: DHCP-Server-Monitoring; Redundanz (zweiter DHCP).
+
+**Fehler 2: "DNS-Auflösung schlägt fehl"**
+- Symptom: `nslookup google.com` → Timeout oder Server not found.
+- Ursache: DNS-Server falsch/offline; Firewall blockiert Port 53.
+- Diagnose: `nslookup google.com 8.8.8.8` → mit anderem Server testen.
+- Lösung: DNS-Server ändern (8.8.8.8); Firewall prüfen (Port 53 UDP/TCP).
+- Prävention: Zuverlässige DNS-Server; redundant.
+
+**Fehler 3: "DHCP-Lease abgelaufen – keine Verbindung"**
+- Symptom: Plötzlich keine IP; Lease abgelaufen.
+- Ursache: DHCP-Server nicht erreichbar bei Verlängerung (50% der Lease-Zeit).
+- Diagnose: `ipconfig /all` → Lease Expires in der Vergangenheit.
+- Lösung: `ipconfig /renew`; DHCP-Server prüfen.
+- Prävention: DHCP-Server-Verfügbarkeit; längere Lease-Zeit.
+
+**Fehler 4: "DNS-Cache vergiftet (DNS Spoofing)"**
+- Symptom: Falsche IP für bekannte Domain; Phishing-Verdacht.
+- Ursache: Manipulierter DNS-Cache (Malware, MITM).
+- Diagnose: `ipconfig /displaydns` → verdächtige Einträge.
+- Lösung: `ipconfig /flushdns`; Malware-Scan; DNS-Server prüfen.
+- Prävention: Sichere DNS-Server (DoH/DoT); Malware-Schutz.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist der DORA-Prozess?
+   a) Discover, Offer, Request, Acknowledge ✓
+   b) Detect, Open, Run, Analyze
+   c) DHCP, Offer, Resolve, Assign
+   d) DNS, Open, Request, Accept
+
+2. Was macht ein A-Record?
+   a) Alias
+   b) IPv4-Adresse für einen Domainnamen ✓
+   c) Mail-Server
+   d) Namensserver
+
+3. Was ist die TTL bei DNS?
+   a) Time To Live – wie lange ein Eintrag gecacht wird ✓
+   b) Total Transfer Length
+   c) Transmission Time Limit
+   d) Trusted Transport Layer
+
+4. Wie leert man den DNS-Cache in Windows?
+   a) `ipconfig /renew`
+   b) `ipconfig /flushdns` ✓
+   c) `ipconfig /release`
+   d) `ipconfig /all`
+
+5. Was passiert bei DHCP-Ausfall?
+   a) Keine IP
+   b) APIPA (169.254.x.x) ✓
+   c) Statische IP automatisch
+   d) Kein Internet, aber IP
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #6002:** "User: 'Mein PC hat keine IP-Adresse mehr. Ich kann nichts im Netzwerk erreichen.'"
+
+**Lösung (aufklappbar):**
+1. `ipconfig /all` → IP prüfen (169.254.x.x = APIPA = DHCP-Problem).
+2. `ipconfig /release` + `/renew` → neue IP anfordern.
+3. Wenn weiterhin APIPA: Kabel prüfen; DHCP-Server (Router) prüfen; anderer PC im gleichen Netz testen.
+4. Falls DHCP-Server down: Statische IP als Workaround (mit korrektem Subnetz/Gateway/DNS).
+5. Dokumentieren; Ursache beheben (Router-Neustart, DHCP-Dienst).
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100)
+- Quellen: CompTIA A+ V15 Exam Objectives (Core 1) – Networking; Microsoft Learn Windows 11 Overview
+- UNGEPRÜFT: DORA-Prozess Details – aus allgemeinem Wissen
+- UNGEPRÜFT: DNS-Record-Typen – aus allgemeinem Wissen; in RFC/Microsoft-Docs verifizieren
+- UNGEPRÜFT: DHCP-Lease-Zeiten (Standard) – variabel

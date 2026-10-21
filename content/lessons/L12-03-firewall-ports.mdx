@@ -1,0 +1,167 @@
+---
+title: "Modul 12 – Lektion 3: Firewall und Ports"
+level: 2
+module: 12
+slug: "modul-12-netzwerk-tiefe-03-firewall-ports"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100)"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "https://assets.ctfassets.net/82ripq7fjls2/6I8WL66IBa1AUovioDGrnM/f74a7eca336fd4e4c8e723a1f893086d/CompTIA-A-220-1202-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 12 – Lektion 3: Firewall und Ports
+
+## 1. Lernziele
+- Du kannst die Windows Defender Firewall konfigurieren.
+- Du kannst wichtige Ports (TCP/UDP) zuordnen.
+- Du kannst Firewall-Regeln erstellen und verwalten.
+- Du kannst Firewall-Probleme diagnostizieren.
+
+## 2. Theorie kompakt
+
+**Windows Defender Firewall:**
+- Stateful Firewall (verfolgt Verbindungsstatus).
+- Profile: Domain, Private, Public (unterschiedliche Regeln pro Profil).
+- Eingehende Regeln: Standardmäßig blockieren (außer erlaubt).
+- Ausgehende Regeln: Standardmäßig erlauben (außer blockiert).
+- Verwaltung: `wf.msc` (Windows Firewall with Advanced Security) oder PowerShell.
+
+**Wichtige Ports:**
+
+| Port | Protokoll | Dienst |
+|---|---|---|
+| 20/21 | TCP | FTP (Data/Control) |
+| 22 | TCP | SSH |
+| 23 | TCP | Telnet (unsicher) |
+| 25 | TCP | SMTP (E-Mail senden) |
+| 53 | TCP/UDP | DNS |
+| 80 | TCP | HTTP |
+| 110 | TCP | POP3 (E-Mail empfangen) |
+| 143 | TCP | IMAP |
+| 389 | TCP/UDP | LDAP (AD) |
+| 443 | TCP | HTTPS |
+| 445 | TCP | SMB (Dateifreigabe) |
+| 636 | TCP | LDAPS (LDAP über SSL) |
+| 993 | TCP | IMAPS |
+| 995 | TCP | POP3S |
+| 1433 | TCP | MS SQL Server |
+| 1723 | TCP | PPTP (VPN) |
+| 3306 | TCP | MySQL |
+| 3389 | TCP/UDP | RDP |
+| 5060/5061 | TCP/UDP | SIP (VoIP) |
+| 8080 | TCP | HTTP (Proxy/Alt) |
+
+**Firewall-Regeln (wf.msc):**
+- Eingehende Regeln: Programme, Ports, vordefinierte.
+- Ausgehende Regeln: Programme, Ports.
+- Verbindungssicherheitsregeln: IPSec.
+- Überwachung: Aktive Verbindungen, Firewall-Profile.
+
+**PowerShell-Firewall-Befehle:**
+- `Get-NetFirewallRule` – Regeln auflisten.
+- `New-NetFirewallRule -DisplayName "Allow Port 8080" -Direction Inbound -Protocol TCP -LocalPort 8080 -Action Allow` – Regel erstellen.
+- `Enable-NetFirewallRule -DisplayName "..."` / `Disable-NetFirewallRule`.
+- `Remove-NetFirewallRule -DisplayName "..."`.
+
+**Firewall-Troubleshooting:**
+- Port blockiert? → `Test-NetConnection <Host> -Port <Port>` (PowerShell).
+- Firewall-Profil prüfen (Domain/Private/Public).
+- Regel vorhanden und aktiv?
+- Drittanbieter-Firewall (z. B. von AV) aktiv?
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Firewall-Regeln erstellen und testen.
+
+Schritte:
+1. `wf.msc` öffnen → Eingehende Regeln prüfen.
+2. Neue Regel erstellen: "Eingehende Regel" → Port → TCP → 8080 → "Verbindung zulassen" → Alle Profile → Name "Lab-Port-8080".
+3. Regel aktivieren.
+4. Test: `Test-NetConnection localhost -Port 8080` (PowerShell) → Port erreichbar?
+5. Regel deaktivieren → Test erneut (sollte fehlschlagen).
+6. PowerShell: `Get-NetFirewallRule | Where-Object DisplayName -like "*Lab*"`.
+7. Aufräumen: Regel löschen.
+
+**Erwartetes Ergebnis:** Firewall-Regel erstellt; Port geöffnet/geschlossen; Test erfolgreich.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Port blockiert – Anwendung funktioniert nicht"**
+- Symptom: Anwendung kann nicht kommunizieren; "Verbindung abgelehnt".
+- Ursache: Firewall blockiert Port.
+- Diagnose: `Test-NetConnection <Host> -Port <Port>`; `wf.msc` → Regeln prüfen.
+- Lösung: Regel erstellen (Port zulassen); oder Anwendung in Ausnahmen hinzufügen.
+- Prävention: Firewall-Regeln dokumentieren; bei Installation Ports prüfen.
+
+**Fehler 2: "Falsches Firewall-Profil – Regeln nicht wirksam"**
+- Symptom: Regel erstellt, aber nicht wirksam.
+- Ursache: Regel für anderes Profil (z. B. Domain, aber PC im Private-Profil).
+- Diagnose: `Get-NetConnectionProfile` → aktives Profil.
+- Lösung: Regel für alle Profile oder korrektes Profil erstellen.
+- Prävention: Profil vor Regel-Erstellung prüfen.
+
+**Fehler 3: "Drittanbieter-Firewall blockiert – Windows Firewall deaktiviert"**
+- Symptom: Windows Firewall deaktiviert, aber Anwendung blockiert.
+- Ursache: Drittanbieter-Firewall (z. B. von AV) aktiv.
+- Diagnose: Windows-Sicherheit → Firewall-Status; installierte Software.
+- Lösung: Drittanbieter-Firewall konfigurieren oder deinstallieren.
+- Prävention: Eine Firewall nutzen; Dokumentation.
+
+**Fehler 4: "Firewall-Regel zu breit – Sicherheitsrisiko"**
+- Symptom: Port für alle IPs geöffnet; Sicherheitsrisiko.
+- Ursache: Regel ohne Einschränkung (Any/Any).
+- Diagnose: Regel-Details prüfen (Remote-IP, Port).
+- Lösung: Regel einschränken (nur bestimmte IPs/Subnetze).
+- Prävention: Least Privilege; Regel-Review.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Auf welchem Port läuft HTTPS?
+   a) 80
+   b) 443 ✓
+   c) 8080
+   d) 21
+
+2. Auf welchem Port läuft RDP?
+   a) 22
+   b) 445
+   c) 3389 ✓
+   d) 53
+
+3. Auf welchem Port läuft DNS?
+   a) 80
+   b) 443
+   c) 53 ✓
+   d) 25
+
+4. Was ist der Standard für eingehende Regeln in Windows Firewall?
+   a) Erlauben
+   b) Blockieren ✓
+   c) Ignorieren
+   d) Fragen
+
+5. Wie testet man, ob ein Port erreichbar ist (PowerShell)?
+   a) `ping`
+   b) `Test-NetConnection <Host> -Port <Port>` ✓
+   c) `ipconfig`
+   d) `nslookup`
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #13003:** "User: 'Ich kann nicht auf den Dateiserver (\\\\server) zugreifen. Andere können.'"
+
+**Lösung (aufklappbar):**
+1. `Test-NetConnection server -Port 445` → Port erreichbar?
+2. Wenn nicht: Firewall auf Client prüfen (ausgehende SMB-Regel?); Firewall auf Server (eingehende 445?).
+3. Wenn Port erreichbar: Berechtigungen prüfen (NTFS + Share).
+4. Wenn Berechtigungen OK: Netzwerk (VLAN, Routing) prüfen.
+5. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100)
+- Quellen: Microsoft Learn Windows 11 Overview; CompTIA A+ V15 Exam Objectives (Core 1/2)
+- UNGEPRÜFT: Port-Liste (Standard-Ports) – aus allgemeinem Wissen; in IANA-RFC verifizieren
+- UNGEPRÜFT: wf.msc/PowerShell-Firewall-Syntax – in Lab verifizieren
+- UNGEPRÜFT: Firewall-Profile (Domain/Private/Public) – in Lab verifizieren

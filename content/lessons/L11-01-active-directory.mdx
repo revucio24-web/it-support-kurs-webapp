@@ -1,0 +1,170 @@
+---
+title: "Modul 11 – Lektion 1: Active Directory Grundlagen"
+level: 2
+module: 11
+slug: "modul-11-ad-gpo-01-active-directory-grundlagen"
+last_verified: "2026-10-19"
+windows_version: "Windows Server 2022 (Evaluation) + Windows 11 24H2 (Client)"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "https://assets.ctfassets.net/82ripq7fjls2/6I8WL66IBa1AUovioDGrnM/f74a7eca336fd4e4c8e723a1f893086d/CompTIA-A-220-1202-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 11 – Lektion 1: Active Directory Grundlagen
+
+## 1. Lernziele
+- Du kannst Active Directory (AD) und seine Komponenten erklären.
+- Du kannst AD DS, AD LDS, AD CS, AD FS unterscheiden.
+- Du kannst Domänen, Gesamtstrukturen (Forests) und Standorte erklären.
+- Du kannst Benutzer und Computer in AD verwalten.
+
+## 2. Theorie kompakt
+
+**Active Directory (AD):** Verzeichnisdienst von Microsoft für Windows-Domänennetzwerke. Speichert Informationen über Benutzer, Computer, Gruppen, Drucker, etc.
+
+**AD-Komponenten:**
+
+| Komponente | Beschreibung |
+|---|---|
+| **AD DS (Domain Services)** | Kern: Authentifizierung, Autorisierung, Verzeichnis |
+| **AD LDS (Lightweight Directory Services)** | LDAP-Verzeichnis ohne Domain (für Apps) |
+| **AD CS (Certificate Services)** | PKI (Zertifikate) |
+| **AD FS (Federation Services)** | Single Sign-On (SSO) für externe Dienste |
+| **AD RMS (Rights Management)** | Informationsrechte-Management (deprecated) |
+
+**AD DS – Struktur:**
+- **Forest (Gesamtstruktur):** Top-Level-Container; enthält eine oder mehrere Domänen.
+- **Domain (Domäne):** Logische Gruppierung von Objekten (User, Computer, Gruppen); gemeinsame Sicherheitsrichtlinien.
+- **Tree (Strukturbaum):** Gruppe von Domänen mit gemeinsamem Namensraum (z. B. contoso.com, europe.contoso.com).
+- **OU (Organizational Unit):** Container für Objekte; für Delegation und GPO-Anwendung.
+- **Site (Standort):** Physischer Standort (für Replikation und Authentifizierung).
+- **Domain Controller (DC):** Server, der AD DS hostet; authentifiziert User; repliziert Daten.
+
+**AD-Objekte:**
+- **User:** Benutzerkonten.
+- **Computer:** Computerkonten.
+- **Group:** Sicherheitsgruppen (für Berechtigungen) und Verteilergruppen.
+- **OU:** Organizational Units.
+- **GPO:** Group Policy Objects (verknüpft mit Domain/OU).
+
+**Gruppentypen:**
+- **Sicherheitsgruppen:** Für Berechtigungen (Zugriff auf Ressourcen).
+- **Verteilergruppen:** Für E-Mail-Verteiler (Exchange).
+
+**Gruppenbereiche:**
+- **Domain Local:** Nur in der eigenen Domain; für Ressourcen-Berechtigungen.
+- **Global:** In der eigenen Domain; für Benutzer/Gruppen; kann in andere Domains vertrauen.
+- **Universal:** Forest-weit; für Benutzer in mehreren Domains.
+
+**AD-Verwaltungstools:**
+- **Active Directory Users and Computers (ADUC):** `dsa.msc` – User, Computer, Gruppen, OUs verwalten.
+- **Active Directory Administrative Center (ADAC):** Moderne UI (PowerShell-basiert).
+- **Group Policy Management (GPMC):** `gpmc.msc` – GPOs verwalten.
+- **Active Directory Sites and Services:** `dssite.msc` – Standorte, Replikation.
+- **Active Directory Domains and Trusts:** `domain.msc` – Vertrauensstellungen.
+
+**DNS und AD:**
+- AD nutzt DNS für Service Location (SRV-Records, z. B. `_ldap._tcp.dc._msdcs.lab.local`).
+- DC muss DNS-Server sein (oder DNS-Server muss AD unterstützen).
+- Ohne DNS funktioniert AD nicht (Domain Join, Authentifizierung).
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: AD DS installieren und Basis-Verwaltung (in VM).
+
+Schritte (in Windows Server VM, aus Modul 0 L00-06):
+1. Server Manager → "Rollen und Features hinzufügen" → "Active Directory-Domänendienste" + "DNS-Server" → Installieren.
+2. Nach Installation: "Zu Domain Controller heraufstufen" → "Neue Gesamtstruktur hinzufügen" → Root-Domain: `lab.local`.
+3. DSRM-Passwort setzen → Installieren → Neustart.
+4. Anmelden als `LAB\Administrator`.
+5. `dsa.msc` (ADUC) öffnen → Struktur prüfen (Users, Computers, Domain Controllers).
+6. Neuen User erstellen: Rechtsklick auf "Users" → "Neu" → "Benutzer" → Name, Passwort.
+7. Neue OU erstellen: Rechtsklick auf Domain → "Neu" → "Organisationseinheit" → Name.
+8. User in OU verschieben.
+
+**Erwartetes Ergebnis:** AD DS installiert; Domain `lab.local` existiert; User und OU erstellt.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Domain Join schlägt fehl – DNS name does not exist"**
+- Symptom: Client kann `lab.local` nicht joinen.
+- Ursache: Client nutzt falschen DNS (Router statt DC).
+- Diagnose: `ipconfig /all` auf Client → DNS-Server; `nslookup lab.local`.
+- Lösung: Client-DNS auf DC-IP setzen; `ipconfig /flushdns`; erneut joinen.
+- Prävention: DHCP-Scope mit DC als DNS; oder statische IP+DNS auf Client.
+
+**Fehler 2: "AD-Replikation schlägt fehl"**
+- Symptom: Änderungen auf einem DC erscheinen nicht auf anderen.
+- Ursache: Netzwerkproblem; Replikationsfehler; Schema-Konflikt.
+- Diagnose: `repadmin /showrepl` (auf DC); Event Viewer (Directory Service-Log).
+- Lösung: Netzwerk prüfen; `repadmin /syncall`; bei Bedarf DC neu starten.
+- Prävention: Replikations-Monitoring; Netzwerk-Stabilität.
+
+**Fehler 3: "DC nicht als DNS-Server konfiguriert"**
+- Symptom: Domain Join funktioniert nicht; `nslookup` schlägt fehl.
+- Ursache: DC-Netzwerkadapter nutzt externen DNS (nicht sich selbst).
+- Diagnose: `ipconfig /all` auf DC → DNS-Server.
+- Lösung: DC-DNS auf 127.0.0.1 (oder eigene IP) setzen; DNS-Dienst neu starten.
+- Prävention: Bei DC-Promotion DNS automatisch mitinstallieren.
+
+**Fehler 4: "AD-Datenbank beschädigt"**
+- Symptom: DC startet nicht; "Active Directory konnte nicht gestartet werden".
+- Ursache: Datenbank (ntds.dit) beschädigt; Hardware-Defekt.
+- Diagnose: Event Viewer (Directory Service-Log); `ntdsutil`.
+- Lösung: Aus Backup wiederherstellen; oder `ntdsutil` → "files" → "integrity" / "recover".
+- Prävention: Regelmäßige Backups; RAID; UPS.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist eine OU (Organizational Unit)?
+   a) Ein Benutzer
+   b) Ein Container für Objekte (User, Computer, Gruppen) für Delegation und GPO ✓
+   c) Eine Domain
+   d) Ein Server
+
+2. Was ist ein Domain Controller (DC)?
+   a) Ein Client-PC
+   b) Ein Server, der AD DS hostet und User authentifiziert ✓
+   c) Ein Router
+   d) Ein Drucker
+
+3. Welches Tool verwaltet Benutzer und Computer in AD?
+   a) services.msc
+   b) dsa.msc (Active Directory Users and Computers) ✓
+   c) gpmc.msc
+   d) diskmgmt.msc
+
+4. Warum braucht AD DNS?
+   a) Für Internetzugang
+   b) Für Service Location (SRV-Records) und Domain Join ✓
+   c) Für E-Mail
+   d) Für Webseiten
+
+5. Was ist eine Forest (Gesamtstruktur)?
+   a) Ein einzelner Server
+   b) Top-Level-Container für eine oder mehrere Domänen ✓
+   c) Ein Benutzer
+   d) Ein Netzwerk
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #12001:** "User: 'Ich kann mich nicht an der Domain anmelden. Fehlermeldung: Der Domänencontroller für diese Domäne konnte nicht kontaktiert werden.'"
+
+**Lösung (aufklappbar):**
+1. `ipconfig /all` auf Client → DNS-Server prüfen (muss DC-IP sein).
+2. `nslookup lab.local` → muss DC-IP zurückgeben.
+3. `ping <DC-IP>` → DC erreichbar?
+4. Wenn DNS falsch: auf DC-IP setzen; `ipconfig /flushdns`.
+5. Wenn DC nicht erreichbar: Netzwerk prüfen (Kabel, Switch, VLAN).
+6. DC prüfen: Dienste (NTDS, DNS, Netlogon) laufen? `services.msc`.
+7. `nltest /dsgetdc:lab.local` → DC finden.
+8. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows Server 2022 (Evaluation) + Windows 11 24H2 (Client)
+- Quellen: Microsoft Learn Windows 11 Overview; CompTIA A+ V15 Exam Objectives (Core 2)
+- UNGEPRÜFT: AD-Komponenten (AD LDS, AD CS, AD FS) – aus allgemeinem Wissen
+- UNGEPRÜFT: Gruppentypen und -bereiche – aus allgemeinem Wissen; in Microsoft-Docs verifizieren
+- UNGEPRÜFT: AD-Verwaltungstools (dsa.msc, gpmc.msc) – in Lab verifizieren
+- UNGEPRÜFT: repadmin/nltest-Syntax – in Lab verifizieren

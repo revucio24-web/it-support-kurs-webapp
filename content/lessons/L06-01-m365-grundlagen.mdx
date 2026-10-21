@@ -1,0 +1,150 @@
+---
+title: "Modul 6 – Lektion 1: Microsoft 365 Grundlagen und Konten"
+level: 1
+module: 6
+slug: "modul-6-m365-01-grundlagen-konten"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100)"
+sources:
+  - "https://learn.microsoft.com/en-us/mem/intune/fundamentals/what-is-intune (Abruf 2026-10-19)"
+  - "https://www.microsoft.com/en-ca/security/business/identity-access/microsoft-entra-id (Abruf 2026-10-19)"
+---
+
+# Modul 6 – Lektion 1: Microsoft 365 Grundlagen und Konten
+
+## 1. Lernziele
+- Du kannst Microsoft 365 (M365) und seine Komponenten erklären.
+- Du kannst M365-Konten (work/school) verwalten.
+- Du kannst Passwort-Resets in M365 durchführen.
+- Du kennst die Admin-Center (M365 Admin Center, Entra ID).
+
+## 2. Theorie kompakt
+
+**Microsoft 365 (M365):** Cloud-basierte Produktivitätsplattform. Umfasst:
+- **Office Apps:** Word, Excel, PowerPoint, Outlook, OneNote, Access, Publisher.
+- **Kommunikation:** Exchange Online (E-Mail), Teams (Chat/Meetings), SharePoint (Intranet), OneDrive (Cloud-Speicher).
+- **Sicherheit:** Defender for Office 365, Entra ID (Identität), Intune (Device Management).
+- **Verwaltung:** M365 Admin Center, Entra ID Admin Center, Intune Admin Center.
+
+**Lizenzpläne (vereinfacht):**
+- **M365 Business Basic:** Web-/Mobile-Apps + Exchange/Teams/SharePoint/OneDrive.
+- **M365 Business Standard:** Desktop-Apps + alles aus Basic.
+- **M365 Business Premium:** Standard + Intune + Defender for Business.
+- **M365 E3/E5:** Enterprise-Pläne (mehr Sicherheit/Compliance).
+
+**Kontotypen:**
+- **Work/School Account:** Organisationskonto (Entra ID), z. B. user@firma.de.
+- **Personal Account:** Microsoft-Konto (Outlook.com, Hotmail).
+- **Guest (B2B):** Externer User mit Gastzugriff.
+
+**Admin-Center:**
+- **M365 Admin Center (admin.microsoft.com):** Benutzer, Lizenzen, Gruppen, Domains, Support.
+- **Entra ID Admin Center (entra.microsoft.com):** Identität, Conditional Access, MFA, App-Registrierungen.
+- **Intune Admin Center (intune.microsoft.com):** Geräte, Compliance, App-Deployment.
+- **Exchange Admin Center (admin.exchange.microsoft.com):** Mailboxen, Flows, Connectors.
+
+**Passwort-Reset (M365):**
+- **Self-Service Password Reset (SSPR):** User kann selbst zurücksetzen (wenn aktiviert + MFA/Security Info hinterlegt).
+- **Admin-Reset:** M365 Admin Center → Benutzer → "Passwort zurücksetzen".
+- **Temporäres Passwort:** User muss bei nächster Anmeldung ändern.
+
+**MFA (Multi-Faktor-Authentifizierung):**
+- Zusätzlicher Faktor neben Passwort (SMS, Authenticator-App, FIDO2-Key).
+- Entra ID Security Defaults oder Conditional Access Policies.
+- Microsoft Authenticator App (empfohlen).
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: M365-Konto verwalten (Simulation, da kein echter Tenant im MVP).
+
+Schritte (konzeptionell, mit Screenshots/Doku):
+1. M365 Admin Center öffnen (admin.microsoft.com) → Anmelden mit Admin-Account.
+2. Benutzer → "Aktive Benutzer" → User auswählen → Details prüfen (Lizenz, Gruppen, Rollen).
+3. Passwort zurücksetzen: User auswählen → "Passwort zurücksetzen" → temporäres Passwort notieren.
+4. Lizenz zuweisen/entfernen: User → "Lizenzen und Apps" → Lizenz an-/abhaken.
+5. Gruppe erstellen: Teams & Gruppen → "Aktive Teams und Gruppen" → "Gruppe hinzufügen".
+6. Entra ID Admin Center → Benutzer → MFA-Status prüfen.
+
+**Erwartetes Ergebnis:** M365-Admin-Funktionen verstanden; Passwort-Reset durchgeführt (Simulation).
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "User kann sich nicht anmelden – Passwort falsch"**
+- Symptom: "Ihr Konto oder Passwort ist falsch".
+- Ursache: Passwort vergessen; Konto gesperrt; MFA-Problem.
+- Diagnose: M365 Admin Center → Benutzer → Anmeldestatus; Entra ID → Sign-in Logs.
+- Lösung: Passwort zurücksetzen (Admin); Konto entsperren; MFA zurücksetzen.
+- Prävention: SSPR aktivieren; MFA-Backup (Telefon, E-Mail).
+
+**Fehler 2: "Lizenz nicht zugewiesen – Apps funktionieren nicht"**
+- Symptom: User kann Outlook/Teams nicht nutzen; "Lizenz erforderlich".
+- Ursache: Keine M365-Lizenz zugewiesen.
+- Diagnose: M365 Admin Center → Benutzer → Lizenzen.
+- Lösung: Lizenz zuweisen (verfügbare Lizenzen prüfen).
+- Prävention: Lizenz-Zuweisung bei User-Erstellung; Lizenz-Pool überwachen.
+
+**Fehler 3: "MFA-Loop – User kann sich nicht anmelden"**
+- Symptom: MFA-Prompt erscheint, aber Authentifizierung schlägt fehl.
+- Ursache: Authenticator-App nicht synchronisiert; Telefonnummer falsch; Conditional Access Policy blockiert.
+- Diagnose: Entra ID → Sign-in Logs → Fehlerdetails.
+- Lösung: MFA zurücksetzen (Entra ID → Benutzer → "Authentication methods" → löschen); User neu registrieren.
+- Prävention: Backup-Authentifizierungsmethoden; Support-Prozess für MFA-Reset.
+
+**Fehler 4: "Domain nicht verifiziert – E-Mail funktioniert nicht"**
+- Symptom: User kann keine E-Mails senden/empfangen; "Domain nicht verifiziert".
+- Ursache: Domain in M365 nicht verifiziert; DNS-Records fehlen.
+- Diagnose: M365 Admin Center → Einstellungen → Domains → Status.
+- Lösung: Domain verifizieren (TXT-Record in DNS); MX-Record setzen.
+- Prävention: Domain-Setup-Checkliste; DNS-Dokumentation.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist M365?
+   a) Ein Betriebssystem
+   b) Eine Cloud-basierte Produktivitätsplattform (Office, Exchange, Teams, SharePoint, OneDrive) ✓
+   c) Ein Antivirus
+   d) Ein Browser
+
+2. Wo verwaltet man Benutzer und Lizenzen in M365?
+   a) Entra ID Admin Center
+   b) M365 Admin Center (admin.microsoft.com) ✓
+   c) Intune Admin Center
+   d) Exchange Admin Center
+
+3. Was ist SSPR?
+   a) Self-Service Password Reset – User kann selbst Passwort zurücksetzen ✓
+   b) Secure Server Password Reset
+   c) System Service Password Recovery
+   d) Smart Security Password Reset
+
+4. Was ist MFA?
+   a) Multi-Faktor-Authentifizierung – zusätzlicher Faktor neben Passwort ✓
+   b) Mail Filter Application
+   c) Microsoft Firewall Appliance
+   d) Managed File Access
+
+5. Wo verwaltet man Identität und Conditional Access?
+   a) M365 Admin Center
+   b) Entra ID Admin Center (entra.microsoft.com) ✓
+   c) Intune Admin Center
+   d) Exchange Admin Center
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #7001:** "User: 'Ich kann mich nicht bei Teams anmelden. Meldung: Ihr Konto ist gesperrt.'"
+
+**Lösung (aufklappbar):**
+1. M365 Admin Center → Benutzer → "Aktive Benutzer" → User suchen → Status prüfen.
+2. Wenn gesperrt: "Konto entsperren" oder Passwort zurücksetzen.
+3. Entra ID → Sign-in Logs → Fehlerdetails prüfen (MFA? Conditional Access?).
+4. Wenn MFA-Problem: MFA zurücksetzen (Entra ID → Benutzer → Authentication methods).
+5. User informieren: Neues Passwort + MFA-Registrierung.
+6. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100)
+- Quellen: Microsoft Learn (Intune Fundamentals, Entra ID); Microsoft Security (Entra ID Übersicht)
+- UNGEPRÜFT: Exakte M365-Lizenzpläne und Preise – variabel, in Microsoft-Docs verifizieren
+- UNGEPRÜFT: Admin-Center-URLs – können sich ändern
+- UNGEPRÜFT: SSPR-Konfigurationsschritte – in Microsoft-Docs verifizieren

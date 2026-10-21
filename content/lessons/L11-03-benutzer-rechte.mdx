@@ -1,0 +1,163 @@
+---
+title: "Modul 11 – Lektion 3: Benutzer- und Rechteverwaltung (AD)"
+level: 2
+module: 11
+slug: "modul-11-ad-gpo-03-benutzer-rechte"
+last_verified: "2026-10-19"
+windows_version: "Windows Server 2022 (Evaluation) + Windows 11 24H2 (Client)"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "https://assets.ctfassets.net/82ripq7fjls2/6I8WL66IBa1AUovioDGrnM/f74a7eca336fd4e4c8e723a1f893086d/CompTIA-A-220-1202-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 11 – Lektion 3: Benutzer- und Rechteverwaltung (AD)
+
+## 1. Lernziele
+- Du kannst Benutzer, Gruppen und OUs in AD verwalten.
+- Du kannst Berechtigungen (NTFS, Freigabe) zuweisen.
+- Du kannst Delegation und Least Privilege anwenden.
+- Du kannst Passwort-Richtlinien und Kontosperrung konfigurieren.
+
+## 2. Theorie kompakt
+
+**Benutzerverwaltung in AD:**
+- **ADUC (dsa.msc):** Benutzer erstellen, bearbeiten, deaktivieren, löschen, verschieben.
+- **ADAC (Active Directory Administrative Center):** Moderne UI.
+- **PowerShell (AD-Modul):** `New-ADUser`, `Set-ADUser`, `Disable-ADAccount`, `Enable-ADAccount`, `Remove-ADUser`.
+
+**Benutzer-Attribute (wichtig):**
+- Name, Vorname, Nachname, Anzeigename.
+- Benutzeranmeldename (sAMAccountName, UPN).
+- E-Mail, Telefon, Abteilung, Büro.
+- Passwort (bei Erstellung setzen).
+- Gruppenmitgliedschaften.
+- Profilpfad, Basisordner (Home Folder).
+
+**Gruppenverwaltung:**
+- Sicherheitsgruppen für Berechtigungen.
+- Verteilergruppen für E-Mail.
+- Verschachtelung (Nesting): Gruppen in Gruppen.
+- **AGDLP-Prinzip:** Accounts → Global Groups → Domain Local Groups → Permissions.
+
+**Berechtigungen (Permissions):**
+- **NTFS-Berechtigungen:** Auf Dateisystem-Ebene (Vollzugriff, Ändern, Lesen, Schreiben, Ausführen).
+- **Freigabe-Berechtigungen (Share):** Auf Netzwerk-Freigabe-Ebene.
+- **Effektive Berechtigung:** Restriktivste Kombination (NTFS + Share).
+- **Vererbung:** Unterordner erben Berechtigungen.
+
+**Delegation:**
+- Rechte an OU-Ebene delegieren (z. B. Helpdesk kann Passwörter zurücksetzen).
+- ADUC → OU → Rechtsklick → "Steuerung delegieren" → Aufgabe auswählen.
+
+**Passwort-Richtlinie (GPO):**
+- Mindestlänge (empfohlen: 12+).
+- Komplexität (Groß/Klein/Zahlen/Sonderzeichen).
+- Max. Alter (z. B. 90 Tage).
+- Min. Alter (z. B. 1 Tag – verhindert sofortige Wiederänderung).
+- Verlauf (z. B. 24 – verhindert Wiederverwendung).
+- Kontosperrung: Anzahl Versuche (z. B. 5), Sperdauer (z. B. 30 Min).
+
+**Fine-Grained Password Policies (FGPP):**
+- Unterschiedliche Passwort-Richtlinien für verschiedene Gruppen (nur ab Windows Server 2008).
+- Verwaltung: ADAC oder PowerShell (`New-ADFineGrainedPasswordPolicy`).
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Benutzer und Gruppen verwalten; Berechtigungen setzen.
+
+Schritte (in DC-VM):
+1. `dsa.msc` → OU "Lab-Users" erstellen.
+2. Benutzer erstellen: "Max Mustermann" (max.mustermann@lab.local).
+3. Gruppe erstellen: "Lab-Admins" (Sicherheitsgruppe, Global).
+4. Max zu "Lab-Admins" hinzufügen.
+5. Freigabe erstellen: Ordner `C:\LabShare` → Freigabe → "LabShare" → Berechtigungen: Lab-Admins = Vollzugriff, Users = Lesen.
+6. NTFS-Berechtigungen: `C:\LabShare` → Eigenschaften → Sicherheit → Lab-Admins = Vollzugriff.
+7. Test: Als Max anmelden (Client-VM) → auf `\\DC\LabShare` zugreifen.
+8. Passwort-Richtlinie: GPMC → Default Domain Policy → Passwort-Richtlinie anpassen.
+
+**Erwartetes Ergebnis:** Benutzer/Gruppe erstellt; Berechtigungen gesetzt; Zugriff funktioniert.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "User kann nicht auf Freigabe zugreifen – Berechtigung fehlt"**
+- Symptom: "Zugriff verweigert" bei `\\DC\Share`.
+- Ursache: Freigabe- oder NTFS-Berechtigung fehlt.
+- Diagnose: Freigabe-Berechtigungen + NTFS-Berechtigungen prüfen; effektive Berechtigung.
+- Lösung: Berechtigungen hinzufügen (beide Ebenen); Vererbung prüfen.
+- Prävention: AGDLP-Prinzip; Dokumentation.
+
+**Fehler 2: "Passwort-Richtlinie wird nicht angewendet"**
+- Symptom: User kann schwaches Passwort setzen.
+- Ursache: GPO nicht verknüpft; oder FGPP überschreibt; oder Default Domain Policy nicht aktualisiert.
+- Diagnose: `gpresult /r`; `net accounts` (auf Client).
+- Lösung: GPO verknüpfen; `gpupdate /force`; FGPP prüfen.
+- Prävention: Passwort-Richtlinie in Default Domain Policy setzen.
+
+**Fehler 3: "Konto gesperrt – User kann sich nicht anmelden"**
+- Symptom: "Konto ist gesperrt" / "Referenced account is currently locked out".
+- Ursache: Zu viele falsche Passwortversuche.
+- Diagnose: ADUC → User → "Konto ist gesperrt" (Checkbox); Event Viewer (4740).
+- Lösung: ADUC → User → Checkbox "Konto ist gesperrt" entfernen; oder warten (Auto-Unlock).
+- Prävention: Kontosperrung-Richtlinie anpassen; User schulen.
+
+**Fehler 4: "Delegation funktioniert nicht – Helpdesk kann Passwort nicht zurücksetzen"**
+- Symptom: Helpdesk-User kann Passwort nicht zurücksetzen.
+- Ursache: Delegation nicht korrekt; oder Berechtigung fehlt.
+- Diagnose: OU → Delegations-Tab; Effective Permissions prüfen.
+- Lösung: Delegation erneut durchführen; "Kennwort zurücksetzen" Berechtigung prüfen.
+- Prävention: Delegation dokumentieren; Testen.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist das AGDLP-Prinzip?
+   a) Accounts → Global Groups → Domain Local Groups → Permissions ✓
+   b) Accounts → Domain Local → Global → Permissions
+   c) Groups → Accounts → Permissions → Local
+   d) Permissions → Groups → Accounts → Local
+
+2. Was ist die effektive Berechtigung bei NTFS + Share?
+   a) Die freigebende (Share)
+   b) Die restriktivste Kombination ✓
+   c) Die NTFS
+   d) Keine
+
+3. Wo konfiguriert man Passwort-Richtlinien in AD?
+   a) ADUC
+   b) GPO (Default Domain Policy) → Account Policies → Password Policy ✓
+   c) services.msc
+   d) regedit
+
+4. Was ist Fine-Grained Password Policy (FGPP)?
+   a) Eine globale Passwort-Richtlinie
+   b) Unterschiedliche Passwort-Richtlinien für verschiedene Gruppen ✓
+   c) Eine Kontosperrung
+   d) Eine Verschlüsselung
+
+5. Wie delegiert man Rechte in AD?
+   a) ADUC → OU → Rechtsklick → "Steuerung delegieren" ✓
+   b) GPMC
+   c) services.msc
+   d) regedit
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #12003:** "User: 'Ich kann nicht auf die Freigabe \\DC\Projekte zugreifen. Fehlermeldung: Zugriff verweigert.'"
+
+**Lösung (aufklappbar):**
+1. `\\DC\Projekte` von Client testen.
+2. Freigabe-Berechtigungen prüfen (DC): Rechtsklick auf Ordner → Freigabe → Berechtigungen.
+3. NTFS-Berechtigungen prüfen: Eigenschaften → Sicherheit.
+4. Effektive Berechtigung berechnen (restriktivste).
+5. User-Gruppenmitgliedschaft prüfen (ADUC).
+6. Wenn fehlend: Berechtigung hinzufügen (beide Ebenen).
+7. `gpupdate /force` auf Client; erneut testen.
+8. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows Server 2022 (Evaluation) + Windows 11 24H2 (Client)
+- Quellen: Microsoft Learn Windows 11 Overview; CompTIA A+ V15 Exam Objectives (Core 2)
+- UNGEPRÜFT: AGDLP-Prinzip – aus allgemeinem Wissen
+- UNGEPRÜFT: FGPP (Fine-Grained Password Policies) – in Microsoft-Docs verifizieren
+- UNGEPRÜFT: ADUC/PowerShell-Syntax – in Lab verifizieren
+- UNGEPRÜFT: NTFS/Freigabe-Berechtigungen – in Lab verifizieren

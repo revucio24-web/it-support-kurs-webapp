@@ -1,0 +1,211 @@
+---
+import Base from './Base.astro';
+import { getSortedLessons, url } from '../lib/lessons';
+
+interface Props {
+  title: string;
+  description?: string;
+  level: number;
+  module: number;
+  slug: string;
+  last_verified: string;
+  windows_version: string;
+  sources: string[];
+}
+const { title, description, level, module, slug, last_verified, windows_version, sources } = Astro.props;
+
+const sorted = await getSortedLessons();
+const idx = sorted.findIndex((l) => l.data.slug === slug);
+const prev = idx > 0 ? sorted[idx - 1] : null;
+const next = idx < sorted.length - 1 ? sorted[idx + 1] : null;
+
+/** Quelle als Link rendern, wenn sie eine URL ist. */
+function isUrl(s: string): boolean {
+  return /^https?:\/\//.test(s.trim());
+}
+---
+<Base title={title} description={description}>
+  <article class="prose dark:prose-invert max-w-3xl mx-auto">
+    <div class="mb-4 text-sm text-gray-500 dark:text-gray-400 flex flex-wrap gap-3">
+      <span>Level {level}</span>
+      <span>Modul {module}</span>
+      <span>Zuletzt geprüft: {last_verified}</span>
+      <span>{windows_version}</span>
+    </div>
+    <h1 class="text-2xl font-bold mb-4">{title}</h1>
+    <div class="lesson-body" data-pagefind-body>
+      <slot />
+    </div>
+    {sources && sources.length > 0 && (
+      <section class="mt-8 border-t border-gray-200 dark:border-gray-800 pt-4" data-pagefind-ignore>
+        <h2 class="text-lg font-semibold">Quellen</h2>
+        <ul class="list-disc pl-5 text-sm">
+          {sources.map((s) => (
+            <li class="break-all">
+              {isUrl(s) ? (
+                <a href={s.split(' ')[0]} class="hover:underline" rel="noopener noreferrer">{s}</a>
+              ) : (
+                <span>{s}</span>
+              )}
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+    <div class="mt-8 space-y-4">
+      <button
+        type="button"
+        id="mark-done"
+        data-slug={slug}
+        class="px-3 py-1.5 rounded border border-gray-300 dark:border-gray-700 text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
+        aria-pressed="false"
+      >
+        Als abgeschlossen markieren
+      </button>
+      <nav class="flex justify-between gap-4 text-sm">
+        {prev ? <a href={url(`/lesson/${prev.data.slug}`)} class="hover:underline">← {prev.data.title}</a> : <span />}
+        {next ? <a href={url(`/lesson/${next.data.slug}`)} class="hover:underline">{next.data.title} →</a> : <span />}
+      </nav>
+    </div>
+  </article>
+  <script is:inline define:vars={{ slug }}>
+    (function () {
+      // --- Fortschritt: Als abgeschlossen markieren ---
+      const btn = document.getElementById('mark-done');
+      if (btn) {
+        const key = 'done:' + slug;
+        function render() {
+          const done = localStorage.getItem(key) === '1';
+          btn.setAttribute('aria-pressed', done ? 'true' : 'false');
+          btn.textContent = done ? '✓ Abgeschlossen' : 'Als abgeschlossen markieren';
+          btn.classList.toggle('bg-green-600', done);
+          btn.classList.toggle('text-white', done);
+          btn.classList.toggle('border-green-600', done);
+        }
+        btn.addEventListener('click', () => {
+          if (localStorage.getItem(key) === '1') localStorage.removeItem(key);
+          else localStorage.setItem(key, '1');
+          render();
+        });
+        render();
+      }
+
+      const CHECK = '\u2713';
+
+      // --- Ticket: "Lösung (aufklappbar)" in <details> umwandeln ---
+      document.querySelectorAll('.lesson-body p').forEach((p) => {
+        if (!/L.sung \(aufklappbar\)/.test(p.textContent || '')) return;
+        const details = document.createElement('details');
+        details.className =
+          'my-3 border border-amber-200 dark:border-amber-800 rounded p-3 bg-amber-50 dark:bg-amber-950/30';
+        const summary = document.createElement('summary');
+        summary.className = 'cursor-pointer text-sm font-medium text-amber-800 dark:text-amber-300';
+        summary.textContent = 'Lösung aufklappen';
+        details.appendChild(summary);
+        const body = document.createElement('div');
+        body.className = 'mt-2 text-sm';
+        let node = p.nextElementSibling;
+        while (node && !/^H[1-6]$/.test(node.tagName)) {
+          const next = node.nextElementSibling;
+          body.appendChild(node);
+          node = next;
+        }
+        details.appendChild(body);
+        p.parentNode.insertBefore(details, p);
+        p.remove();
+      });
+
+      // --- Mini-Quiz: aus statischem Text interaktive Radio-Buttons bauen ---
+      let quizId = 0;
+      document.querySelectorAll('.lesson-body h2').forEach((h) => {
+        if (!/Mini-Quiz/.test(h.textContent || '')) return;
+        const ol = h.nextElementSibling;
+        if (!ol || ol.tagName !== 'OL') return;
+        const items = Array.from(ol.querySelectorAll(':scope > li'));
+        if (!items.length) return;
+        const qid = 'quiz-' + quizId++;
+        const frag = document.createDocumentFragment();
+        const questions = [];
+        items.forEach((li, qi) => {
+          const p = li.querySelector('p');
+          if (!p) return;
+          const text = (p.textContent || '').replace(/\s+/g, ' ').trim();
+          const parts = text.split(/\s*([a-d])\)\s*/i);
+          const question = (parts[0] || '').trim();
+          const options = [];
+          for (let i = 1; i + 1 < parts.length; i += 2) {
+            const raw = parts[i + 1] || '';
+            options.push({ letter: parts[i].toLowerCase(), text: raw.replace(CHECK, '').trim(), correct: raw.includes(CHECK) });
+          }
+          if (!options.length) return;
+          const wrap = document.createElement('div');
+          wrap.className = 'mb-4';
+          const qp = document.createElement('p');
+          qp.className = 'font-medium mb-2';
+          qp.textContent = qi + 1 + '. ' + question;
+          wrap.appendChild(qp);
+          const opts = document.createElement('div');
+          opts.className = 'space-y-1';
+          options.forEach((o, oi) => {
+            const label = document.createElement('label');
+            label.className = 'flex items-start gap-2 text-sm cursor-pointer';
+            const input = document.createElement('input');
+            input.type = 'radio';
+            input.name = qid + '-q' + qi;
+            input.value = String(oi);
+            input.className = 'mt-0.5';
+            const span = document.createElement('span');
+            span.textContent = o.letter + ') ' + o.text;
+            label.appendChild(input);
+            label.appendChild(span);
+            opts.appendChild(label);
+          });
+          wrap.appendChild(opts);
+          const fb = document.createElement('p');
+          fb.className = 'feedback text-sm mt-1 hidden';
+          fb.setAttribute('aria-live', 'polite');
+          wrap.appendChild(fb);
+          frag.appendChild(wrap);
+          questions.push({ correctIndex: options.findIndex((o) => o.correct), fb, wrap });
+        });
+        if (!questions.length) return;
+        const form = document.createElement('form');
+        form.className = 'quiz my-4 border border-gray-200 dark:border-gray-800 rounded p-4';
+        form.appendChild(frag);
+        const btnWrap = document.createElement('div');
+        const submit = document.createElement('button');
+        submit.type = 'button';
+        submit.className = 'quiz-submit px-3 py-1 rounded bg-blue-600 text-white text-sm';
+        submit.textContent = 'Auswerten';
+        const result = document.createElement('p');
+        result.className = 'quiz-result text-sm mt-2 font-medium';
+        result.setAttribute('aria-live', 'polite');
+        btnWrap.appendChild(submit);
+        btnWrap.appendChild(result);
+        form.appendChild(btnWrap);
+        submit.addEventListener('click', () => {
+          let score = 0;
+          let answered = 0;
+          questions.forEach((q) => {
+            const sel = form.querySelector('input[name="' + q.wrap.querySelector('input').name + '"]:checked');
+            if (!sel) {
+              q.fb.textContent = 'Keine Antwort gewählt.';
+              q.fb.classList.remove('hidden');
+              q.fb.className = 'feedback text-sm mt-1 text-gray-500';
+              return;
+            }
+            answered++;
+            const ok = Number(sel.value) === q.correctIndex;
+            if (ok) score++;
+            q.fb.textContent = ok ? '✓ Richtig' : '✗ Falsch';
+            q.fb.classList.remove('hidden');
+            q.fb.className = 'feedback text-sm mt-1 ' + (ok ? 'text-green-600' : 'text-red-600');
+          });
+          result.textContent =
+            'Ergebnis: ' + score + ' / ' + questions.length + (answered < questions.length ? ' (teilweise beantwortet)' : '');
+        });
+        ol.replaceWith(form);
+      });
+    })();
+  </script>
+</Base>

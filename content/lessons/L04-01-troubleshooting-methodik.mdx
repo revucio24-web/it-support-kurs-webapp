@@ -1,0 +1,171 @@
+---
+title: "Modul 4 – Lektion 1: Troubleshooting-Methodik (Grundprinzipien)"
+level: 1
+module: 4
+slug: "modul-4-troubleshooting-01-methodik"
+last_verified: "2026-10-19"
+windows_version: "Allgemein (kein OS-spezifisch)"
+sources:
+  - "https://assets.ctfassets.net/82ripq7fjls2/6I8WL66IBa1AUovioDGrnM/f74a7eca336fd4e4c8e723a1f893086d/CompTIA-A-220-1202-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+  - "https://www.coursera.org/professional-certificates/google-it-support (Abruf 2026-10-19)"
+---
+
+# Modul 4 – Lektion 1: Troubleshooting-Methodik (Grundprinzipien)
+
+## 1. Lernziele
+- Du kennst die 6 Schritte der Troubleshooting-Methodik (CompTIA).
+- Du kannst ein Problem systematisch eingrenzen.
+- Du kannst Hypothesen bilden und testen.
+- Du kannst eine Lösung dokumentieren und verifizieren.
+
+## 2. Theorie kompakt
+
+**CompTIA Troubleshooting-Methodik (6 Schritte):**
+
+1. **Identify the problem** (Problem identifizieren)
+   - User befragen (Symptom, wann, wo, wer, wie).
+   - Systeminfo sammeln (OS, Hardware, Netzwerk).
+   - Relevante Logs prüfen.
+   - Problem replizieren (falls möglich).
+   - Letzte Änderungen identifizieren (Updates, neue Software, Hardware).
+
+2. **Establish a theory of probable cause** (Hypothese bilden)
+   - "Question the obvious" (CompTIA-Mantra).
+   - Einfachste Erklärung zuerst (Kabel, Strom, Neustart).
+   - Reihenfolge: Physisch → Konfiguration → Software → Hardware.
+
+3. **Test the theory** (Hypothese testen)
+   - Gezielte Tests durchführen.
+   - Wenn Hypothese falsch → neue Hypothese (Schritt 2).
+   - Wenn Hypothese richtig → Schritt 4.
+
+4. **Establish a plan of action** (Lösungsplan erstellen)
+   - Lösung planen (Schritte, Reihenfolge, Risiko).
+   - Backup/Snapshot vor riskanten Änderungen.
+   - User informieren.
+
+5. **Implement the solution** (Lösung umsetzen)
+   - Plan ausführen.
+   - Bei unerwarteten Ergebnissen: zurück zu Schritt 2.
+
+6. **Verify full system functionality** (Verifizieren)
+   - Problem gelöst? System vollständig funktionstüchtig?
+   - User bestätigt Lösung.
+   - Dokumentieren (Ticket, KB).
+
+**Wichtig:** Schritt 6 (Verify) wird oft übersprungen – führt zu "gelöst, aber nicht wirklich".
+
+**Eingrenzung (Isolation):**
+- **Physisch vs. Logisch:** Kabel/Port testen vs. Konfiguration.
+- **Hardware vs. Software:** Andere Hardware testen vs. Software neu installieren.
+- **Lokal vs. Netzwerk:** Problem nur auf einem PC → lokal; mehrere PCs → Netzwerk/Server.
+- **User-spezifisch vs. System-weit:** Ein User betroffen → Profil/Konto; alle User → System.
+
+**"Question the obvious" (CompTIA):**
+- Ist das Gerät eingeschaltet?
+- Ist das Kabel angeschlossen?
+- Ist der richtige Port/Monitor ausgewählt?
+- Gibt es einen simpleren Grund?
+
+**Troubleshooting-Tools (Überblick):**
+- `ping`, `tracert`, `ipconfig`, `nslookup` (Netzwerk).
+- `eventvwr`, `devmgmt`, `msinfo32`, `dxdiag` (System).
+- Safe Mode, Clean Boot (Isolation).
+- SFC, DISM (Systemdateien).
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Troubleshooting-Methodik anwenden (Simulation).
+
+Szenario: "User meldet: Outlook startet nicht. Fehlermeldung: 'Cannot start Microsoft Outlook. Cannot open the Outlook window.'"
+
+Schritte (6 Schritte):
+1. **Identify:** User befragen (seit wann? nach Update? Fehlermeldung exakt?). Systeminfo (Windows-Build, Office-Version). Event Viewer prüfen.
+2. **Theory:** Hypothese 1: Profil beschädigt. Hypothese 2: Add-in blockiert. Hypothese 3: Office-Installation beschädigt.
+3. **Test:** Outlook im Safe Mode starten (`outlook.exe /safe`). Wenn es startet → Add-in-Problem. Wenn nicht → Profil/Installation.
+4. **Plan:** Add-ins deaktivieren (wenn Safe Mode funktioniert) oder neues Profil erstellen.
+5. **Implement:** Schritte ausführen.
+6. **Verify:** Outlook normal starten; User bestätigt; dokumentieren.
+
+**Erwartetes Ergebnis:** Problem gelöst und verifiziert; Dokumentation vollständig.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Lösung implementiert, aber nicht verifiziert"**
+- Symptom: Ticket als "gelöst" geschlossen, User meldet erneut.
+- Ursache: Schritt 6 (Verify) übersprungen.
+- Diagnose: Ticket-Status prüfen.
+- Lösung: Ticket reopenen; Problem erneut prüfen; vollständig verifizieren.
+- Prävention: Verify als Pflichtfeld; Checkliste.
+
+**Fehler 2: "Komplexe Lösung für einfaches Problem"**
+- Symptom: Stundenlange Fehlersuche, aber Ursache war Kabel.
+- Ursache: "Question the obvious" ignoriert.
+- Diagnose: Timeline prüfen.
+- Lösung: Von vorne beginnen, einfache Ursachen zuerst prüfen.
+- Prävention: Methodik strikt befolgen; Checkliste.
+
+**Fehler 3: "Hypothese nicht getestet, sondern direkt implementiert"**
+- Symptom: Lösung verschlimmert Problem (z. B. Registry-Änderung ohne Backup).
+- Ursache: Schritt 3 (Test) übersprungen.
+- Diagnose: Änderungshistorie prüfen.
+- Lösung: Änderung rückgängig machen (Snapshot/Backup); von vorne.
+- Prävention: Immer Hypothese testen; Snapshot vor Änderung.
+
+**Fehler 4: "Problem nicht dokumentiert – Wiederholung"**
+- Symptom: Gleiches Problem tritt erneut auf; kein Wissen vorhanden.
+- Ursache: Keine Dokumentation.
+- Diagnose: KB-Suche erfolglos.
+- Lösung: Ticket nachträglich dokumentieren; KB-Artikel erstellen.
+- Prävention: Dokumentation als Pflicht; KCS-Methode.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist der erste Schritt der Troubleshooting-Methodik?
+   a) Lösung implementieren
+   b) Problem identifizieren ✓
+   c) Hypothese testen
+   d) Dokumentieren
+
+2. Was bedeutet "Question the obvious"?
+   a) Komplexe Lösungen zuerst
+   b) Einfachste Erklärungen zuerst prüfen (Kabel, Strom, Neustart) ✓
+   c) User ignorieren
+   d) Logs ignorieren
+
+3. Was passiert, wenn eine Hypothese falsch ist?
+   a) Lösung trotzdem implementieren
+   b) Neue Hypothese bilden und testen ✓
+   c) Ticket schließen
+   d) User blockieren
+
+4. Was ist Schritt 6 der Methodik?
+   a) Lösung implementieren
+   b) Problem identifizieren
+   c) Vollständige Systemfunktionalität verifizieren ✓
+   d) Hypothese bilden
+
+5. Warum ist Verifizierung wichtig?
+   a) Nur für Dokumentation
+   b) Um sicherzustellen, dass das Problem wirklich gelöst ist und das System vollständig funktioniert ✓
+   c) Um das Ticket zu schließen
+   d) Um den User zu beruhigen
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #5001:** "User: 'Mein PC ist seit heute Morgen sehr langsam. Ich habe nichts installiert. Können Sie das prüfen?'"
+
+**Lösung (aufklappbar):**
+1. Identify: User befragen (seit wann genau? Was ist "langsam"? Welche Aktionen?). Systeminfo (CPU/RAM/Disk). Event Viewer prüfen. Letzte Änderungen (Updates?).
+2. Theory: Hypothese 1: Hintergrundprozess (Update, Virenscan). Hypothese 2: Festplatte voll/defekt. Hypothese 3: Malware.
+3. Test: Task-Manager → CPU/RAM/Disk-Auslastung. Wenn Disk 100% → welcher Prozess? SMART prüfen. Virenscan.
+4. Plan: Problematischen Prozess beenden; Speicherplatz freigeben; Malware entfernen.
+5. Implement: Maßnahmen durchführen.
+6. Verify: PC-Performance prüfen; User bestätigt; dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Allgemein (kein OS-spezifisch)
+- Quellen: CompTIA A+ V15 Exam Objectives (Core 2) – Troubleshooting; Google IT Support Certificate
+- UNGEPRÜFT: Exakte CompTIA 6-Schritte-Wortlaut – aus Objectives, nicht aus Primärtext
+- UNGEPRÜFT: "Question the obvious" – CompTIA-Mantra, aus Objectives

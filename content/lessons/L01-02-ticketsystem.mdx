@@ -1,0 +1,168 @@
+---
+title: "Modul 1 – Lektion 2: Ticketsystem-Grundlagen"
+level: 1
+module: 1
+slug: "modul-1-grundlagen-02-ticketsystem"
+last_verified: "2026-10-19"
+windows_version: "Allgemein (kein OS-spezifisch)"
+sources:
+  - "https://www.peoplecert.org/browse-certifications/it-governance-and-service-management/ITIL-1/itil-4-foundation-2565 (Abruf 2026-10-19)"
+---
+
+# Modul 1 – Lektion 2: Ticketsystem-Grundlagen
+
+## 1. Lernziele
+- Du kannst Incident, Service Request und Problem unterscheiden.
+- Du kennst die Ticket-Felder (Kategorie, Priorität, Severity, Status, Assignee).
+- Du kannst Priorität aus Impact × Urgency ableiten (ITIL).
+- Du kannst einen Ticket-Lebenszyklus beschreiben.
+
+## 2. Theorie kompakt
+
+**ITIL 4 – drei zentrale Begriffe:**
+
+| Begriff | Definition (ITIL) | Beispiel |
+|---|---|---|
+| **Incident** | Ungeplante Unterbrechung oder Qualitätsminderung eines IT-Services | Server down, Outlook startet nicht, Drucker defekt |
+| **Service Request** | Anfrage eines Users (kein Fehler, sondern Wunsch) | Passwort-Reset, Software-Installation, neues Notebook, Zugriffsrechte |
+| **Problem** | Zugrundeliegende Ursache eines oder mehrerer Incidents | Bug in Software, defekter Switch, fehlerhaftes Update |
+
+**Incident vs. Problem:** Incident = Symptom (sofort beheben). Problem = Ursache (langfristig beheben, verhindert Wiederholung). Ein Problem kann mehrere Incidents auslösen.
+
+**Ticket-Felder (Standard):**
+- **Titel/Betreff:** Kurz, aussagekräftig ("Outlook startet nicht nach Update KB50...")
+- **Beschreibung:** Symptom, Schritte, Ergebnis, Systeminfo.
+- **Kategorie:** Hardware, Software, Netzwerk, Account, Drucker, ...
+- **Subkategorie:** z. B. Software → Office → Outlook
+- **Typ:** Incident / Service Request / Problem / Change
+- **Impact (Auswirkung):** Wie viele User/Services betroffen? (1 = einzelner User, 2 = Gruppe, 3 = Abteilung, 4 = gesamtes Unternehmen)
+- **Urgency (Dringlichkeit):** Wie schnell muss gelöst werden? (1 = sofort, 2 = heute, 3 = diese Woche, 4 = Routine)
+- **Priority (Priorität):** = f(Impact, Urgency) – Matrix (siehe unten)
+- **Status:** New/Open → In Progress → Waiting (on User/Vendor) → Resolved → Closed
+- **Assignee:** Zuständiger Supporter/Team
+- **SLA-Due:** Fälligkeitszeitpunkt nach SLA
+- **Resolution:** Lösungsbeschreibung (Pflichtfeld vor Schließen)
+
+**Prioritätsmatrix (ITIL, Beispiel):**
+
+| Impact \ Urgency | 1 (sofort) | 2 (heute) | 3 (Woche) | 4 (Routine) |
+|---|---|---|---|---|
+| 1 (Unternehmen) | P1 – Critical | P1 – Critical | P2 – High | P3 – Medium |
+| 2 (Abteilung) | P1 – Critical | P2 – High | P3 – Medium | P4 – Low |
+| 3 (Gruppe) | P2 – High | P3 – Medium | P3 – Medium | P4 – Low |
+| 4 (einzelner User) | P3 – Medium | P4 – Low | P4 – Low | P5 – Planning |
+
+(Exakte Matrix variiert nach Organisation – als Beispiel.)
+
+**Ticket-Lebenszyklus:**
+1. **New/Eingang:** Ticket erstellt (User oder Monitoring).
+2. **Triage/Klassifizierung:** Level 1 prüft, kategorisiert, priorisiert.
+3. **In Progress:** Bearbeitung.
+4. **Waiting:** Warte auf User-Antwort oder Vendor.
+5. **Resolved:** Lösung gefunden, User informiert.
+6. **Closed:** User bestätigt Lösung (oder Auto-Close nach X Tagen).
+7. **Reopened:** Falls Problem wieder auftritt.
+
+**Best Practices:**
+- Ein Ticket = ein Problem (nicht mehrere Themen mischen).
+- Klare, präzise Titel.
+- Vollständige Dokumentation (Symptom, Schritte, Ergebnis, Lösung).
+- Keine sensiblen Daten im Ticket (Passwörter!).
+- Status regelmäßig aktualisieren.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Ticketsystem simulieren (auf Papier/Markdown, da kein echtes System im MVP).
+
+Schritte:
+1. Wähle 3 Szenarien aus deinem Alltag (z. B. "Outlook startet nicht", "Drucker offline", "Passwort vergessen").
+2. Für jedes Szenario ein Ticket-Formular ausfüllen:
+   - Titel, Beschreibung, Kategorie, Typ (Incident/Request), Impact, Urgency, Priority, Status
+3. Priorität mit der Matrix ableiten.
+4. Ticket-Lebenszyklus durchspielen: New → In Progress → Resolved → Closed.
+5. Für ein Ticket: Eskalationsschritt dokumentieren (an Level 2).
+
+**Erwartetes Ergebnis:** 3 vollständig ausgefüllte Tickets mit korrekter Klassifizierung und Priorität.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Mehrere Probleme in einem Ticket"**
+- Symptom: Ticket wird unübersichtlich, Teillösungen, kein klares Schließen.
+- Ursache: User meldet mehrere Themen; Supporter packt alles in ein Ticket.
+- Diagnose: Ticket hat mehrere Themen.
+- Lösung: Aufteilen in separate Tickets; verknüpfen ("related to").
+- Prävention: Regel "Ein Ticket = ein Problem"; Schulung.
+
+**Fehler 2: "Priorität falsch gesetzt (zu hoch)"**
+- Symptom: P1-Ticket für einzelnen User mit Druckerproblem; echte P1-Incidents verzögert.
+- Ursache: User-Druck ("Das ist dringend!") beeinflusst Priorität.
+- Diagnose: Impact/Urgency prüfen.
+- Lösung: Priorität korrigieren; User erklären (Impact = 1 User, nicht P1).
+- Prävention: Klare Prioritätsmatrix; Schulung; Manager-Eskalation bei Uneinigkeit.
+
+**Fehler 3: "Ticket geschlossen ohne User-Bestätigung"**
+- Symptom: User beschwert sich, Problem nicht gelöst.
+- Ursache: Supporter schließt Ticket nach eigener "Lösung" ohne Verifikation.
+- Diagnose: Ticket-Status-Historie.
+- Lösung: Ticket reopenen; User kontaktieren; Lösung verifizieren.
+- Prävention: "Resolved" erst nach User-Bestätigung oder Auto-Close nach 3-5 Tagen mit Warnung.
+
+**Fehler 4: "Passwort im Ticket dokumentiert"**
+- Symptom: Sicherheitsvorfall; Passwort in Klartext im Ticket.
+- Ursache: Supporter dokumentiert vergebenes Passwort.
+- Diagnose: Ticket-Inhalt prüfen (Audit).
+- Lösung: Passwort sofort zurücksetzen; Ticket bereinigen; Incident melden.
+- Prävention: Regel "Keine Passwörter in Tickets"; Passwort-Reset-Tool mit Einmalpasswort; Schulung.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist ein Incident (ITIL)?
+   a) Eine Anfrage eines Users
+   b) Ungeplante Unterbrechung oder Qualitätsminderung eines IT-Services ✓
+   c) Die zugrundeliegende Ursache
+   d) Eine geplante Änderung
+
+2. Was ist ein Service Request?
+   a) Ein Fehler im System
+   b) Eine Anfrage eines Users (z. B. Passwort-Reset, Software) ✓
+   c) Ein Problem
+   d) Ein Change
+
+3. Wie wird Priorität in ITIL abgeleitet?
+   a) Nur nach Urgency
+   b) Impact × Urgency (Matrix) ✓
+   c) Nach Alphabet
+   d) Nach Ticket-Nummer
+
+4. Was ist ein Problem (ITIL)?
+   a) Ein einzelner Incident
+   b) Die zugrundeliegende Ursache eines oder mehrerer Incidents ✓
+   c) Eine Anfrage
+   d) Ein Change Request
+
+5. Welcher Status folgt typischerweise auf "In Progress"?
+   a) Closed
+   b) New
+   c) Resolved oder Waiting ✓
+   d) Reopened
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #2002:** "User meldet: 'Mein Drucker druckt seit heute Morgen nicht mehr. Ich brauche ihn für einen wichtigen Bericht bis 14 Uhr.' Klassifiziere und priorisiere."
+
+**Lösung (aufklappbar):**
+1. Typ: Incident (Störung, nicht Anfrage).
+2. Impact: 1 User, 1 Drucker → Impact 4 (einzelner User).
+3. Urgency: Dringend (Deadline 14 Uhr) → Urgency 2 (heute).
+4. Priorität: Matrix → P4 (Low) oder P3 (Medium) je nach Organisation. Hier: P3 (Medium) (Urgency 2, Impact 4).
+5. Kategorie: Hardware → Drucker.
+6. Status: New → In Progress.
+7. Level-1-Versuche: Drucker neu starten, Kabel, Spooler, Treiber.
+8. Falls nicht gelöst bis 13:30: Eskalation an Level 2 (SLA-Gefahr).
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Allgemein (kein OS-spezifisch)
+- Quellen: ITIL 4 Foundation (PeopleCert/AXELOS) – Incident/Problem/Service Request Definitionen
+- UNGEPRÜFT: Exakte ITIL 4 Wortlaute – aus Syllabus, nicht Primärtext
+- UNGEPRÜFT: Prioritätsmatrix (Beispiel) – organisationsabhängig, nicht aus Quelle

@@ -1,19 +1,17 @@
 import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
 
-const lektionen = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/lektionen' }),
+const lessons = defineCollection({
+  loader: glob({ pattern: '**/*.mdx', base: './content/lessons' }),
   schema: z.object({
     title: z.string(),
-    level: z.union([z.literal(1), z.literal(2)]),
+    level: z.number(),
     module: z.number(),
-    last_verified: z.coerce.string(),
+    slug: z.string(),
+    last_verified: z.string(),
     windows_version: z.string(),
-    sources: z.array(z.object({
-      url: z.string(),
-      abrufdatum: z.coerce.string(),
-    })),
+    sources: z.array(z.string()).default([]),
   }),
 });
 
-export const collections = { lektionen };
+export const collections = { lessons };

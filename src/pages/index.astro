@@ -1,261 +1,99 @@
----
-import { getCollection } from 'astro:content';
+﻿---
 import Base from '../layouts/Base.astro';
+import { getSortedLessons, url } from '../lib/lessons';
 
-const lektionen = await getCollection('lektionen');
-const module = lektionen.map(l => ({
-  nr: l.data.module,
-  titel: l.data.title,
-  slug: l.id,
-  level: l.data.level,
-}));
+const sorted = await getSortedLessons();
 
-const level1 = module.filter(m => m.level === 1).sort((a, b) => a.nr - b.nr);
-const level2 = module.filter(m => m.level === 2).sort((a, b) => a.nr - b.nr);
-const total = lektionen.length;
-const level1Count = level1.length;
-const level2Count = level2.length;
+// group by module
+const modules = new Map();
+for (const l of sorted) {
+  const m = l.data.module;
+  if (!modules.has(m)) modules.set(m, []);
+  modules.get(m).push(l);
+}
+
+const moduleNames = {
+  0: 'Modul 0 – Homelab (Voraussetzung)',
+  1: 'Modul 1 – Grundlagen: Rolle, Tickets, SLA, Eskalation',
+  2: 'Modul 2 – Hardware',
+  3: 'Modul 3 – Windows 11 Grundlagen',
+  4: 'Modul 4 – Troubleshooting-Methodik',
+  5: 'Modul 5 – Netzwerk-Basics',
+  6: 'Modul 6 – Microsoft 365 / Outlook / Teams',
+  7: 'Modul 7 – Sicherheit Basics',
+  8: 'Modul 8 – Remote-Support',
+  9: 'Modul 9 – Windows Tiefe',
+  10: 'Modul 10 – Boot & Recovery',
+  11: 'Modul 11 – Active Directory & GPO',
+  12: 'Modul 12 – Netzwerk Tiefe',
+  13: 'Modul 13 – PowerShell',
+  14: 'Modul 14 – Software-Deployment, Intune, Entra',
+  15: 'Modul 15 – Backup, Recovery, Patch-Management',
+  16: 'Modul 16 – Incident & Problem Management (ITIL)',
+  17: 'Modul 17 – Abschlussprojekt & Prüfungssimulation',
+};
 ---
-
-<Base title="Start">
-  <section class="hero">
-    <h2>🖥️ IT-Support-Kurs</h2>
-    <p class="intro">
-      Deutschsprachiger Kurs für den Einstieg in den IT-Support — von der Hardware bis zur Systemadministration.
-      Mit Homelab, Fehlerdatenbank, Quizzen und Ticket-Simulation.
-    </p>
-    <div class="stats">
-      <div class="stat">
-        <span class="stat-nr">{total}</span>
-        <span class="stat-label">Module</span>
-      </div>
-      <div class="stat">
-        <span class="stat-nr">{level1Count}</span>
-        <span class="stat-label">Level 1</span>
-      </div>
-      <div class="stat">
-        <span class="stat-nr">{level2Count}</span>
-        <span class="stat-label">Level 2</span>
-      </div>
-      <div class="stat">
-        <span class="stat-nr">18</span>
-        <span class="stat-label">Lektionen</span>
+<Base title="IT-Support Kurs (Level 1 + 2)">
+  <section class="mb-8">
+    <h1 class="text-3xl font-bold mb-2">IT-Support Kurs (Level 1 + Level 2)</h1>
+    <p class="text-gray-600 dark:text-gray-400">Praxisnaher Kurs auf Deutsch, von null bis professionell. Fortschritt wird lokal gespeichert.</p>
+    <div class="mt-4">
+      <div class="text-sm mb-1" id="overall-progress" aria-live="polite">Gesamtfortschritt: 0%</div>
+      <div
+        class="w-full h-2 bg-gray-200 dark:bg-gray-800 rounded"
+        role="progressbar"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-valuenow="0"
+        aria-label="Kursfortschritt"
+        id="overall-bar-wrap"
+      >
+        <div id="overall-bar" class="h-2 bg-blue-600 rounded" style="width:0%"></div>
       </div>
     </div>
   </section>
 
-  <section class="start-links">
-    <div class="start-card">
-      <h3>📚 Module entdecken</h3>
-      <p>Alle {total} Module im Überblick — sortiert nach Level.</p>
-      <a href={`${import.meta.env.BASE_URL}module`} class="btn">Alle Module</a>
-    </div>
-    <div class="start-card">
-      <h3>⚠️ Fehler & Lösungen</h3>
-      <p>Datenbank typischer Fehlerfälle mit Symptom, Ursache und Lösung.</p>
-      <a href={`${import.meta.env.BASE_URL}fehler`} class="btn">Fehler durchsuchen</a>
-    </div>
-    <div class="start-card">
-      <h3>📝 Quiz starten</h3>
-      <p>Teste dein Wissen mit interaktiven Quizzen.</p>
-      <a href={`${import.meta.env.BASE_URL}quiz`} class="btn">Quiz übersicht</a>
-    </div>
-  </section>
+  {Array.from(modules.keys()).sort((a,b)=>a-b).map((m) => (
+    <section class="mb-8">
+      <h2 class="text-xl font-semibold mb-3">{moduleNames[m as keyof typeof moduleNames] ?? `Modul ${m}`}</h2>
+      <ul class="space-y-1">
+        {modules.get(m).map((l: any) => (
+          <li class="flex items-center gap-2">
+            <input type="checkbox" id={`done-${l.data.slug}`} class="lesson-check" data-slug={l.data.slug} />
+            <label for={`done-${l.data.slug}`} class="sr-only">{l.data.title} als abgeschlossen markieren</label>
+            <a href={url(`/lesson/${l.data.slug}`)} class="hover:underline">{l.data.title}</a>
+            <span class="text-xs text-gray-500 dark:text-gray-400">L{l.data.level}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  ))}
 
-  <section class="suche-section">
-    <h3>🔍 Kurs durchsuchen</h3>
-    <input type="search" id="suche-input" placeholder="Lektionen, Fehler, Themen suchen..." autocomplete="off" />
-    <div id="suche-ergebnisse" class="suche-ergebnisse" hidden></div>
-  </section>
-
-  <section class="module-vorschau">
-    <h3>Level 1 — Helpdesk & Desktop Support</h3>
-    <div class="grid grid-3">
-      {level1.slice(0, 6).map(m => (
-        <a href={`${import.meta.env.BASE_URL}lektionen/${m.slug}`} class="module-card">
-          <span class="badge badge-level-1">Modul {m.nr}</span>
-          <h4>{m.titel}</h4>
-        </a>
-      ))}
-    </div>
-    {level1.length > 6 && <a href={`${import.meta.env.BASE_URL}module`} class="btn btn-secondary mehr-btn">Alle {level1Count} Level-1-Module</a>}
-  </section>
-
-  <section class="module-vorschau">
-    <h3>Level 2 — Systemadministration</h3>
-    <div class="grid grid-3">
-      {level2.slice(0, 6).map(m => (
-        <a href={`${import.meta.env.BASE_URL}lektionen/${m.slug}`} class="module-card">
-          <span class="badge badge-level-2">Modul {m.nr}</span>
-          <h4>{m.titel}</h4>
-        </a>
-      ))}
-    </div>
-    {level2.length > 6 && <a href={`${import.meta.env.BASE_URL}module`} class="btn btn-secondary mehr-btn">Alle {level2Count} Level-2-Module</a>}
-  </section>
-
-  <section class="homelab-hinweis">
-    <h3>🔧 Homelab empfohlen</h3>
-    <p>
-      Der Kurs ist für ein Homelab mit VMware Workstation Pro (kostenlos) + Eval-VMs optimiert.
-      Siehe <a href={`${import.meta.env.BASE_URL}lektionen/modul-0-homelab`}>Modul 0: Homelab</a> für die komplette Einrichtung.
-    </p>
-  </section>
+  <script is:inline>
+    (function () {
+      const checks = document.querySelectorAll('.lesson-check');
+      checks.forEach((c) => {
+        const slug = c.getAttribute('data-slug');
+        try {
+          if (localStorage.getItem('done:' + slug) === '1') c.checked = true;
+        } catch (e) {}
+        c.addEventListener('change', () => {
+          try {
+            if (c.checked) localStorage.setItem('done:' + slug, '1');
+            else localStorage.removeItem('done:' + slug);
+          } catch (e) {}
+          updateOverall();
+        });
+      });
+      function updateOverall() {
+        const total = checks.length;
+        const d = document.querySelectorAll('.lesson-check:checked').length;
+        const pct = total ? Math.round((d / total) * 100) : 0;
+        document.getElementById('overall-progress').textContent = 'Gesamtfortschritt: ' + pct + '%';
+        document.getElementById('overall-bar').style.width = pct + '%';
+        document.getElementById('overall-bar-wrap').setAttribute('aria-valuenow', String(pct));
+      }
+      updateOverall();
+    })();
+  </script>
 </Base>
-
-<style>
-  .hero {
-    text-align: center;
-    padding: 3rem 0 2rem;
-  }
-  .hero h2 {
-    font-size: 2rem;
-    margin-bottom: 1rem;
-  }
-  .intro {
-    max-width: 700px;
-    margin: 0 auto 2rem;
-    color: var(--muted);
-  }
-  .stats {
-    display: flex;
-    justify-content: center;
-    gap: 2rem;
-    flex-wrap: wrap;
-  }
-  .stat {
-    text-align: center;
-  }
-  .stat-nr {
-    display: block;
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--accent);
-  }
-  .stat-label {
-    font-size: 0.875rem;
-    color: var(--muted);
-  }
-  .start-links {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1rem;
-    margin: 2rem 0;
-  }
-  .start-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 0.5rem;
-    padding: 1.5rem;
-  }
-  .start-card h3 {
-    margin-bottom: 0.5rem;
-  }
-  .start-card p {
-    color: var(--muted);
-    font-size: 0.875rem;
-    margin-bottom: 1rem;
-  }
-  .module-vorschau {
-    margin: 2rem 0;
-  }
-  .module-vorschau h3 {
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid var(--accent);
-  }
-  .mehr-btn {
-    margin-top: 1rem;
-  }
-  .homelab-hinweis {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 0.5rem;
-    padding: 1.5rem;
-    margin: 2rem 0;
-    text-align: center;
-  }
-  .suche-section {
-    margin: 2rem 0;
-  }
-  .suche-section h3 {
-    margin-bottom: 1rem;
-  }
-  #suche-input {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: 1px solid var(--border);
-    border-radius: 0.5rem;
-    background: var(--bg);
-    color: var(--fg);
-    font-size: 1rem;
-  }
-  #suche-input:focus {
-    outline: none;
-    border-color: var(--accent);
-  }
-  .suche-ergebnisse {
-    margin-top: 1rem;
-  }
-  .suche-ergebnis {
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-  .suche-ergebnis:last-child {
-    border-bottom: none;
-  }
-  .suche-ergebnis .badge {
-    flex-shrink: 0;
-  }
-  .suche-ergebnis a {
-    font-weight: 500;
-  }
-  .suche-ergebnis .titel {
-    color: var(--muted);
-    font-size: 0.875rem;
-  }
-</style>
-
-<script>
-  import lektionenData from '../data/lektionen.json';
-
-  const input = document.getElementById('suche-input') as HTMLInputElement;
-  const ergebnisse = document.getElementById('suche-ergebnisse') as HTMLElement;
-
-  input?.addEventListener('input', () => {
-    const q = input.value.toLowerCase().trim();
-    if (!q) {
-      ergebnisse.hidden = true;
-      ergebnisse.innerHTML = '';
-      return;
-    }
-    const treffer: Array<{ slug: string; titel: string; modul: number; level: number; typ: string }> = [];
-    for (const l of lektionenData) {
-      const titel = (l.title || '').toLowerCase();
-      if (titel.includes(q)) {
-        treffer.push({ slug: l.slug, titel: l.title, modul: l.module, level: l.level, typ: 'lektion' });
-      }
-      for (const f of (l.fehler || [])) {
-        const ft = (f.titel || '').toLowerCase();
-        const sym = (f.symptom || '').toLowerCase();
-        if (ft.includes(q) || sym.includes(q)) {
-          treffer.push({ slug: l.slug, titel: f.titel, modul: l.module, level: l.level, typ: 'fehler' });
-        }
-      }
-    }
-    if (treffer.length === 0) {
-      ergebnisse.innerHTML = '<p class="intro">Keine Treffer gefunden.</p>';
-    } else {
-      ergebnisse.innerHTML = treffer.slice(0, 20).map(t =>
-        `<div class="suche-ergebnis">
-          <span class="badge ${t.level === 1 ? 'badge-level-1' : 'badge-level-2'}">${t.typ === 'lektion' ? 'Lektion' : 'Fehler'} M${t.modul}</span>
-          <a href="${import.meta.env.BASE_URL}lektionen/${t.slug}">${t.titel}</a>
-        </div>`
-      ).join('');
-    }
-    ergebnisse.hidden = false;
-  });
-</script>

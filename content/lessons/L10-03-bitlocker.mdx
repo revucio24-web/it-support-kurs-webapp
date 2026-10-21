@@ -1,0 +1,161 @@
+---
+title: "Modul 10 – Lektion 3: BitLocker-Recovery und Verschlüsselung"
+level: 2
+module: 10
+slug: "modul-10-boot-recovery-03-bitlocker"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100) (Pro/Enterprise)"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "https://assets.ctfassets.net/82ripq7fjls2/6I8WL66IBa1AUovioDGrnM/f74a7eca336fd4e4c8e723a1f893086d/CompTIA-A-220-1202-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 10 – Lektion 3: BitLocker-Recovery und Verschlüsselung
+
+## 1. Lernziele
+- Du kannst BitLocker aktivieren und verwalten.
+- Du kannst BitLocker-Recovery durchführen.
+- Du kannst Recovery-Keys finden und nutzen.
+- Du kennst die Unterschiede zwischen BitLocker und Geräteverschlüsselung.
+
+## 2. Theorie kompakt
+
+**BitLocker:** Festplattenverschlüsselung (Full Disk Encryption) in Windows Pro/Enterprise/Education.
+
+**BitLocker vs. Geräteverschlüsselung:**
+- **BitLocker:** Pro/Enterprise/Education; vollständig konfigurierbar; TPM + PIN/Passwort/USB-Key.
+- **Geräteverschlüsselung:** Home; automatisch (wenn TPM + Secure Boot); eingeschränkt (kein PIN, keine Konfiguration).
+
+**BitLocker-Komponenten:**
+- **TPM (Trusted Platform Module):** Hardware-Chip (oder virtuell in VM); speichert Verschlüsselungsschlüssel.
+- **Recovery Key:** 48-stelliger Schlüssel für Wiederherstellung (wenn TPM nicht verfügbar).
+- **Protectors (Schutzmechanismen):**
+  - TPM only (automatisch).
+  - TPM + PIN.
+  - TPM + USB-Key.
+  - Passwort (für externe Laufwerke: BitLocker To Go).
+
+**BitLocker aktivieren:**
+- Systemsteuerung → BitLocker-Laufwerkverschlüsselung → "BitLocker aktivieren".
+- Oder: Einstellungen → Datenschutz & Sicherheit → Geräteverschlüsselung (Home).
+- Recovery Key speichern: In Datei, auf USB, in Entra ID/Azure AD, in AD.
+- Verschlüsselung startet (im Hintergrund, PC nutzbar).
+
+**BitLocker-Recovery (wann nötig):**
+- TPM-Änderung (Mainboard-Wechsel, BIOS-Update).
+- Boot-Konfiguration geändert.
+- Zu viele fehlgeschlagene PIN-Versuche.
+- TPM deaktiviert/deinstalliert.
+
+**Recovery Key finden:**
+- Entra ID/Azure AD: Entra ID Admin Center → Geräte → BitLocker Keys.
+- AD: Active Directory Users and Computers → Computer → "BitLocker Recovery Password".
+- Datei: Gespeicherte .txt-Datei.
+- USB: Gespeicherter Key auf USB-Stick.
+- Microsoft-Konto: account.microsoft.com → Geräte → BitLocker Recovery Key.
+
+**BitLocker-Befehle (manage-bde):**
+- `manage-bde -status C:` → Status (Verschlüsselung, Schutz).
+- `manage-bde -protectors -get C:` → Protector-Liste (Recovery Key ID).
+- `manage-bde -protectors -add C: -tpm` → TPM-Protector hinzufügen.
+- `manage-bde -unlock C: -recoverypassword <Key>` → mit Recovery Key entsperren.
+- `manage-bde -off C:` → Entschlüsselung starten.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: BitLocker aktivieren und Recovery durchführen (in VM).
+
+Schritte (nur in VM!):
+1. VM (Win11 Pro/Enterprise) → Systemsteuerung → BitLocker → "BitLocker aktivieren".
+2. Recovery Key speichern (in Datei auf Shared Folder).
+3. Verschlüsselung starten (dauert einige Minuten).
+4. `manage-bde -status C:` → "Protection On".
+5. Recovery simulieren: VM-Einstellungen → TPM entfernen → VM starten → Recovery-Bildschirm.
+6. Recovery Key eingeben → Windows startet.
+7. TPM wieder hinzufügen → `manage-bde -protectors -add C: -tpm` → Neustart → normaler Boot.
+8. Aufräumen: BitLocker deaktivieren (optional) oder VM löschen.
+
+**Erwartetes Ergebnis:** BitLocker aktiviert; Recovery durchgeführt; normaler Boot wiederhergestellt.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Recovery Key verloren – Daten nicht zugänglich"**
+- Symptom: PC startet nicht; Recovery Key unbekannt.
+- Ursache: Key nicht gesichert (kein AD/Entra/Azure, keine Datei).
+- Diagnose: Alle möglichen Speicherorte prüfen (AD, Entra, Azure, Datei, USB, Microsoft-Konto).
+- Lösung: Wenn Key nicht gefunden → Datenverlust (Verschlüsselung nicht knackbar).
+- Prävention: Key IMMER in Entra ID/Azure/AD sichern; Backup-Key; Dokumentation.
+
+**Fehler 2: "BitLocker-Recovery nach BIOS-Update"**
+- Symptom: Nach BIOS-Update startet PC in Recovery-Modus.
+- Ursache: BIOS-Update ändert TPM-Messungen (PCR-Werte).
+- Diagnose: Recovery-Bildschirm; BitLocker-Status.
+- Lösung: Recovery Key eingeben; TPM neu initialisieren (manage-bde).
+- Prävention: Recovery Key vor BIOS-Update sichern; TPM-Messungen dokumentieren.
+
+**Fehler 3: "BitLocker-Entschlüsselung hängt"**
+- Symptom: `manage-bde -off` oder GUI-Entschlüsselung bleibt bei X% hängen.
+- Ursache: Disk-Problem; Systemauslastung.
+- Diagnose: `manage-bde -status` → Fortschritt; Event Viewer.
+- Lösung: Warten; System nicht ausschalten; bei Bedarf WinRE → Entschlüsselung.
+- Prävention: Genug Akku/Strom; keine anderen Operationen während Entschlüsselung.
+
+**Fehler 4: "Geräteverschlüsselung in Home nicht deaktivierbar"**
+- Symptom: Home-User kann Geräteverschlüsselung nicht deaktivieren (keine Option).
+- Ursache: Geräteverschlüsselung ist automatisch (Home); keine Konfigurationsoption.
+- Diagnose: Einstellungen → Datenschutz & Sicherheit → Geräteverschlüsselung.
+- Lösung: Nur über Registry/PowerShell (nicht empfohlen) oder Windows neu installieren.
+- Prävention: Vor Aktivierung prüfen; Pro/Enterprise für volle Kontrolle.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist der Unterschied zwischen BitLocker und Geräteverschlüsselung?
+   a) Keiner
+   b) BitLocker = Pro/Enterprise (konfigurierbar); Geräteverschlüsselung = Home (automatisch, eingeschränkt) ✓
+   c) BitLocker ist billiger
+   d) Geräteverschlüsselung ist sicherer
+
+2. Wie lang ist ein BitLocker-Recovery-Key?
+   a) 8 Zeichen
+   b) 16 Zeichen
+   c) 48 Ziffern ✓
+   d) 64 Zeichen
+
+3. Wo kann man Recovery Keys speichern?
+   a) Nur auf Papier
+   b) Entra ID/Azure AD, AD, Datei, USB, Microsoft-Konto ✓
+   c) Nur im BIOS
+   d) Nur auf der Festplatte
+
+4. Was ist ein TPM?
+   a) Ein Passwort
+   b) Trusted Platform Module – Hardware-Chip für Schlüsselspeicherung ✓
+   c) Ein USB-Stick
+   d) Ein Antivirus
+
+5. Wann wird BitLocker-Recovery ausgelöst?
+   a) Bei jedem Start
+   b) Bei TPM-Änderung, BIOS-Update, zu vielen PIN-Fehlversuchen ✓
+   c) Bei Windows-Update
+   d) Bei Neustart
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #11003:** "User: 'Mein Laptop startet nicht mehr. Es erscheint ein blauer Bildschirm mit 'BitLocker Drive Encryption Recovery' und verlangt einen Schlüssel.'"
+
+**Lösung (aufklappbar):**
+1. Informationen: Welcher PC? Wer ist der User? Hat er den Recovery Key?
+2. Recovery Key suchen: Entra ID/Azure AD → Geräte → BitLocker Keys; oder AD; oder Microsoft-Konto; oder Datei/USB.
+3. Key eingeben → Windows startet.
+4. Ursache prüfen: BIOS-Update? TPM-Änderung? Boot-Konfiguration?
+5. TPM neu initialisieren: `manage-bde -protectors -add C: -tpm`.
+6. Dokumentieren; User über Recovery Key informieren (sicher aufbewahren).
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100) (Pro/Enterprise)
+- Quellen: Microsoft Learn Windows 11 Overview; CompTIA A+ V15 Exam Objectives (Core 2)
+- UNGEPRÜFT: BitLocker-Befehle (manage-bde) – in Lab verifizieren
+- UNGEPRÜFT: BitLocker-Recovery in Entra ID/Azure AD – in Microsoft-Docs verifizieren
+- UNGEPRÜFT: Geräteverschlüsselung in Home – Details in Microsoft-Docs verifizieren
+- UNGEPRÜFT: TPM-Messungen (PCR) und BIOS-Update-Verhalten – aus allgemeinem Wissen

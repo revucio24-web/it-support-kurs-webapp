@@ -1,0 +1,147 @@
+---
+title: "Modul 0 – Lektion 8: Snapshots und 'kaputt machen'"
+level: 1
+module: 0
+slug: "modul-0-homelab-08-snapshots"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100) – Host + VMware Workstation Pro"
+sources:
+  - "https://www.info2soft.com/blogs/virtualbox-vs-vmware.html (Abruf 2026-10-19)"
+---
+
+# Modul 0 – Lektion 8: Snapshots und "kaputt machen"
+
+## 1. Lernziele
+- Du kannst Snapshots erstellen, benennen und wiederherstellen.
+- Du kennst die Snapshot-Typen (Memory/Quiesced) und deren Unterschiede.
+- Du kannst Snapshots konsolidieren (Merge).
+- Du hast eine "kaputt machen und reparieren"-Übung durchgeführt.
+
+## 2. Theorie kompakt
+
+**Snapshot** = gespeicherter Zustand einer VM (Disk + optional RAM) zu einem Zeitpunkt. Ermöglicht Zurücksetzen bei Fehlern.
+
+**Snapshot-Typen (VMware):**
+- **Memory Snapshot (Standard):** Speichert RAM + Disk. VM kann im laufenden Betrieb snapshotet werden; Revert stellt RAM-Zustand wieder her (schneller). Größer (RAM-Größe).
+- **Quiesced Snapshot:** Friert Gast-Dateisystem ein (VSS) für konsistente Disk. Für Backup-Szenarien. Langsamer, aber disk-konsistent.
+- **Disk-only Snapshot:** Nur Disk, kein RAM. VM muss für konsistenten Zustand heruntergefahren sein. Kleiner.
+
+**Snapshot-Kette:** Jeder Snapshot baut auf dem vorherigen auf (Delta-Disks). Zu viele Snapshots → Performance-Degradation und Speicherverbrauch. Empfehlung: max. 2-3 Snapshots pro VM, dann konsolidieren.
+
+**Konsolidieren (Delete All Snapshots):** Merged alle Delta-Disks in die Basisdisk. VM muss ausgeschaltet sein (oder im laufenden Betrieb möglich, aber langsamer). Speicherplatz wird freigegeben.
+
+**Snapshot ≠ Backup:** Snapshots hängen von der Basisdisk ab. Wenn Basisdisk beschädigt → Snapshot wertlos. Für echte Backups: VM exportieren (OVF/OVA) oder Dateien kopieren.
+
+**Best Practice:** 
+- "Clean-State" Snapshot nach frischer Installation.
+- Vor riskanter Änderung: Snapshot "Pre-Change-XXX".
+- Nach erfolgreicher Änderung: Snapshot konsolidieren oder "Post-Change" erstellen, alte löschen.
+- Snapshots regelmäßig konsolidieren (wöchentlich).
+
+## 3. Praxis-Übung im Homelab
+
+**Teil A – Snapshot-Grundlagen:**
+1. VM starten (z. B. Win11-Ent-Lab01).
+2. "VM → Snapshot → Take Snapshot" → Name "Clean-State-01", Beschreibung "Frisch installiert, Tools installiert, vor Tests".
+3. Option "Snapshot the virtual machine's memory" aktivieren (Standard) → "Take Snapshot".
+4. In VM: Änderung machen (z. B. Desktop-Hintergrund ändern, Testdatei in C:\Lab erstellen).
+5. "VM → Snapshot → Revert to Snapshot → Clean-State-01" → Bestätigen.
+6. VM startet neu → Zustand vor Änderung wiederhergestellt (Hintergrund/Testdatei weg).
+
+**Teil B – "Kaputt machen und reparieren":**
+7. Snapshot "Pre-Break" erstellen.
+8. In VM: Einen Dienst stoppen und deaktivieren (z. B. "Windows Audio" oder "Print Spooler"): `services.msc` → Dienst → Stoppen + Starttyp "Deaktiviert".
+9. Optional: Eine Systemdatei umbenennen (z. B. `C:\Windows\System32\calc.exe` → `calc.exe.bak`) – Vorsicht, nur harmlose Dateien!
+10. Symptom beobachten: betroffene Funktion defekt.
+11. Revert auf "Pre-Break" → alles wiederhergestellt.
+12. Alternativ (ohne Revert): Dienst wieder aktivieren und starten; Datei zurückbenennen.
+
+**Teil C – Konsolidieren:**
+13. VM herunterfahren.
+14. "VM → Snapshot → Delete All Snapshots" → Merge läuft.
+15. VM-Ordner prüfen: Delta-Disks (.vmdk mit -00000x) sind weg, nur Basisdisk bleibt.
+
+**Erwartetes Ergebnis:** Snapshot erstellt/wiederhergestellt, "kaputt machen" reproduziert, Konsolidierung erfolgreich.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Snapshot-Kette beschädigt – VM startet nicht"**
+- Symptom: "Cannot open the disk ... or one of the snapshot disks it depends on".
+- Ursache: Snapshot-Dateien (.vmdk-00000x) gelöscht/verschoben oder Basisdisk beschädigt.
+- Diagnose: VM-Ordner auflisten; .vmdk-Dateien und .vmx prüfen.
+- Lösung: Aus Backup wiederherstellen; oder Snapshot-Manager → "Delete All" (Merge) versuchen (nur wenn Dateien vorhanden). Letzte Rettung: VM neu erstellen, Disk aus Backup.
+- Prävention: VM-Ordner nicht manuell verschieben; Snapshots regelmäßig konsolidieren; Backup der VM-Dateien.
+
+**Fehler 2: "Zu viele Snapshots – VM langsam"**
+- Symptom: VM reagiert träge, Disk-I/O langsam.
+- Ursache: Lange Snapshot-Kette (5+ Snapshots).
+- Diagnose: Snapshot-Manager → Anzahl prüfen.
+- Lösung: "Delete All Snapshots" (Konsolidierung) → Neustart.
+- Prävention: Max. 2-3 Snapshots; nach erfolgreichem Test konsolidieren.
+
+**Fehler 3: "Revert hat Daten gelöscht, die ich behalten wollte"**
+- Symptom: Nach Revert fehlen Dateien, die nach dem Snapshot erstellt wurden.
+- Ursache: Snapshot ist kein Backup; Revert = Zeitreise.
+- Diagnose: Fehlende Dateien identifizieren; Zeitstempel des Snapshots.
+- Lösung: Daten aus Shared Folder/Backup wiederherstellen; zukünftig wichtige Daten in Shared Folder oder Backup speichern.
+- Prävention: Shared Folder für Arbeitsergebnisse; Snapshots nur für Systemzustand.
+
+**Fehler 4: "Snapshot erstellen schlägt fehl – nicht genug Speicherplatz"**
+- Symptom: Fehler "Not enough space on the file system".
+- Ursache: Disk voll; Snapshot benötigt Platz für Delta-Disk.
+- Diagnose: Host-Disk-Frei prüfen; VM-Ordner-Größe.
+- Lösung: Speicherplatz freigeben; alte Snapshots konsolidieren/löschen; VM auf größere Disk verschieben.
+- Prävention: Host-Disk min. 20-30% frei halten; regelmäßige Konsolidierung.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist ein Snapshot?
+   a) Eine vollständige Kopie der VM auf einem anderen Datenträger
+   b) Ein gespeicherter Systemzustand (RAM + Disk) zu einem Zeitpunkt ✓
+   c) Ein Backup der Benutzerdaten
+   d) Eine neue VM-Vorlage
+
+2. Was passiert bei "Revert to Snapshot"?
+   a) Nur die Festplatte wird zurückgesetzt
+   b) VM-Zustand wird auf Snapshot-Zeitpunkt zurückgesetzt (RAM + Disk) ✓
+   c) Es wird ein neuer Snapshot erstellt
+   d) Die VM wird gelöscht
+
+3. Warum sind Snapshots keine Backups?
+   a) Weil sie zu groß sind
+   b) Weil sie von der Basisdisk abhängen ✓
+   c) Weil sie nur einmal erstellt werden können
+   d) Weil sie keine Dateien speichern
+
+4. Was macht "Delete All Snapshots"?
+   a) Löscht die VM
+   b) Merged alle Delta-Disks in die Basisdisk (Konsolidierung) ✓
+   c) Löscht nur den letzten Snapshot
+   d) Erstellt ein Backup
+
+5. Wie viele Snapshots sollten maximal pro VM bestehen?
+   a) Unbegrenzt
+   b) 2-3 (empfohlen) ✓
+   c) Genau 1
+   d) Mindestens 5
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #1008:** "Ein Azubi hat 7 Snapshots in einer VM erstellt. Die VM ist extrem langsam. Er will alle behalten, 'falls er zurück muss'."
+
+**Lösung (aufklappbar):**
+1. Erklären: Zu viele Snapshots → Performance-Degradation (Delta-Kette).
+2. Snapshot-Manager öffnen → Snapshots und ihre Zeitstempel prüfen.
+3. Strategie: Behalten: "Clean-State" (Basis) + letzter "Pre-Change". Löschen: Zwischensnapshots.
+4. "Delete" einzelne Snapshots (Merge in Basis) – VM kann laufen oder aus sein.
+5. Nach Konsolidierung: Performance prüfen.
+6. Alternativ: Wichtigste Snapshots als OVF exportieren (echtes Backup), dann alle löschen.
+7. Regel erklären: Max. 2-3 Snapshots; nach erfolgreichem Test konsolidieren.
+8. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 Home 24H2 (Build 26100) Host + VMware Workstation Pro
+- Quellen: research/quellen.md Abschnitt B1 (Hypervisor)
+- UNGEPRÜFT: VMware Workstation Pro exakte UI-Pfade (können sich ändern)
+- UNGEPRÜFT: Quiesced Snapshot Details (VSS) – in VMware-Doku verifizieren

@@ -1,0 +1,150 @@
+---
+title: "Modul 0 – Lektion 5: VM erstellen – Windows 11 Enterprise Evaluation"
+level: 1
+module: 0
+slug: "modul-0-homelab-05-windows11-vm"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 Enterprise Evaluation (90 Tage) als Gast"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "research/quellen.md Abschnitt B2"
+---
+
+# Modul 0 – Lektion 5: VM erstellen – Windows 11 Enterprise Evaluation
+
+## 1. Lernziele
+- Du kannst eine Windows 11 Enterprise Evaluation VM in VMware erstellen.
+- Du kennst die Windows 11 VM-Anforderungen (TPM 2.0, UEFI, Secure Boot).
+- Du kannst VMware Tools installieren und Shared Folders einrichten.
+- Du weißt um die 90-Tage-Evaluationslimitierung und Verlängerungsoptionen.
+
+## 2. Theorie kompakt
+
+**Windows 11 Enterprise Evaluation** = kostenlose 90-Tage-Testversion von Windows 11 Enterprise. Enthält alle Pro/Enterprise-Features (BitLocker, gpedit, RDP-Host, Domain Join, Hyper-V im Gast, Credential Guard etc.). Ideal für Labs.
+
+**Windows 11 VM-Anforderungen (auch in VM!):**
+- TPM 2.0 (in VMware: virtuelles TPM-Modul hinzufügen)
+- UEFI (nicht Legacy BIOS)
+- Secure Boot (empfohlen)
+- Min. 4 GB RAM, 64 GB Disk, 2 vCPU
+- 64-Bit CPU
+
+**Ohne TPM/UEFI:** Windows 11 Setup verweigert Installation ("This PC can't run Windows 11"). In VMs: virtuelles TPM nutzen (offiziell unterstützt von VMware/VirtualBox). Registry-Hacks zur Umgehung (BypassTPMCheck) sind NICHT empfohlen – sie umgehen Sicherheitsfeatures und können mit Updates brechen.
+
+**Evaluation-Laufzeit:** 90 Tage. Verlängerung: `slmgr /rearm` (max. 3x → bis zu 270 Tage) – danach Neuinstallation oder Aktivierung mit Lizenz. (UNGEPRÜFT: genaue Anzahl Rearms für Win11 Enterprise Eval – in Microsoft-Docs verifizieren.)
+
+**VMware-spezifisch:**
+- "Hardware Compatibility" → Latest (oder Workstation 17.x für Portabilität).
+- Firmware → UEFI (nicht BIOS).
+- Secure Boot aktivieren (Checkbox).
+- TPM hinzufügen: VM Settings → Add Hardware → Trusted Platform Module.
+- CD/DVD → ISO einbinden.
+- Netzwerk → NAT (Internet) oder Host-only/Internal je nach Lab.
+
+## 3. Praxis-Übung im Homelab
+
+Schritte:
+1. Windows 11 Enterprise Evaluation ISO herunterladen: Microsoft Evaluation Center (https://www.microsoft.com/en-us/evalcenter/ – UNGEPRÜFT direkte URL). Suche "Windows 11 Enterprise Evaluation". ISO (~5-6 GB).
+2. VMware: "File → New Virtual Machine → Typical".
+3. Installer: "Installer disc image file (ISO)" → ISO auswählen. VMware erkennt "Windows 11" → "Easy Install" (Express-Installation) optional. Empfehlung: "I will install the operating system later" für volle Kontrolle, dann ISO manuell einbinden.
+4. Guest OS: Microsoft Windows → Windows 11 (64-bit).
+5. VM-Name: "Win11-Ent-Lab01", Location: D:\VMs\Win11-Ent-Lab01.
+6. Disk: 60 GB, "Split into multiple files" (Portabilität) oder "Single file" (Performance).
+7. VM Settings anpassen:
+   - Hardware → Memory: 4096 MB (4 GB) min, besser 6144.
+   - Processors: 2 vCPU.
+   - CD/DVD: ISO eingebunden, "Connect at power on".
+   - Options → Advanced → Firmware: UEFI.
+   - Secure Boot: aktivieren.
+   - Add Hardware → Trusted Platform Module.
+   - Options → Shared Folders: "Always enabled", Ordner wählen (z. B. D:\LabShared).
+8. VM starten → Windows Setup durchlaufen (Sprache, Region, Tastatur, "Ich habe keinen Product Key" → "Windows 11 Enterprise" → Zustimmen → "Benutzerdefiniert" → Disk auswählen → Install).
+9. OOBE: Lokales Konto oder Microsoft-Konto; für Lab: lokales Konto ("weiter ohne Internet" → lokales Konto erstellen) empfohlen (keine echten Daten).
+10. Nach Desktop: VMware Tools installieren (VM → Install VMware Tools → in Gast setup64.exe).
+11. Neustart, Shared Folder prüfen (Z:\), Snapshot "Clean-State" erstellen.
+
+**Erwartetes Ergebnis:** Windows 11 Enterprise läuft in VM, Tools installiert, Shared Folder sichtbar, Snapshot erstellt, `winver` zeigt "Windows 11 Enterprise Evaluation".
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "This PC can't run Windows 11"**
+- Symptom: Setup verweigert Installation.
+- Ursache: TPM/UEFI/Secure Boot fehlt oder nicht aktiviert.
+- Diagnose: VM Settings → Hardware (TPM vorhanden?) + Options → Firmware (UEFI?).
+- Lösung: TPM hinzufügen, Firmware auf UEFI stellen, Secure Boot aktivieren, Neustart. NICHT Registry-Bypass nutzen.
+- Prävention: Checkliste vor Installation (TPM, UEFI, Secure Boot, 4GB RAM, 64GB Disk).
+
+**Fehler 2: "VMware Easy Install hat falsches Konto erstellt"**
+- Symptom: Automatische Installation mit Standardnamen/Passwort, unerwünscht.
+- Ursache: "Typical" + ISO → VMware Easy Install aktiv.
+- Diagnose: Setup lief ohne Eingriff.
+- Lösung: VM löschen, neu erstellen mit "I will install the operating system later", dann ISO manuell einbinden und Setup manuell durchlaufen.
+- Prävention: Bei Lab-VMs immer manuelle Installation wählen.
+
+**Fehler 3: "Shared Folder Z: nicht sichtbar nach Tools-Installation"**
+- Symptom: Kein Z:\ Laufwerk.
+- Ursache: Shared Folders nicht aktiviert oder Tools nicht vollständig installiert.
+- Diagnose: VM Settings → Options → Shared Folders; Tools-Status.
+- Lösung: Shared Folders aktivieren ("Always enabled"), Ordner hinzufügen, VM Neustart; ggf. `net use Z: \\vmware-host\Shared Folders`.
+- Prävention: Standard-Template mit Shared Folders.
+
+**Fehler 4: "Evaluation abgelaufen – Desktop zeigt Wasserzeichen"**
+- Symptom: Nach 90 Tagen Wasserzeichen "Windows 11 Enterprise Evaluation. Build ...".
+- Ursache: Evaluationszeitraum abgelaufen.
+- Diagnose: `slmgr /xpr` → Ablaufdatum.
+- Lösung: `slmgr /rearm` (Admin-CMD) → Neustart → +90 Tage (max. 3x). Danach Neuinstallation oder Lizenz.
+- Prävention: Snapshot "Clean-State" behalten; Ablaufdatum dokumentieren; bei Ablauf VM neu erstellen aus Template.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Wie lange läuft die Windows 11 Enterprise Evaluation?
+   a) 30 Tage
+   b) 90 Tage ✓
+   c) 180 Tage
+   d) Unbegrenzt
+
+2. Welches Hardware-Feature ist für Windows 11 in einer VM zwingend?
+   a) Hyper-V im Gast
+   b) Virtuelles TPM 2.0 ✓
+   c) 16 GB RAM
+   d) SSD (NVMe)
+
+3. Wie verlängert man die Evaluation (begrenzt)?
+   a) Neuinstallation
+   b) `slmgr /rearm` (max. 3x) ✓
+   c) Windows Update
+   d) Product Key eingeben
+
+4. Warum sollte man Registry-Bypass (BypassTPMCheck) NICHT nutzen?
+   a) Weil es illegal ist
+   b) Weil es Sicherheitsfeatures umgeht und mit Updates brechen kann ✓
+   c) Weil es zu langsam ist
+   d) Weil es nicht funktioniert
+
+5. Welche Firmware-Einstellung ist für Windows 11 in der VM nötig?
+   a) Legacy BIOS
+   b) UEFI ✓
+   c) SeaBIOS
+   d) Coreboot
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #1005:** "Ein User hat eine Win11-VM erstellt, aber Setup sagt 'This PC can't run Windows 11'. Er hat 8 GB RAM und 100 GB Disk zugewiesen."
+
+**Lösung (aufklappbar):**
+1. RAM/Disk ausreichend → nicht die Ursache.
+2. VM Settings prüfen: Firmware = UEFI? TPM vorhanden? Secure Boot aktiv?
+3. Falls BIOS (Legacy): auf UEFI umstellen → aber Disk muss neu partitioniert werden (GPT) → am besten VM neu erstellen.
+4. TPM hinzufügen: VM Settings → Add Hardware → Trusted Platform Module → Finish.
+5. Secure Boot aktivieren: Options → Advanced → "Enable Secure Boot".
+6. Neustart der VM → Setup erneut.
+7. Falls immer noch Fehler: ISO prüfen (muss Windows 11 sein, nicht Windows 10); ISO neu herunterladen.
+8. Dokumentieren: Ursache war fehlendes TPM/UEFI.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 Enterprise Evaluation (90 Tage) als Gast in VMware
+- Quellen: Microsoft Learn Windows 11 Overview; research/quellen.md Abschnitt B2
+- UNGEPRÜFT: Microsoft Evaluation Center direkte URL für Win11 Enterprise Eval ISO
+- UNGEPRÜFT: Exakte Anzahl Rearms (slmgr /rearm) für Win11 Enterprise Eval
+- UNGEPRÜFT: VMware Workstation Pro aktuelle Versionsnummer / UI-Pfade (können sich ändern)

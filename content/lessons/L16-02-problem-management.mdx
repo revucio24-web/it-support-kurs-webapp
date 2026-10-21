@@ -1,0 +1,170 @@
+---
+title: "Modul 16 – Lektion 2: Problem Management (ITIL 4)"
+level: 2
+module: 16
+slug: "modul-16-itil-02-problem-management"
+last_verified: "2026-10-19"
+windows_version: "Allgemein (ITSM)"
+sources:
+  - "https://www.peoplecert.org/browse-certifications/it-governance-and-service-management/ITIL-1/itil-4-foundation-2565 (Abruf 2026-10-19)"
+  - "https://nistcsf.com/wp-content/uploads/2019/02/ITIl-V4-Foundation-Syllabus.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 16 – Lektion 2: Problem Management (ITIL 4)
+
+## 1. Lernziele
+- Du kannst Problem Management nach ITIL 4 erklären.
+- Du kannst den Problem-Lebenszyklus beschreiben.
+- Du kannst Root-Cause-Analyse (RCA) durchführen.
+- Du kannst Known Errors und Workarounds verwalten.
+
+## 2. Theorie kompakt
+
+**Problem Management (ITIL 4):** Ziel: Die zugrundeliegende Ursache von Incidents identifizieren und beheben, um Wiederholung zu verhindern.
+
+**Problem vs. Incident:**
+- **Incident:** Symptom (sofort beheben).
+- **Problem:** Ursache (langfristig beheben).
+- Ein Problem kann mehrere Incidents auslösen.
+
+**Problem-Lebenszyklus:**
+1. **Problem Detection:** Problem erkannt (aus Incidents, Proactive Monitoring, etc.).
+2. **Problem Logging:** Problem-Ticket erstellen (Verknüpfung zu Incidents).
+3. **Problem Categorization & Prioritization:** Klassifizieren und priorisieren.
+4. **Problem Investigation & Diagnosis:** Root-Cause-Analyse (RCA).
+5. **Workaround:** Temporäre Lösung (falls Root-Cause nicht sofort behebbar).
+6. **Known Error:** Problem dokumentiert (Ursache bekannt, Workaround vorhanden).
+7. **Problem Resolution:** Root-Cause beheben (Change Request, Patch, etc.).
+8. **Problem Closure:** Problem-Ticket schließen (nach Verifikation).
+
+**Root-Cause-Analyse (RCA):**
+- **5 Whys:** "Warum?" fünfmal fragen, um zur Ursache zu gelangen.
+- **Fishbone (Ishikawa):** Ursachen in Kategorien (Mensch, Maschine, Methode, Material, Messung, Milieu).
+- **Fault Tree Analysis:** Baumdiagramm von Fehlerursachen.
+
+**Known Error (Bekannter Fehler):**
+- Problem, dessen Ursache bekannt ist, aber noch nicht behoben.
+- Workaround dokumentiert.
+- In Known Error Database (KEDB) gespeichert.
+- Nutzen: Bei erneutem Incident schnelle Lösung (Workaround).
+
+**Proactive Problem Management:**
+- Probleme erkennen, bevor Incidents auftreten.
+- Trend-Analyse (wiederkehrende Incidents).
+- Monitoring-Daten auswerten.
+
+**Problem Management und Change Management:**
+- Problem Resolution erfordert oft einen Change (z. B. Patch, Konfigurationsänderung).
+- Problem Management identifiziert den Change; Change Management implementiert ihn.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Problem-Management-Prozess durchführen (Simulation).
+
+Szenario: "Druckerproblem tritt bei 5 Usern in der Marketing-Abteilung auf. Gleicher Drucker, gleiche Fehlermeldung."
+
+Schritte:
+1. Problem-Ticket erstellen: "Druckerproblem Marketing – 5 Incidents".
+2. Incidents verknüpfen (5 Ticket-Nummern).
+3. Klassifizieren: Kategorie "Hardware/Drucker", Impact 2 (Gruppe), Urgency 2 → P2.
+4. RCA: 5 Whys.
+   - Warum druckt der Drucker nicht? → Spooler hängt.
+   - Warum hängt der Spooler? → Treiberproblem.
+   - Warum Treiberproblem? → Falscher Treiber installiert.
+   - Warum falscher Treiber? → Automatische Treiberinstallation (Windows Update).
+   - Warum nicht geprüft? → Kein Testprozess für Treiber.
+5. Workaround: Spooler neu starten; richtigen Treiber manuell installieren.
+6. Known Error erstellen: Ursache (falscher Treiber), Workaround (Spooler + richtiger Treiber).
+7. Problem Resolution: Treiber-Update-Prozess anpassen (Change Request).
+8. Problem Closure: Nach Verifikation schließen.
+
+**Erwartetes Ergebnis:** Problem-Management-Prozess durchgeführt; RCA dokumentiert; Known Error erstellt.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Problem nicht erkannt – wiederkehrende Incidents"**
+- Symptom: Gleiches Incident tritt immer wieder auf.
+- Ursache: Kein Problem-Ticket erstellt; kein Trend-Monitoring.
+- Diagnose: Incident-Historie prüfen (wiederkehrende Muster).
+- Lösung: Problem-Ticket erstellen; RCA durchführen.
+- Prävention: Proactive Problem Management; Trend-Analyse.
+
+**Fehler 2: "RCA zu oberflächlich – falsche Ursache"**
+- Symptom: Problem "gelöst", aber tritt erneut auf.
+- Ursache: Symptom statt Ursache behoben.
+- Diagnose: Problem-Ticket prüfen (RCA-Dokumentation).
+- Lösung: RCA wiederholen; tiefer graben (5 Whys).
+- Prävention: RCA-Schulung; Peer-Review.
+
+**Fehler 3: "Known Error nicht dokumentiert – Wissen geht verloren"**
+- Symptom: Bei erneutem Incident keine Workaround-Info.
+- Ursache: Known Error nicht in KEDB gespeichert.
+- Diagnose: KEDB-Suche erfolglos.
+- Lösung: Known Error nachträglich erstellen.
+- Prävention: Known Error als Pflichtfeld; KCS-Methode.
+
+**Fehler 4: "Problem ohne Change gelöst – nicht nachhaltig"**
+- Symptom: Problem "gelöst", aber durch manuelle Änderung (nicht dokumentiert).
+- Ursache: Kein Change Request; Änderung nicht standardisiert.
+- Diagnose: Change-Log prüfen.
+- Lösung: Change Request erstellen; Änderung standardisieren.
+- Prävention: Problem Resolution → Change Management Prozess.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist das Ziel von Problem Management?
+   a) Störungen schnell beheben
+   b) Zugrundeliegende Ursache identifizieren und beheben (Wiederholung verhindern) ✓
+   c) User informieren
+   d) Tickets schließen
+
+2. Was ist ein Known Error?
+   a) Ein neues Problem
+   b) Ein Problem, dessen Ursache bekannt ist, aber noch nicht behoben (mit Workaround) ✓
+   c) Ein gelöstes Problem
+   d) Ein Incident
+
+3. Was ist die 5-Whys-Methode?
+   a) 5 Fragen stellen
+   b) "Warum?" fünfmal fragen, um zur Ursache zu gelangen ✓
+   c) 5 Lösungen finden
+   d) 5 User befragen
+
+4. Was ist Proactive Problem Management?
+   a) Probleme nach Incidents lösen
+   b) Probleme erkennen, bevor Incidents auftreten (Trend-Analyse) ✓
+   c) Probleme ignorieren
+   d) Probleme eskalieren
+
+5. Wie hängen Problem Management und Change Management zusammen?
+   a) Gar nicht
+   b) Problem Resolution erfordert oft einen Change (Patch, Konfigurationsänderung) ✓
+   c) Change Management ersetzt Problem Management
+   d) Problem Management ist Teil von Change Management
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #17002:** "Monitoring: 'DNS-Auflösung schlägt bei 3 Clients fehl. Gleicher Fehler seit gestern.' Du bist Level 2."
+
+**Lösung (aufklappbar):**
+1. Problem-Ticket erstellen; 3 Incidents verknüpfen.
+2. Klassifizieren: Kategorie "Netzwerk/DNS", Impact 3 (Gruppe), Urgency 2 → P3.
+3. RCA (5 Whys):
+   - Warum DNS-Fehler? → Falscher DNS-Server.
+   - Warum falscher DNS? → DHCP vergibt falschen DNS.
+   - Warum? → DHCP-Scope-Konfiguration geändert.
+   - Warum geändert? → Admin-Fehler bei Scope-Update.
+   - Warum nicht geprüft? → Kein Change-Review.
+4. Workaround: DNS manuell auf korrekten Server setzen.
+5. Known Error: Ursache (DHCP-Scope), Workaround (manueller DNS).
+6. Problem Resolution: DHCP-Scope korrigieren (Change Request).
+7. Closure: Nach Verifikation schließen.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Allgemein (ITSM)
+- Quellen: ITIL 4 Foundation (PeopleCert/AXELOS); ITIL 4 Syllabus (nistcsf.com PDF)
+- UNGEPRÜFT: Exakte ITIL 4 Problem-Management-Definitionen (Wortlaut) – aus Syllabus, nicht Primärtext
+- UNGEPRÜFT: RCA-Methoden (5 Whys, Fishbone, Fault Tree) – aus allgemeiner Praxis
+- UNGEPRÜFT: Known Error Database (KEDB) Details – aus allgemeiner Praxis
+- UNGEPRÜFT: Proactive Problem Management – aus allgemeiner Praxis

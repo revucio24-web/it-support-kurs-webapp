@@ -1,0 +1,162 @@
+---
+title: "Modul 1 – Lektion 6: Dokumentation und Wissensdatenbank (KB)"
+level: 1
+module: 1
+slug: "modul-1-grundlagen-06-dokumentation-kb"
+last_verified: "2026-10-19"
+windows_version: "Allgemein (kein OS-spezifisch)"
+sources:
+  - "https://www.peoplecert.org/browse-certifications/it-governance-and-service-management/ITIL-1/itil-4-foundation-2565 (Abruf 2026-10-19)"
+---
+
+# Modul 1 – Lektion 6: Dokumentation und Wissensdatenbank (KB)
+
+## 1. Lernziele
+- Du kannst die Bedeutung der Dokumentation für IT-Support erklären.
+- Du kannst einen KB-Artikel (Knowledge Base) strukturiert erstellen.
+- Du kennst die Knowledge Management Praxis (ITIL).
+- Du kannst Runbooks und How-To-Artikel unterscheiden.
+
+## 2. Theorie kompakt
+
+**Warum Dokumentation wichtig ist:**
+- **Wissensbewahrung:** Wenn ein Supporter das Unternehmen verlässt, bleibt das Wissen.
+- **Effizienz:** Wiederkehrende Probleme schneller lösen (KB-Artikel).
+- **Konsistenz:** Gleiche Lösung für gleiche Probleme (kein "je nach Supporter").
+- **Onboarding:** Neue Mitarbeiter schneller produktiv.
+- **Compliance/Audit:** Nachvollziehbarkeit für Audits.
+- **Self-Service:** User lösen einfache Probleme selbst (weniger Tickets).
+
+**Knowledge Management (ITIL 4):**
+- Prozess zur Erstellung, Teilung, Nutzung und Pflege von Wissen.
+- **Data → Information → Knowledge → Wisdom** (DIKW-Pyramide).
+- **Knowledge Base (KB):** Zentrale Sammlung von Artikeln (How-Tos, FAQs, Troubleshooting).
+- **Knowledge-Centered Service (KCS):** Methode, bei der Lösungen während der Ticketbearbeitung als KB-Artikel erfasst werden.
+
+**KB-Artikel-Typen:**
+
+| Typ | Beschreibung | Beispiel |
+|---|---|---|
+| **How-To** | Schritt-für-Schritt-Anleitung für eine Aufgabe | "Wie setze ich mein Passwort zurück" |
+| **Troubleshooting** | Symptom → Ursache → Lösung | "Outlook startet nicht – Lösung" |
+| **FAQ** | Häufig gestellte Fragen | "Wie beantrage ich einen neuen Laptop?" |
+| **Runbook** | Detaillierte Prozedur für wiederkehrende Aufgaben (oft für Level 2/3) | "Server-Neustart nach Patch-Day" |
+| **Policy** | Richtlinie/Regel | "Passwort-Richtlinie" |
+
+**KB-Artikel-Struktur (Template):**
+```
+Titel: [Kurz, suchbar, z. B. "Outlook startet nicht nach Update"]
+Kategorie: Software / Office / Outlook
+Symptom: Was sieht der User?
+Ursache: Warum passiert das?
+Lösung: Schritt-für-Schritt (nummeriert)
+Verifikation: Wie prüft man, dass es gelöst ist?
+Verwandte Artikel: Links zu anderen KB-Artikeln
+Letzte Aktualisierung: Datum
+Autor: Name
+```
+
+**Best Practices für KB:**
+- **Suchbar:** Titel und Tags mit Begriffen, die User/Supporter suchen.
+- **Aktuell:** Regelmäßig prüfen und aktualisieren (veraltete Artikel entfernen).
+- **Klar:** Einfache Sprache, Screenshots, Schritt-für-Schritt.
+- **Vollständig:** Symptom, Ursache, Lösung, Verifikation.
+- **Bewertung:** User bewerten Artikel (hilfreich/nicht hilfreich) → Qualität verbessern.
+- **Versionierung:** Änderungen nachvollziehbar.
+
+**Runbook vs. KB-Artikel:**
+- **KB-Artikel:** Für Level 1 und User (einfach, kurz).
+- **Runbook:** Für Level 2/3 (detailliert, technisch, mit Entscheidungsbäumen).
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Einen KB-Artikel erstellen.
+
+Schritte:
+1. Wähle ein Problem aus deinem Alltag (z. B. "Drucker offline nach Windows-Update").
+2. Erstelle einen KB-Artikel nach dem Template (Abschnitt 2).
+3. Teste den Artikel: Gib ihn einem Kollegen (oder dir selbst nach 1 Woche) → kann er das Problem lösen?
+4. Bewerte: Ist der Artikel suchbar? Aktuell? Klar? Vollständig?
+
+**Erwartetes Ergebnis:** Ein vollständiger, suchbarer KB-Artikel.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "KB-Artikel veraltet / falsch"**
+- Symptom: User folgt Anleitung, aber Lösung funktioniert nicht (z. B. nach Software-Update).
+- Ursache: Artikel nicht aktualisiert.
+- Diagnose: Letzte Aktualisierung prüfen; Schritte nachvollziehen.
+- Lösung: Artikel aktualisieren oder archivieren; User informieren.
+- Prävention: Regelmäßige Reviews (quartalsweise); "Letzte Aktualisierung"-Feld; User-Feedback.
+
+**Fehler 2: "Wissen bleibt in Köpfen (Knowledge Silos)"**
+- Symptom: Nur ein Supporter kann bestimmtes Problem lösen; bei Abwesenheit Stillstand.
+- Ursache: Keine Dokumentation; Wissen nicht geteilt.
+- Diagnose: Abhängigkeit von einzelnen Personen.
+- Lösung: Knowledge-Sharing-Sessions; Pflicht zur KB-Erstellung nach Ticket-Lösung.
+- Prävention: KCS-Methode; Team-Reviews; Belohnung für KB-Beiträge.
+
+**Fehler 3: "KB-Artikel zu technisch für User"**
+- Symptom: User versteht Anleitung nicht; ruft trotzdem an.
+- Ursache: Artikel für Supporter geschrieben, nicht für User.
+- Diagnose: User-Feedback; Lesbarkeit.
+- Lösung: Zwei Versionen: User-Version (einfach) + Supporter-Version (technisch). Oder Self-Service-Portal mit einfachen Artikeln.
+- Prävention: Zielgruppe definieren; Usability-Tests.
+
+**Fehler 4: "Keine Suchfunktion / schlechte Tags"**
+- Symptom: Supporter findet Artikel nicht; löst von vorne.
+- Ursache: Schlechte Titel/Tags; keine Volltextsuche.
+- Diagnose: Suchtests durchführen.
+- Lösung: Titel und Tags optimieren; Volltextsuche implementieren.
+- Prävention: Suchbegriffe aus User-Anfragen; regelmäßige Suchanalyse.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist ein KB-Artikel?
+   a) Ein Ticket
+   b) Ein Artikel in der Wissensdatenbank (How-To, Troubleshooting, FAQ) ✓
+   c) Ein Vertrag
+   d) Ein Log
+
+2. Was ist Knowledge-Centered Service (KCS)?
+   a) Eine Software
+   b) Eine Methode, bei der Lösungen während der Ticketbearbeitung als KB-Artikel erfasst werden ✓
+   c) Ein SLA
+   d) Ein Eskalationsprozess
+
+3. Was ist der Unterschied zwischen KB-Artikel und Runbook?
+   a) Keiner
+   b) KB-Artikel = einfach/kurz (Level 1 + User); Runbook = detailliert/technisch (Level 2/3) ✓
+   c) Runbook = für User
+   d) KB-Artikel = nur für Admins
+
+4. Warum ist Dokumentation wichtig?
+   a) Nur für Compliance
+   b) Wissensbewahrung, Effizienz, Konsistenz, Onboarding, Self-Service ✓
+   c) Nur für Management
+   d) Nicht wichtig
+
+5. Wie oft sollten KB-Artikel überprüft werden?
+   a) Nie
+   b) Regelmäßig (z. B. quartalsweise) ✓
+   c) Nur bei Beschwerden
+   d) Jährlich reicht
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #2006:** "User: 'Wie kann ich mein Passwort zurücksetzen? Ich finde keine Anleitung.' Du bist Level 1."
+
+**Lösung (aufklappbar):**
+1. Prüfen: Gibt es einen KB-Artikel "Passwort zurücksetzen"?
+2. Falls ja: Link an User senden; kurz erklären.
+3. Falls nein: User durch den Prozess führen (Schritt-für-Schritt).
+4. Nach Lösung: KB-Artikel erstellen (How-To) mit Screenshots.
+5. Artikel in Self-Service-Portal veröffentlichen.
+6. Ticket schließen; User um Feedback bitten.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Allgemein (kein OS-spezifisch)
+- Quellen: ITIL 4 Foundation (PeopleCert/AXELOS) – Knowledge Management Praxis
+- UNGEPRÜFT: KCS-Methode Details – aus allgemeiner Praxis, nicht aus spezifischer Quelle
+- UNGEPRÜFT: KB-Review-Intervall (quartalsweise) – organisationsabhängig

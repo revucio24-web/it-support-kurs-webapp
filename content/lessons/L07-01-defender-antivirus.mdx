@@ -1,0 +1,150 @@
+---
+title: "Modul 7 – Lektion 1: Microsoft Defender und Antivirus"
+level: 1
+module: 7
+slug: "modul-7-sicherheit-01-defender-antivirus"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100)"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "https://assets.ctfassets.net/82ripq7fjls2/6I8WL66IBa1AUovioDGrnM/f74a7eca336fd4e4c8e723a1f893086d/CompTIA-A-220-1202-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 7 – Lektion 1: Microsoft Defender und Antivirus
+
+## 1. Lernziele
+- Du kannst Microsoft Defender Antivirus konfigurieren und verwalten.
+- Du kannst Virenscans durchführen (schnell/vollständig/offline).
+- Du kannst Defender-Bedrohungen prüfen und beheben.
+- Du kennst die Unterschiede zwischen Antivirus und EDR.
+
+## 2. Theorie kompakt
+
+**Microsoft Defender Antivirus:**
+- Integrierter Antivirus in Windows 11 (kostenlos, automatisch aktiv).
+- Echtzeitschutz, Cloud-gestützte Erkennung, Verhaltensüberwachung.
+- **Scan-Typen:**
+  - **Schnellscan:** Prüft häufige Infektionsorte (RAM, Autostart, Registry).
+  - **Vollständiger Scan:** Prüft alle Dateien (dauert länger).
+  - **Benutzerdefinierter Scan:** Bestimmte Ordner/Laufwerke.
+  - **Offline-Scan:** Scan vor Windows-Start (für Rootkits/Bootkits).
+- **Bedrohungsschutzstufen:** Standard, Hoch, Höchste (Cloud-Schutz).
+- **Ausschlüsse:** Ordner/Dateitypen/Prozesse vom Scan ausschließen (nur bei Bedarf, Sicherheitsrisiko!).
+
+**Defender verwalten:**
+- Einstellungen → Datenschutz & Sicherheit → Windows-Sicherheit → Viren- & Bedrohungsschutz.
+- PowerShell: `Get-MpComputerStatus`, `Start-MpScan -ScanType QuickScan`, `Update-MpSignature`.
+- `MpCmdRun.exe` (CMD): `MpCmdRun -Scan -ScanType 1` (Quick), `-ScanType 2` (Full).
+
+**Defender for Endpoint (MDE):**
+- Enterprise-EDR (Endpoint Detection and Response).
+- Erweiterte Bedrohungserkennung, automatisierte Untersuchung, Hunting.
+- Für Unternehmensumgebungen (separate Lizenz).
+
+**Antivirus vs. EDR:**
+- **Antivirus (AV):** Erkennt bekannte Malware (Signaturen + Heuristik).
+- **EDR:** Erkennt verdächtiges Verhalten (nicht nur bekannte Malware); ermöglicht Untersuchung und Response.
+
+**Weitere Schutzfunktionen (Windows-Sicherheit):**
+- **Firewall & Netzwerkschutz:** Windows Defender Firewall.
+- **App- & Browsersteuerung:** SmartScreen (Phishing-Schutz).
+- **Gerätesicherheit:** Core Isolation, Secure Boot, TPM.
+- **Kontoschutz:** Windows Hello, Dynamic Lock.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Defender verwalten und scannen.
+
+Schritte:
+1. Einstellungen → Windows-Sicherheit → Viren- & Bedrohungsschutz → Status prüfen (Echtzeitschutz aktiv?).
+2. "Schnellscan" durchführen → Ergebnis prüfen.
+3. "Scanoptionen" → "Vollständiger Scan" (dauert länger, optional).
+4. "Offline-Scan" (optional, Neustart erforderlich).
+5. PowerShell: `Get-MpComputerStatus` → Defender-Status; `Update-MpSignature` → Signaturen aktualisieren.
+6. Bedrohungsverlauf prüfen: "Schutzverlauf" → erkannte/quarantänisierte Bedrohungen.
+
+**Erwartetes Ergebnis:** Defender aktiv; Scan durchgeführt; keine Bedrohungen (oder behoben).
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Defender deaktiviert – Echtzeitschutz aus"**
+- Symptom: Windows-Sicherheit zeigt "Echtzeitschutz ist deaktiviert".
+- Ursache: Drittanbieter-AV installiert (deaktiviert Defender); oder Malware hat Defender deaktiviert.
+- Diagnose: Installierte AV-Software prüfen; `Get-MpComputerStatus` → `RealTimeProtectionEnabled`.
+- Lösung: Drittanbieter-AV deinstallieren (Defender aktiviert sich automatisch); oder Defender manuell aktivieren (wenn keine AV).
+- Prävention: Nur einen AV gleichzeitig; Defender als Standard.
+
+**Fehler 2: "Defender blockiert legitime Software (False Positive)"**
+- Symptom: Anwendung wird als Bedrohung erkannt und quarantänisiert.
+- Ursache: Heuristik erkennt verdächtiges Verhalten.
+- Diagnose: Schutzverlauf → Bedrohungsdetails.
+- Lösung: Datei aus Quarantäne wiederherstellen; Ausschluss hinzufügen (nur wenn sicher!).
+- Prävention: Datei bei Microsoft melden (False Positive); Ausschlüsse sparsam.
+
+**Fehler 3: "Offline-Scan findet Bedrohung, die Online-Scan nicht fand"**
+- Symptom: Rootkit/Bootkit erkannt.
+- Ursache: Malware lädt vor Windows (Bootkit).
+- Diagnose: Offline-Scan-Ergebnis.
+- Lösung: Bedrohung entfernen; System neu starten; bei Bedarf Windows neu installieren.
+- Prävention: Secure Boot aktivieren; TPM nutzen; regelmäßige Scans.
+
+**Fehler 4: "Defender-Signaturen veraltet"**
+- Symptom: "Virendefinitionen veraltet" in Windows-Sicherheit.
+- Ursache: Windows Update fehlgeschlagen; kein Internet.
+- Diagnose: `Get-MpComputerStatus` → `AntivirusSignatureLastUpdated`.
+- Lösung: `Update-MpSignature` (PowerShell); Windows Update prüfen; Internetverbindung.
+- Prävention: Windows Update aktiv; Netzwerk-Monitoring.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was macht ein Schnellscan?
+   a) Prüft alle Dateien
+   b) Prüft häufige Infektionsorte (RAM, Autostart, Registry) ✓
+   c) Prüft nur den Desktop
+   d) Prüft das Netzwerk
+
+2. Was ist ein Offline-Scan?
+   a) Scan ohne Internet
+   b) Scan vor Windows-Start (für Rootkits/Bootkits) ✓
+   c) Schneller Scan
+   d) Cloud-Scan
+
+3. Was ist der Unterschied zwischen AV und EDR?
+   a) Keiner
+   b) AV erkennt bekannte Malware; EDR erkennt verdächtiges Verhalten ✓
+   c) EDR ist billiger
+   d) AV ist für Unternehmen
+
+4. Wie aktualisiert man Defender-Signaturen manuell (PowerShell)?
+   a) `Update-Windows`
+   b) `Update-MpSignature` ✓
+   c) `Get-MpStatus`
+   d) `Scan-MpThreat`
+
+5. Was ist SmartScreen?
+   a) Ein Virenscanner
+   b) Ein Phishing-/Malware-Schutz für Apps und Browser (App- & Browsersteuerung) ✓
+   c) Eine Firewall
+   d) Ein VPN
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #8001:** "User: 'Mein PC ist sehr langsam und ich bekomme Pop-ups im Browser. Ich denke, ich habe einen Virus.'"
+
+**Lösung (aufklappbar):**
+1. Informationen: Seit wann? Welche Pop-ups? Welche Browser?
+2. Defender: Schnellscan durchführen; dann Vollständiger Scan.
+3. Wenn Bedrohung gefunden: Quarantäne → Details prüfen → entfernen.
+4. Browser: Erweiterungen prüfen (verdächtige entfernen); Startseite zurücksetzen.
+5. Wenn Defender nichts findet: Offline-Scan; Malwarebytes (Drittanbieter) als Zweitmeinung.
+6. System bereinigen: Temp-Dateien; Browser-Cache.
+7. Prävention: SmartScreen aktivieren; keine unbekannten Downloads; Updates.
+8. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100)
+- Quellen: Microsoft Learn Windows 11 Overview; CompTIA A+ V15 Exam Objectives (Core 2) – Security
+- UNGEPRÜFT: MpCmdRun.exe-Pfade und Parameter – in Lab verifizieren
+- UNGEPRÜFT: Defender for Endpoint Details – aus allgemeinem Wissen
+- UNGEPRÜFT: Offline-Scan-Prozess – in Lab verifizieren

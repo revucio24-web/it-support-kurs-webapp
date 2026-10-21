@@ -1,0 +1,183 @@
+---
+title: "Modul 13 – Lektion 2: PowerShell für Support-Automatisierung"
+level: 2
+module: 13
+slug: "modul-13-powershell-02-support-automatisierung"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100) + PowerShell 5.1/7"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "https://assets.ctfassets.net/82ripq7fjls2/6I8WL66IBa1AUovioDGrnM/f74a7eca336fd4e4c8e723a1f893086d/CompTIA-A-220-1202-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 13 – Lektion 2: PowerShell für Support-Automatisierung
+
+## 1. Lernziele
+- Du kannst wiederkehrende Support-Aufgaben mit PowerShell automatisieren.
+- Du kannst Skripte für User-Management, Diagnose und Reporting schreiben.
+- Du kannst Fehlerbehandlung in Skripten implementieren.
+- Du kannst Skripte sicher und dokumentiert einsetzen.
+
+## 2. Theorie kompakt
+
+**Support-Automatisierung (Use Cases):**
+- **User-Management:** Bulk-User-Erstellung, Passwort-Reset, Gruppenzuweisung.
+- **Diagnose:** Systeminfo sammeln, Log-Analyse, Performance-Check.
+- **Reporting:** Ticket-Statistiken, Compliance-Reports, Inventar.
+- **Bereinigung:** Temp-Dateien löschen, Cache leeren, alte Profile entfernen.
+- **Monitoring:** Dienste prüfen, Disk-Space überwachen, Alerts.
+
+**Skript-Struktur (Best Practice):**
+```powershell
+#Requires -RunAsAdministrator
+<#
+.SYNOPSIS
+  Kurzbeschreibung
+.DESCRIPTION
+  Ausführliche Beschreibung
+.PARAMETER Name
+  Parameter-Beschreibung
+.EXAMPLE
+  .\Script.ps1 -Name "Test"
+#>
+param(
+    [Parameter(Mandatory=$true)]
+    [string]$Name
+)
+# Fehlerbehandlung
+$ErrorActionPreference = "Stop"
+try {
+    # Code
+    Write-Host "Erfolg" -ForegroundColor Green
+} catch {
+    Write-Host "Fehler: $_" -ForegroundColor Red
+    exit 1
+}
+```
+
+**Fehlerbehandlung:**
+- `try { } catch { } finally { }` – Standard.
+- `$ErrorActionPreference = "Stop"` – Fehler als Exception behandeln.
+- `-ErrorAction SilentlyContinue` – Fehler ignorieren (vorsichtig!).
+- `Write-Error`, `Write-Warning`, `Write-Verbose`.
+
+**Logging:**
+- `Start-Transcript -Path C:\Logs\script.log` – gesamte Session protokollieren.
+- `Stop-Transcript` – Protokollierung beenden.
+- Eigene Log-Funktion: `Add-Content -Path C:\Logs\app.log -Value "$(Get-Date) - $Message"`.
+
+**Nützliche Skript-Snippets (Support):**
+
+```powershell
+# Systeminfo sammeln
+Get-ComputerInfo | Select-Object CsName, OsName, OsVersion, CsTotalPhysicalMemory
+
+# Disk-Space prüfen
+Get-PSDrive -PSProvider FileSystem | Select-Object Name, @{N='FreeGB';E={[math]::Round($_.Free/1GB,2)}}
+
+# Dienste prüfen
+Get-Service | Where-Object {$_.Status -ne 'Running' -and $_.StartType -eq 'Automatic'}
+
+# Temp-Dateien bereinigen
+Remove-Item -Path "$env:TEMP\*" -Recurse -Force -ErrorAction SilentlyContinue
+
+# Event-Log analysieren (letzte 24h Fehler)
+Get-EventLog -LogName System -EntryType Error -After (Get-Date).AddDays(-1)
+```
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Ein Support-Skript schreiben und ausführen.
+
+Schritte:
+1. PowerShell ISE oder VS Code öffnen.
+2. Skript erstellen: `C:\Lab\Support-Diag.ps1`.
+3. Inhalt: Systeminfo sammeln, Disk-Space prüfen, Dienste prüfen, Ergebnis als CSV exportieren.
+4. Ausführen: `.\Support-Diag.ps1`.
+5. Ergebnis prüfen: `C:\Lab\diag-report.csv`.
+6. Fehlerbehandlung testen: Ungültigen Pfad eingeben → Fehlermeldung.
+
+**Erwartetes Ergebnis:** Skript erstellt und ausgeführt; Diagnose-Report generiert.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Skript läuft, aber keine Ausgabe / Fehler"**
+- Symptom: Skript beendet ohne Fehlermeldung.
+- Ursache: Fehler werden verschluckt (kein try/catch); Ausgabe nicht angezeigt.
+- Diagnose: `$ErrorActionPreference = "Stop"` setzen; try/catch hinzufügen.
+- Lösung: Fehlerbehandlung implementieren; Logging hinzufügen.
+- Prävention: Skript-Template mit Fehlerbehandlung nutzen.
+
+**Fehler 2: "Skript funktioniert lokal, aber nicht remote"**
+- Symptom: Skript läuft auf PC A, aber nicht auf PC B.
+- Ursache: Execution Policy unterschiedlich; Module nicht installiert; Berechtigungen.
+- Diagnose: Execution Policy prüfen; Module prüfen; als Admin ausführen.
+- Lösung: Execution Policy setzen; Module installieren; Credentials prüfen.
+- Prävention: Skript-Abhängigkeiten dokumentieren.
+
+**Fehler 3: "Destructive Skript – Datenverlust"**
+- Symptom: Skript löscht falsche Dateien (z. B. `Remove-Item` mit falschem Pfad).
+- Ursache: Keine Bestätigung; kein WhatIf; falscher Pfad.
+- Diagnose: Gelöschte Dateien prüfen.
+- Lösung: Aus Backup wiederherstellen; Skript korrigieren.
+- Prävention: `-WhatIf` nutzen; Bestätigung einbauen; Test in VM.
+
+**Fehler 4: "Skript zu langsam – Timeout"**
+- Symptom: Skript läuft sehr lange; Timeout.
+- Ursache: Ineffiziente Schleifen; zu viele Objekte; Netzwerk-Latenz.
+- Diagnose: `Measure-Command { .\Script.ps1 }`.
+- Lösung: Pipeline nutzen (statt Schleifen); Filter früh anwenden; parallele Verarbeitung.
+- Prävention: Performance testen; Optimierung.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was macht `-WhatIf` bei PowerShell-Cmdlets?
+   a) Führt den Befehl aus
+   b) Zeigt, was passieren würde, ohne auszuführen ✓
+   c) Ignoriert Fehler
+   d) Zeigt Hilfe
+
+2. Was ist `Start-Transcript`?
+   a) Ein Backup-Tool
+   b) Protokolliert die gesamte PowerShell-Session in eine Datei ✓
+   c) Ein Netzwerk-Tool
+   d) Ein Virenscanner
+
+3. Was macht `$ErrorActionPreference = "Stop"`?
+   a) Ignoriert Fehler
+   b) Behandelt Fehler als Exception (stoppt Skript) ✓
+   c) Zeigt Warnungen
+   d) Löscht Fehler
+
+4. Welches Cmdlet misst die Ausführungszeit?
+   a) `Get-Time`
+   b) `Measure-Command` ✓
+   c) `Stopwatch`
+   d) `Timer`
+
+5. Was ist der sicherste Weg, destruktive Befehle zu testen?
+   a) Auf Produktionssystem
+   b) Mit `-WhatIf` und in VM/Snapshot ✓
+   c) Ohne Backup
+   d) Mit Admin-Rechten
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #14002:** "Admin: 'Ich brauche ein Skript, das alle User auflistet, deren Passwort in den nächsten 7 Tagen abläuft.'"
+
+**Lösung (aufklappbar):**
+1. AD-Modul importieren: `Import-Module ActiveDirectory`.
+2. User abfragen: `Get-ADUser -Filter * -Properties PasswordLastSet, PasswordNeverExpires`.
+3. Ablauf berechnen: Passwortalter + Max. Alter (aus Policy).
+4. Filtern: User, deren Passwort in 7 Tagen abläuft.
+5. Exportieren: `Export-Csv C:\Lab\expiring-passwords.csv`.
+6. Skript mit Fehlerbehandlung und Logging.
+7. Testen und dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100) + PowerShell 5.1/7
+- Quellen: Microsoft Learn Windows 11 Overview; CompTIA A+ V15 Exam Objectives (Core 2)
+- UNGEPRÜFT: PowerShell-Snippets – in Lab verifizieren
+- UNGEPRÜFT: AD-Modul-Cmdlets – in Lab verifizieren (AD-Modul nötig)
+- UNGEPRÜFT: Execution Policy Details – in Microsoft-Docs verifizieren

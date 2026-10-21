@@ -1,0 +1,157 @@
+---
+title: "Modul 3 – Lektion 3: Dateisystem und Speicherverwaltung"
+level: 1
+module: 3
+slug: "modul-3-windows11-03-dateisystem-speicher"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100)"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "https://assets.ctfassets.net/82ripq7fjls2/6I8WL66IBa1AUovioDGrnM/f74a7eca336fd4e4c8e723a1f893086d/CompTIA-A-220-1202-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 3 – Lektion 3: Dateisystem und Speicherverwaltung
+
+## 1. Lernziele
+- Du kannst NTFS, FAT32, exFAT unterscheiden.
+- Du kannst Partitionen verwalten (Disk Management).
+- Du kannst Speicherplatz freigeben (Disk Cleanup, Storage Sense).
+- Du kannst Dateien/Ordner-Berechtigungen (NTFS) erklären.
+
+## 2. Theorie kompakt
+
+**Dateisysteme:**
+
+| Dateisystem | Max. Dateigröße | Max. Partition | Einsatz | Hinweise |
+|---|---|---|---|---|
+| **NTFS** | 16 EB | 256 TB | Windows-System, interne Disks | Berechtigungen, Kompression, Verschlüsselung (EFS), Journaling |
+| **FAT32** | 4 GB | 32 GB (Windows) / 2 TB (theor.) | USB-Sticks, SD-Karten (legacy) | Keine Berechtigungen; kompatibel mit allen OS |
+| **exFAT** | 16 EB | 128 PB | USB-Sticks, SD-Karten (modern) | Keine Berechtigungen; für große Dateien (>4 GB) |
+| **ReFS** | 16 EB | 1 YB | Server/Storage Spaces | Resilient; für Enterprise |
+
+**Partitionen:**
+- **MBR (Master Boot Record):** Legacy; max. 4 primäre Partitionen; max. 2 TB.
+- **GPT (GUID Partition Table):** Modern; bis 128 Partitionen; >2 TB; für UEFI.
+- Windows 11 erfordert GPT + UEFI.
+
+**Disk Management (`diskmgmt.msc`):**
+- Partitionen erstellen/löschen/verkleinern/vergrößern.
+- Laufwerksbuchstaben zuweisen/ändern.
+- Volumes formatieren (NTFS/exFAT/FAT32).
+- Erweitern/Verkleinern von Volumes (nur angrenzender freier Speicher).
+
+**Speicherplatz freigeben:**
+- **Disk Cleanup (`cleanmgr`):** Temp-Dateien, Windows Update Cache, Papierkorb, etc.
+- **Storage Sense:** Automatische Bereinigung (Einstellungen → System → Speicher).
+- **Compact OS:** Systemdateien komprimieren (`compact /compactos:always`).
+- **Dateien verschieben:** Große Dateien auf andere Disk.
+
+**NTFS-Berechtigungen:**
+- **Vollzugriff, Ändern, Lesen & Ausführen, Lesen, Schreiben.**
+- Vererbung: Unterordner erben Berechtigungen vom übergeordneten Ordner.
+- Explizite Berechtigungen überschreiben vererbte.
+- **Freigabe-Berechtigungen** (SMB) + **NTFS-Berechtigungen** → effektive Berechtigung = restriktivste Kombination.
+
+**Wichtige Befehle:**
+- `chkdsk C: /f /r` – Dateisystem prüfen + Bad Sectors (Neustart nötig).
+- `sfc /scannow` – Systemdateien prüfen.
+- `icacls` – Berechtigungen anzeigen/setzen (CMD).
+- `takeown` – Besitz übernehmen.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Speicherverwaltung und Berechtigungen.
+
+Schritte:
+1. `diskmgmt.msc` öffnen → Disks/Partitionen/Volumes anzeigen.
+2. Neues Volume erstellen (falls freier Speicher): Rechtsklick auf "Nicht zugeordnet" → "Neues einfaches Volume" → Größe, Laufwerksbuchstabe, Format (NTFS).
+3. `cleanmgr` → "Systemdateien bereinigen" → Temp-Dateien, Windows Update Cache auswählen → OK.
+4. Storage Sense aktivieren: Einstellungen → System → Speicher → Storage Sense → Ein.
+5. NTFS-Berechtigungen: Ordner erstellen `C:\LabTest` → Rechtsklick → Eigenschaften → Sicherheit → "Bearbeiten" → Benutzer hinzufügen → "Lesen" gewähren.
+6. `icacls C:\LabTest` → Berechtigungen anzeigen.
+
+**Erwartetes Ergebnis:** Partition verwaltet, Speicherplatz freigegeben, Berechtigungen gesetzt.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Datei zu groß für USB-Stick (FAT32)"**
+- Symptom: "Die Datei ist zu groß für das Zieldateisystem" beim Kopieren.
+- Ursache: FAT32 max. Dateigröße 4 GB.
+- Diagnose: Dateisystem des Sticks prüfen (`fsutil fsinfo volumeinfo X:`).
+- Lösung: Stick auf exFAT oder NTFS formatieren (Daten vorher sichern!); oder Datei splitten (7-Zip).
+- Prävention: Für große Dateien exFAT/NTFS verwenden.
+
+**Fehler 2: "Zugriff verweigert – keine Berechtigung"**
+- Symptom: "Zugriff verweigert" beim Öffnen/Ändern einer Datei.
+- Ursache: NTFS-Berechtigungen fehlen; Datei gehört anderem User; UAC.
+- Diagnose: Rechtsklick → Eigenschaften → Sicherheit; `icacls`.
+- Lösung: Berechtigungen anpassen (als Admin); Besitz übernehmen (`takeown /f <Datei>` + `icacls <Datei> /grant %username%:F`).
+- Prävention: Berechtigungen dokumentieren; Admin-Zugriff nur bei Bedarf.
+
+**Fehler 3: "Volume kann nicht verkleinert werden – nicht genug zusammenhängender Speicher"**
+- Symptom: "Verkleinern" in Disk Management gibt weniger Platz frei als erwartet.
+- Ursache: Dateien am Ende des Volumes (z. B. Pagefile, Shadow Copies).
+- Diagnose: Defragmentierung (HDD) oder `fsutil` prüfen.
+- Lösung: Pagefile verschieben; Shadow Copies löschen; Defragmentieren (HDD); oder Drittanbieter-Tool.
+- Prävention: Vor Verkleinerung aufräumen; Pagefile auf andere Disk.
+
+**Fehler 4: "chkdsk findet Fehler / Bad Sectors"**
+- Symptom: `chkdsk` meldet "X KB in fehlerhaften Sektoren".
+- Ursache: Physischer Defekt der Festplatte (HDD) oder SSD-Wear.
+- Diagnose: CrystalDiskInfo → SMART-Status.
+- Lösung: Backup erstellen; Festplatte ersetzen; Daten migrieren.
+- Prävention: Regelmäßige SMART-Checks; Backup (3-2-1).
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Welches Dateisystem unterstützt Dateien >4 GB und Berechtigungen?
+   a) FAT32
+   b) exFAT
+   c) NTFS ✓
+   d) ReFS (nur Server)
+
+2. Was ist GPT?
+   a) Ein Dateisystem
+   b) GUID Partition Table – moderne Partitionstabelle (bis 128 Partitionen, >2 TB) ✓
+   c) Ein Treiber
+   d) Eine Verschlüsselung
+
+3. Wo verwaltet man Partitionen?
+   a) Im Explorer
+   b) In der Datenträgerverwaltung (diskmgmt.msc) ✓
+   c) Im Geräte-Manager
+   d) In der Ereignisanzeige
+
+4. Was ist die effektive Berechtigung bei SMB-Freigabe + NTFS?
+   a) Die freigebende (SMB)
+   b) Die restriktivste Kombination ✓
+   c) Die NTFS
+   d) Keine
+
+5. Welcher Befehl prüft das Dateisystem und Bad Sectors?
+   a) sfc /scannow
+   b) chkdsk C: /f /r ✓
+   c) dism /cleanup
+   d) icacls
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #4003:** "User: 'Ich kann eine 5 GB große Datei nicht auf meinen USB-Stick kopieren. Fehlermeldung: Datei zu groß.'"
+
+**Lösung (aufklappbar):**
+1. Dateisystem des Sticks prüfen: Rechtsklick → Eigenschaften → Dateisystem.
+2. Falls FAT32: Erklären, dass FAT32 max. 4 GB pro Datei unterstützt.
+3. Optionen:
+   a) Stick auf exFAT formatieren (Daten vorher sichern!).
+   b) Datei splitten (7-Zip → 4 GB + 1 GB).
+   c) Anderen Stick (exFAT/NTFS) verwenden.
+4. Falls NTFS/exFAT und trotzdem Fehler: Dateisystem beschädigt? → `chkdsk X: /f`.
+5. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100)
+- Quellen: Microsoft Learn Windows 11 Overview; CompTIA A+ V15 Exam Objectives (Core 2) – File Systems
+- UNGEPRÜFT: Exakte max. Größen (NTFS 16 EB, etc.) – aus allgemeinem Wissen; in Microsoft-Docs verifizieren
+- UNGEPRÜFT: chkdsk/icacls/takeown Syntax – in Lab verifizieren
+- UNGEPRÜFT: Compact OS Befehl – in Lab verifizieren

@@ -1,0 +1,150 @@
+---
+title: "Modul 2 – Lektion 2: Peripherie und Schnittstellen"
+level: 1
+module: 2
+slug: "modul-2-hardware-02-peripherie"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100)"
+sources:
+  - "https://assets.ctfassets.net/82ripq7fjls2/1oSdlyujpaX3GrM0rir6Ge/91afb2be72785281e8fb4c0d9a70c6f4/CompTIA-A-220-1201-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+---
+
+# Modul 2 – Lektion 2: Peripherie und Schnittstellen
+
+## 1. Lernziele
+- Du kennst die wichtigsten Peripheriegeräte und ihre Schnittstellen.
+- Du kannst USB-Versionen (2.0/3.0/3.1/3.2/4) und Stecker (A/B/C) unterscheiden.
+- Du kannst Bluetooth-Pairing-Probleme diagnostizieren.
+- Du kannst Docking-Station-Probleme lösen.
+
+## 2. Theorie kompakt
+
+**Schnittstellen (Ports):**
+
+| Schnittstelle | Geschwindigkeit | Stecker | Einsatz |
+|---|---|---|---|
+| USB 2.0 | 480 Mbps | A, B, Micro, Mini | Tastatur, Maus, Drucker |
+| USB 3.0/3.1 Gen1 | 5 Gbps | A (blau), C | Externe SSD, Drucker |
+| USB 3.1/3.2 Gen2 | 10 Gbps | A, C | Schnelle externe SSD |
+| USB4 / Thunderbolt 4 | 40 Gbps | C | Docking, eGPU, Monitor |
+| HDMI 2.0/2.1 | 4K/8K Video + Audio | HDMI | Monitor, TV, Projektor |
+| DisplayPort 1.4/2.0 | 4K/8K | DP | Monitor (höher als HDMI) |
+| VGA | Analog | D-Sub 15-Pin | Alte Monitore (legacy) |
+| DVI | Digital/Analog | DVI-I/D/A | Legacy-Monitore |
+| 3,5 mm Audio | Analog | Klinke | Kopfhörer, Mikrofon |
+| Ethernet (RJ45) | 1/2,5/10 Gbps | RJ45 | Netzwerk (siehe Modul 5) |
+| PS/2 | Legacy | Mini-DIN 6 | Alte Tastatur/Maus |
+
+**USB-C (Universal Serial Bus Type-C):** Reversibler Stecker; kann USB, DisplayPort, Thunderbolt, Power Delivery (PD) übertragen. Ein Port für alles.
+
+**Bluetooth:**
+- Kurzstrecken-Funk (2,4 GHz), ~10 m Reichweite.
+- Pairing: Gerät in Pairing-Modus → Windows-Einstellungen → Bluetooth → Gerät hinzufügen.
+- Profile: A2DP (Audio), HID (Tastatur/Maus), PAN (Netzwerk).
+- Probleme: Treiber, Interferenzen (WLAN 2,4 GHz), Reichweite, Akku.
+
+**Docking Station:**
+- Verbindet Laptop mit Monitor, Tastatur, Maus, Netzwerk, Power (USB-C PD).
+- Probleme: Treiber (DisplayLink), Firmware, Power Delivery, Kabel.
+- "Universal Dock" (USB-C) vs. proprietäre Docks (Thunderbolt).
+
+**Peripherie-Treiber:**
+- Windows Update liefert generische Treiber (funktioniert meist).
+- Hersteller-Treiber (z. B. Logitech G HUB, Razer Synapse) für erweiterte Funktionen.
+- Konflikt: Hersteller-Software kann mit Windows-Updates kollidieren.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Peripherie diagnostizieren.
+
+Schritte:
+1. Geräte-Manager öffnen (`devmgmt.msc`) → "Bluetooth", "Mäuse und andere Zeigegeräte", "Tastaturen", "Monitore", "USB-Controller" prüfen.
+2. Einstellungen → Bluetooth & Geräte → Geräte hinzufügen (Bluetooth-Pairing testen mit Kopfhörer/Maus).
+3. USB-Gerät einstecken → Geräusche (USB-Connect-Sound)? Geräte-Manager → neues Gerät?
+4. Monitor: Einstellungen → System → Anzeige → "Erkennen"; Auflösung/Skalierung prüfen.
+5. Docking Station: USB-C einstecken → Monitor erkannt? Netzwerk? Power?
+
+**Erwartetes Ergebnis:** Alle Peripheriegeräte erkannt und funktionsfähig; Bluetooth-Pairing erfolgreich.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Bluetooth-Gerät lässt sich nicht koppeln"**
+- Symptom: Gerät erscheint nicht in der Liste oder Pairing schlägt fehl.
+- Ursache: Gerät nicht im Pairing-Modus; Treiber fehlt; Interferenz; bereits mit anderem Gerät gekoppelt.
+- Diagnose: Geräte-Manager → Bluetooth-Treiber; Bluetooth-Dienst (bthserv) prüfen.
+- Lösung: Gerät in Pairing-Modus versetzen; altes Pairing entfernen; Treiber neu installieren; Bluetooth neu starten.
+- Prävention: Vor Pairing altes Pairing löschen; Treiber aktuell halten.
+
+**Fehler 2: "USB-Gerät wird nicht erkannt"**
+- Symptom: Kein Sound, kein neues Gerät im Geräte-Manager.
+- Ursache: Kabel defekt; Port defekt; Treiber fehlt; Stromversorgung (USB-PD) unzureichend.
+- Diagnose: Anderen Port testen; anderes Kabel; Geräte-Manager → "Unbekanntes Gerät" (gelbes Dreieck)?
+- Lösung: Port/Kabel wechseln; Treiber installieren; USB-Controller neu starten (Geräte-Manager → deaktivieren/aktivieren).
+- Prävention: Kabelqualität prüfen; USB-Hub mit eigener Stromversorgung.
+
+**Fehler 3: "Monitor zeigt 'No Signal'"**
+- Symptom: Monitor schwarz, "No Signal" oder "Out of Range".
+- Ursache: Falscher Eingang am Monitor; Kabel locker; GPU nicht aktiv; falsche Auflösung.
+- Diagnose: Monitor-Eingang (HDMI/DP) prüfen; Kabel prüfen; `dxdiag` → Display.
+- Lösung: Richtigen Eingang wählen; Kabel neu einstecken; GPU-Treiber neu installieren; Auflösung auf Standard setzen.
+- Prävention: Kabel beschriften; Monitor-Eingang dokumentieren.
+
+**Fehler 4: "Docking Station: Monitor flackert / nicht erkannt"**
+- Symptom: Monitor an Docking flackert oder wird nicht erkannt.
+- Ursache: DisplayLink-Treiber fehlt/veraltet; USB-C-Kabel (nicht Thunderbolt) für 4K; Bandbreite.
+- Diagnose: Docking-Hersteller-Treiber prüfen; Kabel-Typ (USB-C vs Thunderbolt).
+- Lösung: DisplayLink-Treiber installieren/aktualisieren; Thunderbolt-Kabel verwenden; Auflösung reduzieren.
+- Prävention: Hersteller-Empfehlungen (Kabel, Treiber) beachten.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Welche USB-Version bietet 40 Gbps?
+   a) USB 3.0
+   b) USB 3.2 Gen2
+   c) USB4 / Thunderbolt 4 ✓
+   d) USB 2.0
+
+2. Was ist USB-C?
+   a) Ein Protokoll
+   b) Ein reversibler Stecker, der USB/DP/TB/PD übertragen kann ✓
+   c) Eine Geschwindigkeit
+   d) Ein Treiber
+
+3. Wie diagnostiziert man ein nicht erkanntes USB-Gerät?
+   a) Nur neu starten
+   b) Geräte-Manager prüfen (unbekanntes Gerät?); Port/Kabel wechseln; Treiber installieren ✓
+   c) Kabel abschneiden
+   d) Registry bearbeiten
+
+4. Was ist DisplayLink?
+   a) Ein Monitorhersteller
+   b) Eine Technologie für USB-basierte Grafik (Docking Stations) ✓
+   c) Ein Kabeltyp
+   d) Ein Treiber für Tastaturen
+
+5. Welcher Port überträgt Video + Audio + Daten + Strom (PD)?
+   a) VGA
+   b) HDMI
+   c) USB-C (mit DP Alt Mode / Thunderbolt) ✓
+   d) PS/2
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #3002:** "User: 'Meine Bluetooth-Maus funktioniert seit dem Windows-Update nicht mehr. Sie ist in der Liste, aber der Cursor bewegt sich nicht.'"
+
+**Lösung (aufklappbar):**
+1. Geräte-Manager → "Mäuse und andere Zeigegeräte" → Maus prüfen (gelbes Dreieck?).
+2. Bluetooth-Dienst prüfen: `services.msc` → "Bluetooth-Unterstützungsdienst" (bthserv) → läuft? Neustart.
+3. Maus entfernen und neu koppeln: Einstellungen → Bluetooth → Gerät entfernen → neu hinzufügen.
+4. Treiber: Rechtsklick → "Treiber aktualisieren" oder Hersteller-Treiber installieren.
+5. Windows-Update rückgängig? (falls Update der Auslöser) – nur als letzte Option.
+6. Alternative: USB-Dongle (2,4 GHz) statt Bluetooth testen.
+7. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100)
+- Quellen: CompTIA A+ V15 Exam Objectives (Core 1) – Peripherals/Connectors; Microsoft Learn Windows 11 Overview
+- UNGEPRÜFT: Exakte USB-Geschwindigkeiten/Versionen (USB-IF Spezifikation) – aus allgemeinem Wissen
+- UNGEPRÜFT: DisplayLink-Treiber-URLs – herstellerabhängig

@@ -1,0 +1,159 @@
+---
+title: "Modul 4 – Lektion 4: Dokumentation und Verifikation"
+level: 1
+module: 4
+slug: "modul-4-troubleshooting-04-dokumentation"
+last_verified: "2026-10-19"
+windows_version: "Allgemein (kein OS-spezifisch)"
+sources:
+  - "https://assets.ctfassets.net/82ripq7fjls2/6I8WL66IBa1AUovioDGrnM/f74a7eca336fd4e4c8e723a1f893086d/CompTIA-A-220-1202-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 4 – Lektion 4: Dokumentation und Verifikation
+
+## 1. Lernziele
+- Du kannst eine vollständige Troubleshooting-Dokumentation erstellen.
+- Du kennst die Verifikationsschritte nach einer Lösung.
+- Du kannst ein Ticket nach der Lösung abschließen.
+- Du kannst aus einem gelösten Ticket einen KB-Artikel erstellen.
+
+## 2. Theorie kompakt
+
+**Dokumentations-Template (Troubleshooting):**
+
+```
+Problem: [Kurzbeschreibung]
+Symptom: [Was sieht der User? Fehlermeldung?]
+Scope: [Wie viele User/PCs betroffen?]
+Zeitpunkt: [Seit wann? Nach welcher Änderung?]
+Schritte versucht:
+  1. [Aktion] → [Ergebnis]
+  2. [Aktion] → [Ergebnis]
+Hypothese: [Vermutete Ursache]
+Lösung: [Was hat das Problem gelöst?]
+Verifikation: [Wie wurde geprüft, dass es gelöst ist?]
+User-Bestätigung: [Ja/Nein + Zeitstempel]
+KB-Artikel: [Link, falls erstellt]
+```
+
+**Verifikation (Schritt 6 – oft übersprungen!):**
+1. **Funktionstest:** Das ursprüngliche Problem ist gelöst (z. B. Outlook startet).
+2. **Regressionstest:** Andere Funktionen nicht beeinträchtigt (z. B. E-Mail senden/empfangen funktioniert).
+3. **User-Bestätigung:** User bestätigt, dass das Problem gelöst ist.
+4. **Dokumentation:** Ticket mit allen Details aktualisiert.
+5. **KB-Artikel:** Falls wiederkehrendes Problem → KB-Artikel erstellen.
+
+**Ticket-Abschluss:**
+- Status: Resolved → (User-Bestätigung) → Closed.
+- Resolution-Feld ausfüllen (Pflicht).
+- Kategorie/Priorität prüfen (korrekt?).
+- Verknüpfte Tickets/Probleme aktualisieren.
+- Auto-Close nach X Tagen (wenn User nicht antwortet) – mit Warnung.
+
+**KB-Artikel aus Ticket erstellen (KCS):**
+1. Ticket lösen.
+2. Prüfen: Ist das Problem wiederkehrend? → KB-Artikel lohnt sich.
+3. Artikel nach Template erstellen (Modul 1, L01-06).
+4. Im Ticket verlinken.
+5. Review durch Kollegen (Qualität).
+
+**Metriken (KPIs) für Troubleshooting:**
+- **MTTR (Mean Time To Resolve):** Durchschnittliche Lösungszeit.
+- **FCR (First Contact Resolution):** Anteil beim ersten Kontakt gelöst.
+- **Reopen Rate:** Anteil der wieder geöffneten Tickets (Ziel: &lt;5%).
+- **Escalation Rate:** Anteil eskalierter Tickets.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Vollständige Dokumentation eines Troubleshooting-Falls.
+
+Schritte:
+1. Nimm einen gelösten Fall aus den vorherigen Lektionen (z. B. DNS-Problem aus L00-10).
+2. Fülle das Dokumentations-Template aus (Abschnitt 2).
+3. Verifikation durchführen: Funktionstest + Regressionstest.
+4. User-Bestätigung (simuliert) dokumentieren.
+5. KB-Artikel erstellen (falls wiederkehrendes Problem).
+6. Ticket abschließen.
+
+**Erwartetes Ergebnis:** Vollständige Dokumentation; Ticket geschlossen; KB-Artikel erstellt (optional).
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Ticket ohne Resolution-Feld geschlossen"**
+- Symptom: Ticket geschlossen, aber keine Lösungsbeschreibung.
+- Ursache: Supporter hat "gelöst" geschrieben ohne Details.
+- Diagnose: Ticket-Inhalt prüfen.
+- Lösung: Ticket nachträglich ergänzen.
+- Prävention: Resolution-Feld als Pflichtfeld; Review.
+
+**Fehler 2: "Keine Verifikation → Problem kehrt zurück"**
+- Symptom: User meldet gleiches Problem erneut.
+- Ursache: Lösung nicht vollständig; Regression nicht geprüft.
+- Diagnose: Ticket-Historie; was wurde verifiziert?
+- Lösung: Problem erneut analysieren; vollständig lösen; verifizieren.
+- Prävention: Verifikation als Pflichtschritt; Checkliste.
+
+**Fehler 3: "KB-Artikel nicht erstellt → Wissen geht verloren"**
+- Symptom: Gleiches Problem tritt erneut auf; Supporter löst von vorne.
+- Ursache: Kein KB-Artikel nach Lösung.
+- Diagnose: KB-Suche erfolglos.
+- Lösung: Ticket nachträglich dokumentieren; KB-Artikel erstellen.
+- Prävention: KCS-Methode; Belohnung für KB-Beiträge.
+
+**Fehler 4: "Ticket nicht geschlossen → Backlog wächst"**
+- Symptom: Viele offene Tickets; Metriken schlecht.
+- Ursache: Supporter vergisst, Tickets zu schließen.
+- Diagnose: Offene Tickets prüfen.
+- Lösung: Tickets mit User-Bestätigung schließen; Auto-Close konfigurieren.
+- Prävention: Tägliche Review offener Tickets; Auto-Close nach X Tagen.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was gehört in eine vollständige Troubleshooting-Dokumentation?
+   a) Nur Titel
+   b) Problem, Symptom, Scope, Schritte, Hypothese, Lösung, Verifikation, User-Bestätigung ✓
+   c) Nur Lösung
+   d) Nur Ticket-Nummer
+
+2. Was ist Verifikation?
+   a) Ticket schließen
+   b) Prüfen, dass das Problem gelöst ist und das System vollständig funktioniert ✓
+   c) User informieren
+   d) Dokumentieren
+
+3. Was ist ein Regressionstest?
+   a) Nur das ursprüngliche Problem prüfen
+   b) Prüfen, dass andere Funktionen nicht beeinträchtigt wurden ✓
+   c) Ein Stresstest
+   d) Ein Backup-Test
+
+4. Wann erstellt man einen KB-Artikel aus einem Ticket?
+   a) Nie
+   b) Wenn das Problem wiederkehrend ist ✓
+   c) Immer
+   d) Nur bei P1
+
+5. Was bedeutet KCS?
+   a) Knowledge-Centered Service – Lösungen während Ticketbearbeitung als KB-Artikel erfassen ✓
+   b) Knowledge Control System
+   c) Key Customer Service
+   d) Kernel Configuration Service
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #5004:** "User meldet: 'Mein Drucker druckt nicht. Ich habe den Spooler neu gestartet, aber es funktioniert immer noch nicht.'"
+
+**Lösung (aufklappbar):**
+1. Informationen: Was genau? Fehlermeldung? Welcher Drucker? Seit wann? Andere User?
+2. Prüfen: Spooler-Status (`sc query spooler`); Queue-Dateien; Drucker-Status (offline?).
+3. Isolation: Anderer User auf gleichem PC? Anderer PC mit gleichem Drucker?
+4. Lösungsversuche: Spooler stoppen → Queue leeren → Spooler starten; Treiber neu installieren; Drucker-Port prüfen (TCP/IP).
+5. Verifikation: Testdruck; User bestätigt.
+6. Dokumentation: Vollständiges Ticket; KB-Artikel (falls wiederkehrend).
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Allgemein (kein OS-spezifisch)
+- Quellen: CompTIA A+ V15 Exam Objectives (Core 2) – Troubleshooting; ITIL 4 (Knowledge Management)
+- UNGEPRÜFT: KCS-Methode Details – aus allgemeiner Praxis
+- UNGEPRÜFT: Metriken (MTTR, FCR, Reopen Rate) – Branchenüblich, nicht aus spezifischer Quelle

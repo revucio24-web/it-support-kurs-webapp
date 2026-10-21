@@ -1,0 +1,161 @@
+---
+title: "Modul 15 – Lektion 3: Patch-Management"
+level: 2
+module: 15
+slug: "modul-15-backup-recovery-03-patch-management"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100)"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "https://learn.microsoft.com/en-us/windows/release-health/supported-versions-windows-client (Abruf 2026-10-19)"
+---
+
+# Modul 15 – Lektion 3: Patch-Management
+
+## 1. Lernziele
+- Du kannst den Patch-Management-Prozess erklären.
+- Du kannst Windows Update for Business (WUfB) nutzen.
+- Du kannst Update-Rings und Deferrals konfigurieren.
+- Du kannst Patch-Probleme diagnostizieren.
+
+## 2. Theorie kompakt
+
+**Patch-Management-Prozess:**
+1. **Identify:** Verfügbare Updates prüfen (Microsoft Update Catalog, WSUS, Intune).
+2. **Test:** Updates in Testumgebung/Gerätegruppe testen.
+3. **Approve:** Updates freigeben (für Pilot-Gruppe).
+4. **Deploy:** Rollout an alle Geräte.
+5. **Monitor:** Compliance prüfen; Fehler analysieren.
+6. **Remediate:** Probleme beheben; bei Bedarf Rollback.
+
+**Windows Update for Business (WUfB):**
+- Cloud-basierte Patch-Verwaltung (Intune/Entra ID).
+- **Update Rings:** Gruppen von Geräten mit unterschiedlichen Update-Zeitplänen.
+  - **Pilot:** Früh (z. B. 0 Tage Deferral).
+  - **Broad:** Später (z. B. 7 Tage Deferral).
+  - **Critical:** Sofort (Security Updates).
+- **Deferrals:** Verzögerung von Feature/Quality Updates (z. B. 7 Tage).
+- **Deadlines:** Maximale Zeit bis Installation erzwungen wird.
+- **Pause:** Updates pausieren (max. 35 Tage).
+
+**WSUS (Windows Server Update Services):**
+- On-Premise Patch-Verwaltung.
+- Synchronisiert Updates von Microsoft; Admin genehmigt; Clients holen von WSUS.
+- Wird zunehmend durch Intune/WUfB ersetzt.
+
+**Update-Typen:**
+- **Feature Updates:** Neue Windows-Version (z. B. 23H2 → 24H2). Jährlich.
+- **Quality Updates:** Sicherheits- + Bugfixes. Monatlich (Patch Tuesday).
+- **Driver Updates:** Treiber über Windows Update.
+- **Definition Updates:** Defender-Signaturen. Mehrmals täglich.
+
+**Patch-Prioritäten:**
+- **Critical/Security:** Sofort (innerhalb 24-72 h).
+- **Important:** Innerhalb 7-14 Tage.
+- **Moderate/Low:** Innerhalb 30 Tage.
+- **Feature Updates:** Nach Test (30-90 Tage).
+
+**Patch-Troubleshooting:**
+- Update schlägt fehl: Fehlercode prüfen; Logs (CBS.log, WindowsUpdate.log).
+- Update hängt: Dienste neu starten; SoftwareDistribution leeren.
+- Update verursacht Problem: Rollback (Uninstall Update); Pause.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Patch-Management verstehen und anwenden.
+
+Schritte:
+1. Einstellungen → Windows Update → "Nach Updates suchen" → verfügbare Updates.
+2. "Erweiterte Optionen" → "Optionale Updates" prüfen.
+3. "Updateverlauf" → installierte Updates prüfen.
+4. Windows Update pausieren: "Updates pausieren" → 1 Woche.
+5. Pause aufheben → Updates installieren.
+6. PowerShell: `Get-WindowsUpdateLog` (generiert Log-Datei) – UNGEPRÜFT.
+7. `Get-HotFix` → installierte Hotfixes auflisten.
+
+**Erwartetes Ergebnis:** Patch-Management verstanden; Updates verwaltet.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Update schlägt fehl – Fehler 0x800f081f"**
+- Symptom: Update-Installation bricht ab.
+- Ursache: Beschädigte Komponenten; fehlende Quelldateien.
+- Diagnose: CBS.log; `DISM /Online /Cleanup-Image /CheckHealth`.
+- Lösung: DISM `/RestoreHealth`; SFC; Windows Update Troubleshooter.
+- Prävention: Regelmäßige DISM/SFC; Windows-Updates.
+
+**Fehler 2: "Update hängt bei 0% – BITS-Dienst"**
+- Symptom: Download/Installation bleibt hängen.
+- Ursache: BITS-Dienst gestoppt; Netzwerkproblem.
+- Diagnose: `services.msc` → BITS-Status; `bitsadmin /list`.
+- Lösung: BITS neu starten; `bitsadmin /reset`; SoftwareDistribution leeren.
+- Prävention: Netzwerk-Monitoring; BITS-Überwachung.
+
+**Fehler 3: "Update verursacht Blue Screen – Rollback nötig"**
+- Symptom: Nach Update BSOD oder System nicht bootbar.
+- Ursache: Inkompatibler Treiber; beschädigtes Update.
+- Diagnose: Event Viewer; Safe Mode.
+- Lösung: WinRE → "Uninstall Updates" → letztes Update entfernen; oder Systemwiederherstellung.
+- Prävention: Updates in Testumgebung testen; Pilot-Gruppe.
+
+**Fehler 4: "Feature Update bricht ab – nicht genug Speicherplatz"**
+- Symptom: Feature Update (z. B. 24H2) schlägt fehl.
+- Ursache: Zu wenig freier Speicher (< 20-30 GB).
+- Diagnose: Speicherplatz prüfen.
+- Lösung: Speicherplatz freigeben; externe USB für Update (Media Creation Tool).
+- Prävention: Regelmäßige Bereinigung; min. 30 GB frei halten.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist Patch Tuesday?
+   a) Jeden Montag
+   b) Am 2. Dienstag des Monats ✓
+   c) Jeden Freitag
+   d) Am 1. des Monats
+
+2. Was sind Update Rings?
+   a) Gruppen von Geräten mit unterschiedlichen Update-Zeitplänen ✓
+   b) Update-Dateien
+   c) Update-Server
+   d) Update-Fehler
+
+3. Was ist ein Deferral?
+   a) Sofortige Installation
+   b) Verzögerung von Updates (z. B. 7 Tage) ✓
+   c) Update-Blockierung
+   d) Update-Rollback
+
+4. Welches Tool verwaltet Patches on-premises?
+   a) Intune
+   b) WSUS (Windows Server Update Services) ✓
+   c) Winget
+   d) Windows Update
+
+5. Was ist die empfohlene Reihenfolge bei Patch-Problemen?
+   a) Sofort alle Updates installieren
+   b) Testen → Pilot → Rollout → Monitoring ✓
+   c) Keine Updates
+   d) Nur Security Updates
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #16003:** "Admin: 'Nach dem letzten Windows-Update starten mehrere PCs nicht mehr richtig. Was tun?'"
+
+**Lösung (aufklappbar):**
+1. Informationen: Welches Update? Welche PCs betroffen? Fehlermeldung?
+2. WinRE → "Uninstall Updates" → letztes Update entfernen.
+3. Wenn mehrere PCs: Update pausieren (WUfB/Intune) → Rollback.
+4. Safe Mode → SFC/DISM.
+5. Wenn nichts hilft: Systemwiederherstellung oder In-Place-Upgrade.
+6. Update blockieren (WSUS/Intune) bis Fix verfügbar.
+7. Microsoft-Support kontaktieren; Known Issues prüfen.
+8. Dokumentieren; Lessons Learned.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100)
+- Quellen: Microsoft Learn Windows 11 Overview; Windows Release Health (supported versions)
+- UNGEPRÜFT: WUfB-Konfiguration (Update Rings, Deferrals) – in Microsoft-Docs verifizieren
+- UNGEPRÜFT: WSUS-Konfiguration – in Microsoft-Docs verifizieren
+- UNGEPRÜFT: Get-WindowsUpdateLog Syntax – in Lab verifizieren
+- UNGEPRÜFT: Patch-Prioritäten (Zeitrahmen) – Branchenüblich, nicht aus spezifischer Quelle

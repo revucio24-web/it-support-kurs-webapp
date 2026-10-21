@@ -1,0 +1,36 @@
+/* Performance: Fehler-Karten erst bei Bedarf rendern */
+.content-visibility-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 200px;
+}
+
+/* Fokus-Styles für Tastaturnavigation */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+summary:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* Shiki Dual-Theme (defaultColor: false → CSS-Variablen) */
+pre.astro-code,
+code[class*='language-'] {
+  background-color: var(--shiki-light-bg) !important;
+  color: var(--shiki-light) !important;
+}
+
+.dark pre.astro-code,
+.dark code[class*='language-'] {
+  background-color: var(--shiki-dark-bg) !important;
+  color: var(--shiki-dark) !important;
+}
+
+pre.astro-code span {
+  color: var(--shiki-light);
+}
+
+.dark pre.astro-code span {
+  color: var(--shiki-dark);
+}

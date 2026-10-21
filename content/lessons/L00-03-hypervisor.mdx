@@ -1,0 +1,145 @@
+---
+title: "Modul 0 – Lektion 3: Hypervisor-Auswahl – VMware Workstation Pro vs VirtualBox"
+level: 1
+module: 0
+slug: "modul-0-homelab-03-hypervisor-auswahl"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100) – Host"
+sources:
+  - "https://tech-insider.org/vmware-vs-virtualbox-2026/ (Abruf 2026-10-19)"
+  - "https://monovm.com/blog/vmware-vs-virtualbox (Abruf 2026-10-19)"
+  - "https://www.info2soft.com/blogs/virtualbox-vs-vmware.html (Abruf 2026-10-19)"
+  - "https://pureinfotech.com/download-install-vmware-workstation-pro-free-windows (Abruf 2026-10-19)"
+  - "https://www.techspot.com/downloads/189-vmware-workstation-for-linux.html (Abruf 2026-10-19)"
+---
+
+# Modul 0 – Lektion 3: Hypervisor-Auswahl – VMware Workstation Pro vs VirtualBox
+
+## 1. Lernziele
+- Du kannst die beiden Typ-2-Hypervisoren VMware Workstation Pro und VirtualBox vergleichen.
+- Du kannst begründet eine Wahl treffen (Performance, Lizenz, Funktionen).
+- Du kennst die aktuellen Lizenzbedingungen (beide kostenlos, Stand 2026).
+- Du weißt, warum Hyper-V auf Home nicht verfügbar ist und Typ-2 nötig ist.
+
+## 2. Theorie kompakt
+
+**Typ-2-Hypervisor** = läuft als Anwendung auf einem Host-OS (im Gegensatz zu Typ-1 wie ESXi/Hyper-V, der direkt auf Hardware läuft). Für Windows 11 Home zwingend, weil kein Hyper-V (Typ-1) verfügbar.
+
+**Vergleich (Stand 2026):**
+
+| Kriterium | VMware Workstation Pro | Oracle VirtualBox |
+|---|---|---|
+| Lizenz | Kostenlos (personal + kommerziell) seit Nov 2024 | GPL v2 (kostenlos, Open Source) |
+| Extension Pack | nicht nötig | PUEL (USB 3.0, Disk-Encryption) – kommerzielle Einschränkungen |
+| Host-OS | Windows, Linux | Windows, Linux, macOS (Intel), Solaris |
+| Performance (I/O) | deutlich besser (3x+ in Tests) | gut, aber mehr Overhead |
+| 3D-Grafik | DirectX 11, OpenGL 4.5 (besser) | experimentell, DX 11/OpenGL 3.3 |
+| Netzwerk-Editor | Virtual Network Editor (sehr flexibel) | gut, aber weniger poliert |
+| Snapshots | robust, live-Snapshots | intuitiver Baum, gut |
+| macOS-Host | nein (Fusion Pro separat) | ja (Intel) |
+| Support | kein kostenloser Ticket-Support (free tier) | Community |
+
+**Empfehlung (primär): VMware Workstation Pro** – kostenlos (seit Nov 2024, Broadcom), bessere Performance, Virtual Network Editor für Lab-Netzwerke (NAT/Host-only/Internal), virtuelles TPM für Windows 11, robustere Snapshots.
+
+**Alternative: VirtualBox 7.2** – wenn macOS-Host, wenn Open-Source-Präferenz, oder wenn VMware-Download nicht möglich. Für reine Windows-Hosts ist VMware meist die bessere Wahl.
+
+**Hyper-V auf Home:** nicht verfügbar. "Virtual Machine Platform" und "Windows Hypervisor Platform" sind in Home vorhanden (für WSL2/Sandbox), aber der Hyper-V-Manager (Typ-1) fehlt. VMware/VirtualBox nutzen WHPX (Windows Hypervisor Platform) optional als Backend.
+
+**Lizenz-Hinweis:** VMware Workstation Pro ist seit Nov 2024 kostenlos für personal, educational und commercial use (Broadcom-Announcement). Kein Lizenzschlüssel nötig. Download erfordert Broadcom-Account (kostenlose Registrierung). (Quelle: TechSpot/Tech-Insider/MonoVM – sekundär; Broadcom-Original-Announcement nicht direkt verifiziert → UNGEPRÜFT für genaue URL.)
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: VMware Workstation Pro 25H2 (oder aktuell) herunterladen und installieren.
+
+Schritte:
+1. Broadcom-Account erstellen: https://www.broadcom.com/ (kostenlos).
+2. Download-Bereich: VMware Workstation Pro für Windows (x64).
+3. Installer ausführen (Admin-Rechte). Standard-Installation, "Typical".
+4. Nach Installation: "Help → About" → Version prüfen (z. B. 25H2 oder 17.6.x).
+5. Test: "Create a New Virtual Machine" → "Typical" → ISO auswählen → VM erstellen (ohne zu starten) → prüfen, ob Wizard durchläuft.
+6. Deinstallation testen? Nein – VMs behalten. (Optional: Portable-Mode prüfen – nicht nötig.)
+
+**Erwartetes Ergebnis:** VMware Workstation Pro installiert, Lizenzfrei nutzbar, "Create VM"-Wizard funktioniert.
+
+**Falls VirtualBox gewählt:** Download https://www.virtualbox.org/wiki/Downloads (Windows hosts), Extension Pack separat installieren (PUEL-Lizenz beachten).
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "VMware Installer bricht mit 'Hyper-V detected' ab"**
+- Symptom: Installation oder VM-Start scheitert.
+- Ursache: Windows Hypervisor Platform aktiv oder WSL2 aktiv.
+- Diagnose: `optionalfeatures.exe` → "Virtual Machine Platform" / "Windows Hypervisor Platform" prüfen; `wsl --status`.
+- Lösung: Features deaktivieren (falls WSL nicht nötig) ODER VMware mit WHPX-Backend nutzen (Settings → "Virtualize Intel VT-x/EPT or AMD-V/RVI" + "Virtualize CPU performance counters").
+- Prävention: Vor Installation Windows-Features inventarisieren.
+
+**Fehler 2: "VirtualBox VM startet mit 'VT-x is not available' "**
+- Symptom: VM startet nicht.
+- Ursache: VT-x deaktiviert im BIOS oder von anderem Hypervisor belegt.
+- Diagnose: BIOS prüfen (F2/Del beim Boot); `systeminfo` → Hyper-V Requirements.
+- Lösung: BIOS → VT-x/AMD-V aktivieren; andere Hypervisor deinstallieren; Neustart.
+- Prävention: BIOS-Einstellungen dokumentieren (Foto).
+
+**Fehler 3: "Broadcom-Download erfordert Registrierung / 403"**
+- Symptom: Download-Link funktioniert nicht, "Access denied".
+- Ursache: Broadcom verlangt Account + Lizenzvereinbarung.
+- Diagnose: Login-Status prüfen.
+- Lösung: Account erstellen (kostenlos), EULA akzeptieren, dann Download. Alternativ Mirror (TechSpot) – aber Original bevorzugt.
+- Prävention: Account vor Lab-Setup anlegen.
+
+**Fehler 4: "Extension Pack Lizenz (VirtualBox) – kommerzielle Nutzung unklar"**
+- Symptom: Unsicherheit, ob VirtualBox Extension Pack kommerziell nutzbar.
+- Ursache: PUEL (Personal Use and Evaluation License) – kommerzielle Nutzung erfordert Lizenz.
+- Diagnose: Oracle VirtualBox PUEL lesen.
+- Lösung: Für rein persönliches Lab: PUEL ok. Für geschäftliche Nutzung: Oracle-Lizenz oder auf VMware wechseln (kommerziell frei).
+- Prävention: Lizenzbedingungen vor Einsatz prüfen; für Kurs-Lab VMware empfehlen (kommerziell frei).
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Welcher Hypervisor ist für Windows 11 Home zwingend nötig?
+   a) Hyper-V (Typ-1)
+   b) Typ-2-Hypervisor (VMware/VirtualBox) ✓
+   c) ESXi
+   d) Keiner – Home kann VMs nativ
+
+2. Seit wann ist VMware Workstation Pro kostenlos?
+   a) 2019
+   b) November 2024 ✓
+   c) 2026
+   d) Noch nicht kostenlos
+
+3. Welcher Hypervisor unterstützt macOS-Hosts (Intel)?
+   a) VMware Workstation Pro
+   b) VirtualBox ✓
+   c) Hyper-V
+   d) Keiner
+
+4. Was ist der Virtual Network Editor (VMware)?
+   a) Ein Tool zum Bearbeiten von VM-Dateien
+   b) Ein Tool zum Erstellen isolierter Netzwerktopologien (NAT/Host-only/Internal) ✓
+   c) Ein Texteditor
+   d) Ein Registry-Editor
+
+5. Welche Lizenz hat VirtualBox (Core)?
+   a) Proprietär, kostenpflichtig
+   b) GPL v2 (Open Source) ✓
+   c) MIT
+   d) Apache 2.0
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #1003:** "Ein Azubi hat VirtualBox installiert, aber die VM startet mit 'VT-x is not available'. Er hat Windows 11 Home und sagt, er nutzt WSL2 für Linux-Entwicklung."
+
+**Lösung (aufklappbar):**
+1. Ursache: WSL2 nutzt Virtual Machine Platform, die VT-x belegt → Konflikt mit VirtualBox.
+2. Option A: WSL2 deaktivieren (`wsl --shutdown`, dann Feature "Virtual Machine Platform" deaktivieren) → Neustart → VirtualBox funktioniert. Nachteil: WSL2 weg.
+3. Option B: VirtualBox mit "Hyper-V Backend" (VirtualBox 6.1+ unterstützt WHPX) – in Settings der VM → System → Acceleration → "Hyper-V" aktivieren. (UNGEPRÜFT: exakte UI-Pfad für VirtualBox 7.2)
+4. Option C: Auf VMware Workstation Pro wechseln (nutzt WHPX nativ, besserer Coexist).
+5. Empfehlung: Option C für Lab-Stabilität; Option B wenn VirtualBox beibehalten.
+6. Dokumentieren: Lösung + Entscheidung im Ticket.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 Home 24H2 (Build 26100) Host
+- Quellen: research/quellen.md Abschnitt B1 (Hypervisor-Vergleich)
+- UNGEPRÜFT: Broadcom-Original-Announcement-URL (nur sekundäre Quellen: TechSpot, Tech-Insider, MonoVM)
+- UNGEPRÜFT: Exakte VirtualBox 7.2 UI-Pfade für WHPX-Backend

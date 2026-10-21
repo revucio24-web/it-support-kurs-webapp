@@ -1,0 +1,156 @@
+---
+title: "Modul 12 – Lektion 2: VPN (Grundlagen, Troubleshooting)"
+level: 2
+module: 12
+slug: "modul-12-netzwerk-tiefe-02-vpn"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100)"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "https://assets.ctfassets.net/82ripq7fjls2/1oSdlyujpaX3GrM0rir6Ge/91afb2be72785281e8fb4c0d9a70c6f4/CompTIA-A-220-1201-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 12 – Lektion 2: VPN (Grundlagen, Troubleshooting)
+
+## 1. Lernziele
+- Du kannst VPN-Protokolle (IPSec, SSL/TLS, WireGuard, OpenVPN) erklären.
+- Du kannst VPN-Verbindungen in Windows konfigurieren.
+- Du kannst VPN-Probleme diagnostizieren.
+- Du kennst Split Tunneling und Full Tunnel.
+
+## 2. Theorie kompakt
+
+**VPN (Virtual Private Network):** Verschlüsselter Tunnel über ein unsicheres Netzwerk (z. B. Internet) zu einem sicheren Netzwerk (Firmennetz).
+
+**VPN-Protokolle:**
+
+| Protokoll | Schicht | Verschlüsselung | Port | Einsatz |
+|---|---|---|---|---|
+| **IPSec (IKEv2)** | Layer 3 | AES | UDP 500/4500 | Windows nativ, mobil |
+| **SSL/TLS (OpenVPN)** | Layer 4-7 | TLS | TCP/UDP 443/1194 | Flexibel, Firewall-freundlich |
+| **WireGuard** | Layer 3 | ChaCha20 | UDP 51820 | Modern, schnell, einfach |
+| **SSTP** | Layer 4-7 | TLS | TCP 443 | Windows, Firewall-freundlich |
+| **L2TP/IPSec** | Layer 2-3 | IPSec | UDP 500/1701/4500 | Legacy, Windows nativ |
+| **PPTP** | Layer 2 | MPPE (schwach) | TCP 1723 | Veraltet, unsicher |
+
+**VPN-Typen:**
+- **Remote Access VPN:** Einzelner User verbindet sich mit Firmennetz.
+- **Site-to-Site VPN:** Zwei Netzwerke verbunden (z. B. Filiale ↔ Hauptstelle).
+
+**Tunneling-Modi:**
+- **Full Tunnel:** Gesamter Traffic über VPN (sicherer, aber langsamer).
+- **Split Tunnel:** Nur Firmen-Traffic über VPN, Internet-Traffic direkt (schneller, aber weniger sicher).
+
+**Windows VPN-Konfiguration:**
+- Einstellungen → Netzwerk → VPN → "VPN-Verbindung hinzufügen".
+- Oder: `rasphone` (Telefonbucheinträge).
+- Oder: PowerShell `Add-VpnConnection`.
+
+**VPN-Troubleshooting:**
+- Verbindung schlägt fehl: Credentials, Zertifikat, Firewall, Netzwerk.
+- Verbindung bricht ab: Instabile Verbindung, Timeout, Server-Problem.
+- Langsam: Full Tunnel, Bandbreite, Server-Last.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: VPN-Verbindung konfigurieren und testen (Simulation).
+
+Schritte:
+1. Windows VPN-Verbindung erstellen: Einstellungen → Netzwerk → VPN → "VPN-Verbindung hinzufügen".
+   - Anbieter: Windows (integriert)
+   - Verbindungsname: "Lab-VPN"
+   - Servername: vpn.lab.local (oder IP)
+   - VPN-Typ: Automatisch (oder IKEv2)
+   - Anmeldeinfo: Benutzername/Passwort
+2. Verbindung herstellen (wird fehlschlagen, da kein echter VPN-Server – Simulation).
+3. `rasphone` → Verbindungen prüfen.
+4. PowerShell: `Get-VpnConnection` → VPN-Verbindungen auflisten.
+5. VPN-Logs: Event Viewer → "Anwendungen und Dienstprotokolle" → "Microsoft-Windows-VPN-Client" (falls vorhanden).
+
+**Erwartetes Ergebnis:** VPN-Konfiguration verstanden; Verbindung (Simulation) durchgeführt.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "VPN-Verbindung schlägt fehl – Fehler 800/691"**
+- Symptom: VPN-Verbindung bricht ab mit Fehlercode.
+- Ursache: Falsche Credentials (691); Netzwerkproblem (800); Zertifikatproblem.
+- Diagnose: Fehlercode in Microsoft-Docs nachschlagen; Event Viewer.
+- Lösung: Credentials prüfen; VPN-Server erreichbar? (`ping`); Zertifikat prüfen.
+- Prävention: Credentials dokumentieren; VPN-Server-Monitoring.
+
+**Fehler 2: "VPN verbunden, aber keine Firmenressourcen erreichbar"**
+- Symptom: VPN-Status "Verbunden", aber `ping` zu Server fehlschlägt.
+- Ursache: Routing-Problem; DNS nicht aktualisiert; Split Tunneling falsch konfiguriert.
+- Diagnose: `ipconfig` → VPN-Adapter IP; `route print` → Routing-Tabelle.
+- Lösung: DNS aktualisieren (`ipconfig /flushdns`); Routing korrigieren; Full Tunnel testen.
+- Prävention: VPN-Konfiguration dokumentieren; Split/Full Tunnel planen.
+
+**Fehler 3: "VPN-Verbindung bricht nach kurzer Zeit ab"**
+- Symptom: VPN verbindet, aber bricht nach X Minuten ab.
+- Ursache: Idle-Timeout; Server-seitige Trennung; instabile Internetverbindung.
+- Diagnose: VPN-Logs; Internet-Stabilität prüfen.
+- Lösung: Idle-Timeout erhöhen; Internetverbindung stabilisieren; Server-Logs prüfen.
+- Prävention: Stabile Internetverbindung; VPN-Monitoring.
+
+**Fehler 4: "Split Tunneling – Internet funktioniert nicht über VPN"**
+- Symptom: Mit VPN verbunden, aber kein Internetzugriff.
+- Ursache: Split Tunneling falsch konfiguriert; DNS über VPN nicht erreichbar.
+- Diagnose: `ipconfig` → DNS-Server (VPN-DNS?); `route print`.
+- Lösung: Full Tunnel testen; DNS-Server korrigieren; Split Tunneling deaktivieren.
+- Prävention: VPN-Konfiguration testen; Dokumentation.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist ein VPN?
+   a) Ein Antivirus
+   b) Ein verschlüsselter Tunnel über ein unsicheres Netzwerk ✓
+   c) Ein Firewall
+   d) Ein Router
+
+2. Welches VPN-Protokoll nutzt Port 443 (Firewall-freundlich)?
+   a) IPSec (IKEv2)
+   b) WireGuard
+   c) SSL/TLS (OpenVPN) oder SSTP ✓
+   d) PPTP
+
+3. Was ist Split Tunneling?
+   a) Gesamter Traffic über VPN
+   b) Nur Firmen-Traffic über VPN, Internet-Traffic direkt ✓
+   c) Kein Traffic über VPN
+   d) Doppelter Tunnel
+
+4. Welches Protokoll gilt als veraltet und unsicher?
+   a) WireGuard
+   b) IKEv2
+   c) PPTP ✓
+   d) OpenVPN
+
+5. Was ist ein Site-to-Site VPN?
+   a) Einzelner User verbindet sich mit Firmennetz
+   b) Zwei Netzwerke verbunden (z. B. Filiale ↔ Hauptstelle) ✓
+   c) Ein VPN für Mobilgeräte
+   d) Ein VPN für Cloud
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #13002:** "User (Homeoffice): 'Mein VPN verbindet sich, aber ich kann nicht auf den Dateiserver (\\\\server\\share) zugreifen.'"
+
+**Lösung (aufklappbar):**
+1. VPN-Status prüfen: Verbunden?
+2. `ipconfig` → VPN-Adapter IP; DNS-Server (muss DC-DNS sein).
+3. `nslookup server.lab.local` → DNS-Auflösung?
+4. `ping server.lab.local` → erreichbar?
+5. `\\server\share` → Zugriff?
+6. Wenn DNS falsch: `ipconfig /flushdns`; DNS auf VPN-DNS setzen.
+7. Wenn Routing falsch: `route print` → Route zum Server-Subnetz?
+8. Wenn Berechtigung: NTFS/Freigabe-Berechtigungen prüfen.
+9. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100)
+- Quellen: Microsoft Learn Windows 11 Overview; CompTIA A+ V15 Exam Objectives (Core 1)
+- UNGEPRÜFT: VPN-Protokoll-Details (Ports, Verschlüsselung) – aus allgemeinem Wissen
+- UNGEPRÜFT: Windows VPN-Konfiguration (rasphone, Add-VpnConnection) – in Lab verifizieren
+- UNGEPRÜFT: VPN-Fehlercodes (800, 691) – in Microsoft-Docs verifizieren
+- UNGEPRÜFT: Split/Full Tunneling Konfiguration – in Microsoft-Docs verifizieren

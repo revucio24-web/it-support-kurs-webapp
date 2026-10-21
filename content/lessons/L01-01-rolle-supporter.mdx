@@ -1,0 +1,155 @@
+---
+title: "Modul 1 – Lektion 1: Rolle des IT-Supporters (Level 1/2/3)"
+level: 1
+module: 1
+slug: "modul-1-grundlagen-01-rolle-supporter"
+last_verified: "2026-10-19"
+windows_version: "Allgemein (kein OS-spezifisch)"
+sources:
+  - "https://www.peoplecert.org/browse-certifications/it-governance-and-service-management/ITIL-1/itil-4-foundation-2565 (Abruf 2026-10-19)"
+  - "https://www.coursera.org/professional-certificates/google-it-support (Abruf 2026-10-19)"
+---
+
+# Modul 1 – Lektion 1: Rolle des IT-Supporters (Level 1/2/3)
+
+## 1. Lernziele
+- Du kannst die drei Support-Level (L1/L2/L3) voneinander unterscheiden.
+- Du kennst die Aufgaben des First Level Support (FLS).
+- Du verstehst den Unterschied zwischen Helpdesk und Service Desk (ITIL).
+- Du kannst typische Tätigkeiten einem Level zuordnen.
+
+## 2. Theorie kompakt
+
+**Support-Level (typische Struktur):**
+
+| Level | Bezeichnung | Aufgaben | Beispiele |
+|---|---|---|---|
+| **Level 1 (First Line)** | Helpdesk / Service Desk | Annahme, Klassifizierung, Dokumentation, Lösung einfacher Probleme, Eskalation | Passwort-Reset, Druckerproblem, WLAN-Verbindung, Software-Installation (Standard) |
+| **Level 2** | Second Line Support | Tiefere technische Analyse, komplexe Fehler, Konfiguration, Remote-Support | AD/GPO-Fehler, Netzwerkprobleme, Treiberkonflikte, Performance-Analyse |
+| **Level 3** | Third Line / Spezialisten | Hersteller-Support, Entwickler, Infrastruktur-Experten, Code-Fixes | Bug in Anwendung, Server-Ausfall, Datenbank-Problem, Vendor-Escalation |
+
+**Helpdesk vs. Service Desk (ITIL):**
+- **Helpdesk** = reaktiv, fokussiert auf Incident-Fixing (Störungsbehebung). Historisch.
+- **Service Desk** (ITIL) = zentraler Kontaktpunkt für alle IT-Anfragen (Incidents + Service Requests + Informationen). Proaktiv, inkl. Self-Service-Portal, Wissensdatenbank, Kommunikation.
+
+**Aufgaben des Level-1-Supporters (täglich):**
+1. Tickets annehmen (Telefon, E-Mail, Portal, Chat).
+2. User identifizieren und authentifizieren (Identitätsprüfung vor Änderungen!).
+3. Problem verstehen (aktives Zuhören, Rückfragen).
+4. Klassifizieren (Incident vs. Service Request, Kategorie, Priorität).
+5. Dokumentieren (Symptom, Schritte, Ergebnis).
+6. Einfache Probleme lösen (Passwort-Reset, Drucker, WLAN, Standard-Software).
+7. Eskalieren (wenn nicht lösbar oder SLA-Gefahr).
+8. User informieren (Status, Lösung, nächste Schritte).
+9. Wissensdatenbank pflegen (KB-Artikel erstellen/aktualisieren).
+
+**Soft Skills (genauso wichtig wie Technik):**
+- Aktives Zuhören, Empathie ("Ich verstehe, dass das frustrierend ist").
+- Klare, jargonfreie Sprache (User sind keine IT-Experten).
+- Geduld, Freundlichkeit, Professionalität auch bei schwierigen Usern.
+- Dokumentationsdisziplin.
+
+**Typische Kennzahlen (KPIs):**
+- **FCR (First Contact Resolution):** Anteil der Tickets, die beim ersten Kontakt gelöst werden (Ziel: >70%).
+- **MTTR (Mean Time To Resolve):** Durchschnittliche Lösungszeit.
+- **CSAT (Customer Satisfaction):** Zufriedenheit der User.
+- **Ticket-Volumen / Backlog:** Anzahl offener Tickets.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Ein typisches Level-1-Ticket durchspielen (Simulation).
+
+Szenario: User meldet "Mein Drucker druckt nicht mehr seit heute Morgen."
+
+Schritte (als Supporter):
+1. Ticket anlegen: Titel "Drucker druckt nicht", Kategorie "Hardware/Drucker", User "Max Mustermann".
+2. User kontaktieren (Telefon/Chat): Begrüßung, Identitätsprüfung (Name + Abteilung + ggf. Mitarbeiter-ID).
+3. Informationen sammeln: Welcher Drucker? Fehlermeldung? Seit wann? Andere User betroffen? (→ Isolation)
+4. Klassifizieren: Incident (Störung) vs. Service Request (Anfrage). Hier: Incident.
+5. Priorität setzen: Impact (1 User, 1 Drucker) = niedrig; Urgency = mittel → Priority = P3 (nach ITIL-Matrix).
+6. Lösungsversuch Level 1: Drucker neu starten, Kabel prüfen, Spooler-Dienst, Treiber.
+7. Falls gelöst: Ticket dokumentieren (Schritte + Lösung), schließen, User informieren.
+8. Falls nicht gelöst: Eskalation an Level 2 mit vollständiger Dokumentation.
+
+**Erwartetes Ergebnis:** Ticket vollständig dokumentiert, klassifiziert, priorisiert; Lösung oder Eskalation erfolgt.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Ticket ohne ausreichende Dokumentation geschlossen"**
+- Symptom: User meldet gleiches Problem erneut; kein Nachvollzug möglich.
+- Ursache: Supporter hat nur "gelöst" geschrieben, keine Schritte.
+- Diagnose: Ticket-Historie prüfen.
+- Lösung: Ticket nachträglich ergänzen; Standard-Template einführen (Symptom, Schritte, Ergebnis, Lösung).
+- Prävention: Pflichtfelder im Ticketsystem; Review durch Teamlead.
+
+**Fehler 2: "Falsche Klassifizierung → SLA-Verletzung"**
+- Symptom: Ticket als "Service Request" statt "Incident" klassifiziert → längere Reaktionszeit → SLA-Verletzung.
+- Ursache: Unklare Unterscheidung Incident/Request.
+- Diagnose: Ticket-Kategorie + SLA prüfen.
+- Lösung: Klassifizierung korrigieren; SLA neu berechnen; User informieren.
+- Prävention: Schulung; klare Definitionen; Review bei Erstellung.
+
+**Fehler 3: "User nicht identifiziert → Sicherheitsvorfall"**
+- Symptom: Passwort-Reset für falsche Person; Datenleck.
+- Ursache: Keine Identitätsprüfung vor sensiblen Änderungen.
+- Diagnose: Audit-Log prüfen.
+- Lösung: Incident melden; Passwort erneut zurücksetzen; User informieren; Prozess anpassen.
+- Prävention: Pflicht-Identitätsprüfung (Name + Geburtsdatum/Mitarbeiter-ID + Rückruf auf bekannte Nummer) vor Passwort-Reset.
+
+**Fehler 4: "Eskalation ohne Dokumentation → Level 2 verliert Zeit"**
+- Symptom: Level 2 muss von vorne anfangen; User frustriert.
+- Ursache: Ticket nur mit "Funktioniert nicht" weitergeleitet.
+- Diagnose: Ticket-Inhalt prüfen.
+- Lösung: Ticket nachträglich mit Symptom, Schritten, Ergebnissen, Systeminfo ergänzen.
+- Prävention: Eskalations-Checkliste (Symptom, Schritte, Ergebnis, Systeminfo, User-Kontakt).
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist der Unterschied zwischen Helpdesk und Service Desk (ITIL)?
+   a) Keiner
+   b) Helpdesk = reaktiv Incident-Fixing; Service Desk = zentraler Kontaktpunkt für alle Anfragen (inkl. Requests, Info) ✓
+   c) Service Desk ist nur für VIPs
+   d) Helpdesk ist moderner
+
+2. Welche Aufgabe gehört typischerweise zu Level 1?
+   a) Code-Fix in Anwendung
+   b) Server-Hardware-Austausch
+   c) Passwort-Reset und Druckerproblem ✓
+   d) Datenbank-Optimierung
+
+3. Was bedeutet FCR?
+   a) First Contact Resolution – Anteil der Tickets, die beim ersten Kontakt gelöst werden ✓
+   b) Fastest Case Resolution
+   c) Full Customer Report
+   d) Final Check Required
+
+4. Welche Kennzahl misst die durchschnittliche Lösungszeit?
+   a) FCR
+   b) CSAT
+   c) MTTR ✓
+   d) Backlog
+
+5. Was ist vor einem Passwort-Reset Pflicht?
+   a) Nichts
+   b) Identitätsprüfung des Users ✓
+   c) Genehmigung des Managers
+   d) Ticket schließen
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #2001:** "User: 'Mein Outlook startet nicht seit dem Update gestern.' Du bist Level 1."
+
+**Lösung (aufklappbar):**
+1. Ticket anlegen: Kategorie "Software/Outlook", User identifizieren.
+2. Informationen sammeln: Fehlermeldung? Welches Update? Betrifft nur ihn? (Isolation)
+3. Level-1-Versuche: Outlook im Safe Mode starten (`outlook.exe /safe`); Profil prüfen; Add-ins deaktivieren; Office-Reparatur (Schnellreparatur).
+4. Falls gelöst: dokumentieren + schließen.
+5. Falls nicht: Eskalation an Level 2 mit vollständiger Doku (Schritte, Ergebnisse, Systeminfo: Windows-Build, Office-Version, Fehlermeldung).
+6. User informieren über Status und nächste Schritte.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Allgemein (kein OS-spezifisch)
+- Quellen: ITIL 4 Foundation (PeopleCert/AXELOS) – Incident/Problem/Service Request Definitionen; Google IT Support Certificate – Customer Service
+- UNGEPRÜFT: Exakte ITIL 4 Definitionen (Wortlaut) – aus Syllabus, nicht aus Primärtext; vor Veröffentlichung mit offizieller ITIL-Literatur abgleichen
+- UNGEPRÜFT: KPI-Zielwerte (FCR >70%) – Branchenüblich, nicht aus Quelle

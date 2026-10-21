@@ -1,0 +1,176 @@
+---
+title: "Modul 4 – Lektion 3: Troubleshooting-Tools (CMD/PowerShell/Event Viewer)"
+level: 1
+module: 4
+slug: "modul-4-troubleshooting-03-tools"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100)"
+sources:
+  - "https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/clean (Abruf 2026-10-19)"
+  - "https://assets.ctfassets.net/82ripq7fjls2/6I8WL66IBa1AUovioDGrnM/f74a7eca336fd4e4c8e723a1f893086d/CompTIA-A-220-1202-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 4 – Lektion 3: Troubleshooting-Tools (CMD/PowerShell/Event Viewer)
+
+## 1. Lernziele
+- Du kennst die wichtigsten CMD/PowerShell-Befehle für Troubleshooting.
+- Du kannst den Event Viewer (Ereignisanzeige) nutzen.
+- Du kannst Systeminformationen abfragen.
+- Du kannst Tools für Netzwerk, Speicher und System nutzen.
+
+## 2. Theorie kompakt
+
+**CMD-Befehle (Troubleshooting):**
+
+| Befehl | Funktion |
+|---|---|
+| `ipconfig /all` | Netzwerkkonfiguration (IP, DNS, DHCP, MAC) |
+| `ipconfig /flushdns` | DNS-Cache leeren |
+| `ipconfig /release` + `/renew` | IP freigeben/erneuern |
+| `ping <Ziel>` | Erreichbarkeit testen |
+| `tracert <Ziel>` | Route verfolgen |
+| `nslookup <Domain>` | DNS-Auflösung testen |
+| `netstat -ano` | Offene Ports/Verbindungen |
+| `sfc /scannow` | Systemdateien prüfen |
+| `chkdsk C: /f /r` | Dateisystem prüfen |
+| `tasklist` | Laufende Prozesse |
+| `taskkill /PID <PID> /F` | Prozess beenden |
+| `sc query <Dienst>` | Dienst-Status |
+| `net stop/start <Dienst>` | Dienst stoppen/starten |
+| `systeminfo` | Systeminfo (OS, RAM, CPU, Boot) |
+| `whoami` | Aktueller User |
+| `gpresult /r` | Angewendete GPOs (Pro/Enterprise) |
+| `rsop.msc` | Resultant Set of Policy (Pro/Enterprise) |
+
+**PowerShell-Befehle (Troubleshooting):**
+
+| Befehl | Funktion |
+|---|---|
+| `Get-Process` | Laufende Prozesse |
+| `Get-Service` | Dienste |
+| `Get-EventLog -LogName System -Newest 20` | System-Events |
+| `Get-ComputerInfo` | Systeminfo |
+| `Get-PhysicalDisk` | Disk-Status (SMART) |
+| `Test-NetConnection <Host> -Port <Port>` | Port-Test |
+| `Resolve-DnsName <Domain>` | DNS-Auflösung |
+| `Get-NetIPAddress` | IP-Konfiguration |
+| `Get-NetAdapter` | Netzwerkadapter |
+
+**Event Viewer (Ereignisanzeige):**
+- `eventvwr.msc` öffnet die Ereignisanzeige.
+- **Windows-Protokolle:**
+  - **Anwendung:** Anwendungsfehler (z. B. App-Crash).
+  - **Sicherheit:** Anmeldeversuche, Rechteänderungen (Audit).
+  - **System:** Systemfehler, Treiber, Dienste.
+  - **Setup:** Windows-Setup-Ereignisse.
+  - **Forwarded Events:** Von anderen PCs weitergeleitet.
+- **Anwendungs- und Dienstprotokolle:** Spezifische Logs (z. B. Microsoft-Windows-PowerShell/Operational).
+- **Filtern:** Ansicht → Benutzerdefinierte Ansichten; oder "Aktuelles Protokoll filtern" → Event-Level (Critical, Error, Warning, Information).
+- **Event-ID:** Jedes Ereignis hat eine ID (z. B. 41 = Kernel-Power (unerwarteter Neustart), 6008 = unerwartetes Herunterfahren).
+
+**Wichtige Event-IDs (Beispiele):**
+- **41 (Kernel-Power):** Unerwarteter Neustart/Absturz (Strom, Überhitzung).
+- **6008:** Unerwartetes Herunterfahren.
+- **1001 (BugCheck):** Bluescreen (BSOD) – enthält Stop-Code.
+- **7001/7009:** Dienst-Startfehler.
+- **4624/4625:** Erfolgreiche/fehlgeschlagene Anmeldung (Security-Log).
+- **4720:** Benutzerkonto erstellt (Security-Log).
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Tools anwenden.
+
+Schritte:
+1. `ipconfig /all` → IP, DNS, DHCP, MAC notieren.
+2. `ping 8.8.8.8` → Internet-Erreichbarkeit.
+3. `tracert google.com` → Route (Hops).
+4. `nslookup google.com` → DNS-Auflösung.
+5. `eventvwr.msc` → System-Log → nach "Error" filtern → letzte 10 Fehler notieren.
+6. `sfc /scannow` → Systemdateien prüfen (dauert einige Minuten).
+7. PowerShell: `Get-Process | Sort-Object CPU -Descending | Select-Object -First 10`.
+8. `Get-Service | Where-Object Status -eq 'Stopped'` → gestoppte Dienste.
+
+**Erwartetes Ergebnis:** Netzwerk- und Systemstatus bekannt; keine kritischen Fehler.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "ipconfig zeigt keine IP (169.254.x.x)"**
+- Symptom: `ipconfig` zeigt APIPA-Adresse (169.254.x.x).
+- Ursache: DHCP-Server nicht erreichbar; kein DHCP-Antwort.
+- Diagnose: `ipconfig /all` → DHCP-Server leer; `ping` zum Router.
+- Lösung: `ipconfig /release` + `/renew`; Kabel prüfen; Router/DHCP prüfen.
+- Prävention: Statische IP als Fallback; DHCP-Server-Monitoring.
+
+**Fehler 2: "Event Viewer zeigt Tausende Fehler – unübersichtlich"**
+- Symptom: Zu viele Events; relevante nicht findbar.
+- Ursache: Kein Filter; zu breite Ansicht.
+- Diagnose: Filter setzen (Event-Level, Zeitraum, Event-ID).
+- Lösung: Benutzerdefinierte Ansicht erstellen; nach Event-ID filtern.
+- Prävention: Regelmäßige Log-Reviews; Alerts für kritische Events.
+
+**Fehler 3: "sfc /scannow findet Fehler, aber kann nicht reparieren"**
+- Symptom: "Windows-Ressourcenschutz konnte die angeforderten Dateien nicht reparieren."
+- Ursache: CBS-Store beschädigt.
+- Diagnose: `C:\Windows\Logs\CBS\CBS.log` prüfen.
+- Lösung: `DISM /Online /Cleanup-Image /RestoreHealth` → dann `sfc /scannow`.
+- Prävention: Regelmäßige SFC/DISM; Windows-Updates.
+
+**Fehler 4: "ping funktioniert, aber Browser lädt keine Seite"**
+- Symptom: `ping 8.8.8.8` OK, aber Browser zeigt Fehler.
+- Ursache: DNS-Problem (nicht IP-Problem); Proxy; Firewall.
+- Diagnose: `nslookup google.com` → DNS testen; Proxy-Einstellungen prüfen.
+- Lösung: DNS-Server ändern (8.8.8.8); `ipconfig /flushdns`; Proxy deaktivieren.
+- Prävention: Zuverlässige DNS-Server; Proxy-Dokumentation.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Welcher Befehl leert den DNS-Cache?
+   a) `ipconfig /renew`
+   b) `ipconfig /flushdns` ✓
+   c) `ipconfig /release`
+   d) `ipconfig /all`
+
+2. Was zeigt Event-ID 41 (Kernel-Power)?
+   a) Erfolgreiche Anmeldung
+   b) Unerwarteter Neustart/Absturz ✓
+   c) Dienst-Start
+   d) Windows-Update
+
+3. Welches Tool prüft Systemdateien?
+   a) `chkdsk`
+   b) `sfc /scannow` ✓
+   c) `ipconfig`
+   d) `netstat`
+
+4. Was macht `tracert`?
+   a) IP-Adresse anzeigen
+   b) Route zu einem Ziel verfolgen (Hops) ✓
+   c) DNS auflösen
+   d) Port testen
+
+5. Wo findet man Anwendungsfehler (App-Crashes)?
+   a) System-Log
+   b) Anwendungs-Log (Application) ✓
+   c) Sicherheits-Log
+   d) Setup-Log
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #5003:** "User: 'Mein PC war heute Morgen aus, als ich kam. Ich habe nichts gemacht. Können Sie prüfen, warum?'"
+
+**Lösung (aufklappbar):**
+1. Event Viewer → System-Log → Event-ID 41 (Kernel-Power) oder 6008 (unerwartetes Herunterfahren) suchen.
+2. Zeitstempel des Events mit User-Aussage abgleichen.
+3. Mögliche Ursachen: Stromausfall, Überhitzung, Hardware-Defekt, Windows Update (Neustart).
+4. Weitere Prüfung: `powercfg /lastwake` (was hat den PC geweckt?); `powercfg /requests` (was hält ihn wach?).
+5. Wenn Überhitzung: Temperatur prüfen; Kühlung.
+6. Wenn Strom: USV prüfen; Stromversorgung.
+7. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100)
+- Quellen: Microsoft Learn (Windows Commands); CompTIA A+ V15 Exam Objectives (Core 2)
+- UNGEPRÜFT: Exakte Event-IDs (41, 6008, 1001, etc.) – in Microsoft-Docs verifizieren
+- UNGEPRÜFT: powercfg-Befehle – in Lab verifizieren
+- UNGEPRÜFT: PowerShell-Cmdlet-Syntax – in Lab verifizieren

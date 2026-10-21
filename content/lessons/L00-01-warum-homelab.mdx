@@ -1,0 +1,133 @@
+---
+title: "Modul 0 – Lektion 1: Warum ein Homelab? + Sicherheitsregeln"
+level: 1
+module: 0
+slug: "modul-0-homelab-01-warum-homelab"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100) – Host"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "https://tech-insider.org/vmware-vs-virtualbox-2026/ (Abruf 2026-10-19)"
+---
+
+# Modul 0 – Lektion 1: Warum ein Homelab? + Sicherheitsregeln
+
+## 1. Lernziele
+- Du verstehst, warum ein Homelab für IT-Support-Lernen unverzichtbar ist.
+- Du kennst die Sicherheitsregeln, damit Lab-Übungen nicht deinen echten PC beschädigen.
+- Du kannst einen Snapshot erstellen und wiederherstellen.
+- Du erkennst den Unterschied zwischen Host und Gast.
+
+## 2. Theorie kompakt
+
+**Homelab** = eine isolierte Testumgebung auf deinem eigenen PC, in der du Systeme absichtlich "kaputt machen" und reparieren kannst, ohne echte Daten oder Produktionssysteme zu gefährden.
+
+**Warum nötig:** IT-Support lebt von Erfahrung mit Fehlern. In der echten Arbeit darf man nicht experimentieren. Im Lab schon.
+
+**Host vs. Gast:**
+- **Host** = dein echter PC (Windows 11 Home). Läuft das Hypervisor-Programm.
+- **Gast (VM)** = virtuelle Maschine, z. B. Windows Server oder Windows 11 Enterprise. Läuft "in" einer Datei auf dem Host.
+
+**Sicherheitsregeln (verbindlich):**
+1. Niemals Lab-Übungen auf dem Host-OS oder Produktivsystemen durchführen.
+2. Nur in VMs "kaputt machen". Snapshots vor jeder riskanten Änderung.
+3. Keine realen Passwörter, keine echten Firmendaten in VMs.
+4. VMs mit Internetzugang nur über NAT, nie Bridge in ein Produktionsnetz.
+5. Evaluations-/Testlizenzen nur für Lab-Zwecke (kein Produktionseinsatz).
+6. BitLocker-Recovery-Keys, Passwörter aus dem Lab nicht mit echten Konten wiederverwenden.
+
+**Snapshot (Schnappschuss):** Speichert den kompletten Zustand einer VM (RAM + Disk) zu einem Zeitpunkt. Ermöglicht "Zeitreise" zurück, wenn etwas schiefgeht. Snapshots sind KEINE Backups (sie hängen von der Basisdisk ab).
+
+## 3. Praxis-Übung im Homelab
+
+**Voraussetzung:** Hypervisor installiert (siehe L00-03/L00-04), mindestens eine VM vorhanden (siehe L00-05).
+
+Schritte:
+1. VM starten.
+2. Im Hypervisor: "Snapshot erstellen" → Name "Clean-State-01", Beschreibung "Frisch installiert, vor Tests".
+3. In der VM: eine harmlose Änderung machen (z. B. Desktop-Hintergrund ändern, eine Testdatei erstellen).
+4. VM herunterfahren.
+5. Snapshot "Clean-State-01" wiederherstellen (Revert).
+6. VM starten → Zustand vor Schritt 3 ist wiederhergestellt (Änderung weg).
+
+**Erwartetes Ergebnis:** Nach Revert ist die Testdatei / Hintergrundänderung verschwunden; VM ist im Ausgangszustand.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Ich habe auf dem Host statt in der VM gearbeitet"**
+- Symptom: Echte Systemeinstellungen verändert, Daten verloren.
+- Ursache: Verwechslung Host/Gast, kein klares Lab-Setup.
+- Diagnose: Prüfen, in welchem Fenster gearbeitet wurde; Host-Taskleiste vs. VM-Fenster.
+- Lösung: Änderungen am Host manuell rückgängig machen; für die Zukunft: VM im Vollbild, Host-Hintergrund deutlich anders, VM-Fenster beschriften.
+- Prävention: Regel "Nur in VM-Fenstern mit gelbem Rahmen arbeiten"; Snapshot-Disziplin.
+
+**Fehler 2: "Snapshot wiederherstellen hat Daten gelöscht"**
+- Symptom: Nach Revert sind neuere Dateien weg, die nach dem Snapshot erstellt wurden.
+- Ursache: Snapshot ist kein Backup; Revert setzt auf Snapshot-Zeitpunkt zurück.
+- Diagnose: Zeitstempel des Snapshots prüfen; fehlende Dateien identifizieren.
+- Lösung: Daten aus einem Backup/Shared-Folder wiederherstellen; zukünftig wichtige Daten in Shared Folder oder Backup speichern.
+- Prävention: Shared Folder für Arbeitsergebnisse; Snapshots nur für Systemzustand, nicht für Daten.
+
+**Fehler 3: "VM startet nicht mehr nach Snapshot-Kette"**
+- Symptom: Fehlermeldung beim Start, "Snapshot chain broken" / "Parent disk not found".
+- Ursache: Snapshot-Dateien (.vmdk/.vdi) verschoben/gelöscht oder Basisdisk beschädigt.
+- Diagnose: VM-Verzeichnis prüfen; .vmdk/.vdi-Dateien und .vmx vorhanden?
+- Lösung: Aus Backup wiederherstellen oder VM neu erstellen; Snapshots konsolidieren ("Delete All Snapshots" → merge).
+- Prävention: VM-Ordner nicht manuell verschieben; Snapshots regelmäßig konsolidieren; Backup der VM-Dateien.
+
+**Fehler 4: "Hypervisor blockiert weil Hyper-V aktiv"**
+- Symptom: VMware/VirtualBox meldet "VT-x is not available" oder "Hyper-V detected".
+- Ursache: Windows 11 Home hat kein Hyper-V, aber "Virtual Machine Platform"/"Windows Hypervisor Platform" oder WSL2 kann VT-x belegen.
+- Diagnose: `systeminfo` → "Hyper-V Requirements" prüfen; optional `bcdedit /enum`.
+- Lösung: "Windows-Features" → "Virtual Machine Platform" / "Windows Hypervisor Platform" deaktivieren; Neustart. Alternativ Hypervisor mit WHPX-Backend nutzen.
+- Prävention: Vor Hypervisor-Installation Windows-Features prüfen.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist ein Snapshot in einer VM?
+   a) Eine vollständige Kopie der VM auf einem anderen Datenträger
+   b) Ein gespeicherter Systemzustand (RAM + Disk) zu einem Zeitpunkt ✓
+   c) Ein Backup der Benutzerdaten
+   d) Eine neue VM-Vorlage
+
+2. Warum darf man Lab-Übungen nicht auf dem Host durchführen?
+   a) Weil der Host zu langsam ist
+   b) Weil Fehler den echten PC/Produktivsystem beschädigen können ✓
+   c) Weil der Host kein Internet hat
+   d) Weil Snapshots auf dem Host nicht funktionieren
+
+3. Was ist der Unterschied zwischen Host und Gast?
+   a) Host = VM, Gast = physischer PC
+   b) Host = physischer PC mit Hypervisor, Gast = virtuelle Maschine ✓
+   c) Host = Server, Gast = Client
+   d) Es gibt keinen Unterschied
+
+4. Was passiert bei "Revert to Snapshot"?
+   a) Nur die Festplatte wird zurückgesetzt, RAM bleibt
+   b) VM-Zustand wird auf Snapshot-Zeitpunkt zurückgesetzt (RAM + Disk) ✓
+   c) Es wird ein neuer Snapshot erstellt
+   d) Die VM wird gelöscht
+
+5. Welche Aussage zu Snapshots ist korrekt?
+   a) Snapshots sind vollwertige Backups
+   b) Snapshots hängen von der Basisdisk ab und sind keine Backups ✓
+   c) Snapshots können nur einmal erstellt werden
+   d) Snapshots verbrauchen keinen Speicherplatz
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #1001:** "Mein Kollege hat in der Test-VM experimentiert und jetzt startet Windows nicht mehr. Er sagt, er hat 'irgendwas mit Diensten' gemacht. Repariere die VM ohne Datenverlust."
+
+**Lösung (aufklappbar):**
+1. VM nicht starten (vermeidet weitere Schäden).
+2. Snapshot-Liste prüfen: Gibt es einen "Clean-State" oder "Vor-Änderung"-Snapshot?
+3. Falls ja: Revert auf letzten guten Snapshot → VM startet wieder.
+4. Falls nein: WinRE (L10) nutzen – SFC/DISM, oder "Letzte als funktionierend bekannte Konfiguration" (falls verfügbar).
+5. Datenrettung: VM-Disk an eine zweite VM anhängen und Dateien kopieren (Offline-Mount).
+6. Prävention: Kollegen Snapshot-Regel beibringen; Shared Folder für Daten.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100) Host
+- Quellen: siehe research/quellen.md Abschnitt B (Homelab/Hypervisor) und Microsoft Learn Windows 11 Overview
+- UNGEPRÜFT: Exakte Microsoft-URLs zu Editionsvergleich (Hyper-V/gpedit/RDP/Domain-Join) werden in L00-02 nachgetragen

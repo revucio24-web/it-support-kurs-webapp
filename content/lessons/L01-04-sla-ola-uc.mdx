@@ -1,0 +1,162 @@
+---
+title: "Modul 1 – Lektion 4: SLA, OLA und UC"
+level: 1
+module: 1
+slug: "modul-1-grundlagen-04-sla-ola-uc"
+last_verified: "2026-10-19"
+windows_version: "Allgemein (kein OS-spezifisch)"
+sources:
+  - "https://www.peoplecert.org/browse-certifications/it-governance-and-service-management/ITIL-1/itil-4-foundation-2565 (Abruf 2026-10-19)"
+  - "https://nistcsf.com/wp-content/uploads/2019/02/ITIl-V4-Foundation-Syllabus.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 1 – Lektion 4: SLA, OLA und UC
+
+## 1. Lernziele
+- Du kannst SLA, OLA und UC unterscheiden.
+- Du kennst typische SLA-Kennzahlen (Response Time, Resolution Time, Availability).
+- Du kannst SLA-Verletzungen erkennen und eskalieren.
+- Du verstehst die Rolle des Service Level Management.
+
+## 2. Theorie kompakt
+
+**Definitionen (ITIL 4):**
+
+| Begriff | Definition | Parteien |
+|---|---|---|
+| **SLA** (Service Level Agreement) | Vereinbarung zwischen IT-Service-Provider und Kunde über Service-Qualität | IT ↔ Kunde/Business |
+| **OLA** (Operational Level Agreement) | Interne Vereinbarung zwischen IT-Teams über Unterstützung | IT-Team A ↔ IT-Team B (intern) |
+| **UC** (Underpinning Contract) | Vertrag mit externem Lieferanten | IT ↔ externer Vendor (z. B. Microsoft, ISP) |
+
+**SLA-Inhalte (typisch):**
+- **Service Scope:** Welche Services sind abgedeckt?
+- **Availability (Verfügbarkeit):** z. B. 99,9% (entspricht ~8,76 h Downtime/Jahr).
+- **Response Time (Reaktionszeit):** Zeit bis zur ersten Reaktion (z. B. P1: 15 Min, P4: 8 h).
+- **Resolution Time (Lösungszeit):** Zeit bis zur Lösung (z. B. P1: 4 h, P4: 5 Tage).
+- **Support Hours:** z. B. Mo-Fr 8-18 Uhr (oder 24/7).
+- **Exclusions:** Was ist nicht abgedeckt (z. B. höhere Gewalt, User-Fehler).
+- **Penalties:** Konsequenzen bei Verletzung (Gutschriften, Kündigungsrecht).
+
+**Verfügbarkeitsklassen (Beispiel):**
+
+| Verfügbarkeit | Downtime/Jahr | Typischer Einsatz |
+|---|---|---|
+| 99% | 3,65 Tage | Nicht-kritische Systeme |
+| 99,9% | 8,76 Stunden | Standard-Business |
+| 99,99% | 52,6 Minuten | Kritische Systeme |
+| 99,999% | 5,26 Minuten | Mission-critical (Banking, Krankenhaus) |
+
+**Service Level Management (ITIL-Praxis):**
+- SLAs definieren, verhandeln, überwachen.
+- Regelmäßige Reviews (monatlich/quartalsweise).
+- Reporting: SLA-Compliance (z. B. "95% der P1-Tickets innerhalb SLA gelöst").
+- Eskalation bei Verletzungsgefahr.
+
+**OLA/UC-Beispiel:**
+- SLA mit Kunde: "E-Mail-Service 99,9% verfügbar, P1-Resolution 4 h."
+- OLA: "Netzwerk-Team stellt VPN-Verbindung innerhalb 1 h bereit."
+- UC: "Microsoft garantiert 99,9% Uptime für Exchange Online (via UC)."
+
+**SLA-Verletzung (Breach):**
+- Wenn Response/Resolution Time überschritten wird.
+- Konsequenzen: Gutschrift, Eskalation an Management, Vertragsstrafe.
+- Prävention: Monitoring, Alerts bei 80% SLA-Zeit, Eskalation.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: SLA-Compliance für 5 Tickets berechnen.
+
+Schritte:
+1. Definiere SLA-Parameter (Beispiel):
+   - P1: Response 15 Min, Resolution 4 h
+   - P2: Response 1 h, Resolution 8 h
+   - P3: Response 4 h, Resolution 24 h
+   - P4: Response 8 h, Resolution 5 Tage
+2. Für 5 fiktive Tickets: Erstellungszeit, erste Reaktion, Lösungszeit notieren.
+3. SLA-Compliance berechnen: (Tickets innerhalb SLA / Gesamt) × 100.
+4. Identifiziere verletzte Tickets und Ursachen.
+
+**Erwartetes Ergebnis:** SLA-Compliance in %; verletzte Tickets mit Ursache.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "SLA nicht mit Kunden abgestimmt"**
+- Symptom: Kunde erwartet 24/7-Support, IT bietet nur 8-18.
+- Ursache: SLA nicht dokumentiert oder nicht kommuniziert.
+- Diagnose: SLA-Dokument prüfen.
+- Lösung: SLA neu verhandeln, dokumentieren, kommunizieren.
+- Prävention: SLA-Review bei Service-Start; jährliche Reviews.
+
+**Fehler 2: "OLA fehlt → SLA-Verletzung trotz guter IT"**
+- Symptom: IT verletzt SLA, obwohl Service Desk gut arbeitet.
+- Ursache: Internes Team (z. B. Netzwerk) hält OLA nicht ein → kaskadierende Verzögerung.
+- Diagnose: OLA-Compliance prüfen.
+- Lösung: OLA neu verhandeln; Eskalation an IT-Management.
+- Prävention: OLA für alle internen Abhängigkeiten definieren; monitoren.
+
+**Fehler 3: "SLA-Verletzung nicht eskaliert"**
+- Symptom: Ticket überschreitet SLA; niemand reagiert.
+- Ursache: Kein Alert/Monitoring; Supporter merkt es nicht.
+- Diagnose: Ticket-Status + SLA-Due prüfen.
+- Lösung: Sofort eskalieren; User informieren; Maßnahmen ergreifen.
+- Prävention: Automatische Alerts bei 80% SLA-Zeit; Dashboard; Eskalationsprozess.
+
+**Fehler 4: "UC mit Vendor nicht geprüft"**
+- Symptom: Vendor liefert nicht; IT kann SLA nicht einhalten.
+- Ursache: UC nicht gelesen oder Vendor-Leistung nicht überwacht.
+- Diagnose: UC + Vendor-Performance prüfen.
+- Lösung: Vendor kontaktieren; UC durchsetzen; alternative Lösung.
+- Prävention: UC-Review bei Vertragsverlängerung; Vendor-Management.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist ein SLA?
+   a) Interner Vertrag zwischen IT-Teams
+   b) Vereinbarung zwischen IT-Service-Provider und Kunde über Service-Qualität ✓
+   c) Vertrag mit externem Lieferanten
+   d) Ein Ticket-Typ
+
+2. Was ist ein OLA?
+   a) Vereinbarung mit externem Vendor
+   b) Interne Vereinbarung zwischen IT-Teams ✓
+   c) Kundenvertrag
+   d) Service Request
+
+3. Was ist ein UC?
+   a) Interner Vertrag
+   b) Kundenvertrag
+   c) Vertrag mit externem Lieferanten (Underpinning Contract) ✓
+   d) Ticket-Status
+
+4. 99,9% Verfügbarkeit entspricht ca. wie viel Downtime pro Jahr?
+   a) 3,65 Tage
+   b) 8,76 Stunden ✓
+   c) 52,6 Minuten
+   d) 5,26 Minuten
+
+5. Wann spricht man von einer SLA-Verletzung (Breach)?
+   a) Wenn ein Ticket erstellt wird
+   b) Wenn Response/Resolution Time überschritten wird ✓
+   c) Wenn ein User unzufrieden ist
+   d) Wenn ein Ticket geschlossen wird
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #2004:** "Kunde (Abteilungsleiter): 'Unser E-Mail-System ist seit 2 Stunden down. Das ist inakzeptabel! Wir haben ein SLA mit 99,9% Verfügbarkeit.' Du bist Level 1."
+
+**Lösung (aufklappbar):**
+1. Ticket als P1 (Critical) erstellen; SLA prüfen (Resolution Time, z. B. 4 h).
+2. Informationen sammeln: Seit wann genau? Alle User betroffen? Fehlermeldung?
+3. Sofort eskalieren an Level 2/3 (Infrastruktur) – P1 erfordert sofortige Bearbeitung.
+4. User/Kunde informieren: Bestätigung, dass Problem bekannt, Team arbeitet daran, nächste Update in X Min.
+5. Monitoring: SLA-Verletzungsgefahr prüfen (2 h von 4 h verbraucht).
+6. Dokumentieren: Zeitstempel, Maßnahmen, Kommunikation.
+7. Nach Lösung: Post-Incident Review (PIR) vorschlagen.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Allgemein (kein OS-spezifisch)
+- Quellen: ITIL 4 Foundation (PeopleCert/AXELOS) – Service Level Management Praxis; ITIL 4 Syllabus (nistcsf.com PDF)
+- UNGEPRÜFT: Exakte ITIL 4 SLA-Definitionen (Wortlaut) – aus Syllabus, nicht Primärtext
+- UNGEPRÜFT: Verfügbarkeitsklassen-Tabelle – Branchenüblich, nicht aus spezifischer Quelle
+- UNGEPRÜFT: SLA-Response/Resolution-Zeiten (Beispiel) – organisationsabhängig

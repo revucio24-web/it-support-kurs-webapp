@@ -1,0 +1,162 @@
+---
+title: "Modul 13 – Lektion 4: PowerShell-Skripte und Best Practices"
+level: 2
+module: 13
+slug: "modul-13-powershell-04-skripte-best-practices"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100) + PowerShell 5.1/7"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "https://assets.ctfassets.net/82ripq7fjls2/6I8WL66IBa1AUovioDGrnM/f74a7eca336fd4e4c8e723a1f893086d/CompTIA-A-220-1202-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 13 – Lektion 4: PowerShell-Skripte und Best Practices
+
+## 1. Lernziele
+- Du kannst PowerShell-Skripte strukturiert und sicher schreiben.
+- Du kannst Parameter, Funktionen und Module nutzen.
+- Du kannst Skripte signieren und deployen.
+- Du kennst Best Practices für PowerShell-Entwicklung.
+
+## 2. Theorie kompakt
+
+**Skript-Best-Practices:**
+1. **Comment-Based Help:** `.SYNOPSIS`, `.DESCRIPTION`, `.PARAMETER`, `.EXAMPLE`.
+2. **Parameter:** `param()` mit Typen und Validierung (`[ValidateNotNullOrEmpty()]`, `[ValidateSet()]`).
+3. **Fehlerbehandlung:** `try/catch/finally`, `$ErrorActionPreference = "Stop"`.
+4. **Logging:** `Start-Transcript`, eigene Log-Funktion.
+5. **Ausgabe:** `Write-Output` (Pipeline), `Write-Host` (Konsole), `Write-Verbose` (Debug).
+6. **Keine hardcodierten Werte:** Parameter oder Config-Datei nutzen.
+7. **Pfade:** Relative Pfade vermeiden; `$PSScriptRoot` nutzen.
+8. **Sicherheit:** Keine Passwörter im Klartext; `Get-Credential` nutzen; Secrets in Vault.
+9. **Testing:** `-WhatIf`, `-Confirm`, Pester (Unit-Tests).
+10. **Versionierung:** Git für Skript-Verwaltung.
+
+**Funktionen:**
+```powershell
+function Get-SystemInfo {
+    [CmdletBinding()]
+    param()
+    [PSCustomObject]@{
+        ComputerName = $env:COMPUTERNAME
+        OS = (Get-CimInstance Win32_OperatingSystem).Caption
+        RAM = [math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory/1GB, 2)
+    }
+}
+```
+
+**Module:**
+- Skripte als wiederverwendbare Module (.psm1) verpacken.
+- Modul-Manifest (.psd1) mit Metadaten.
+- Installation: `Install-Module` (PSGallery) oder manuell in `$env:PSModulePath`.
+
+**Skript-Signierung:**
+- Code Signing Certificate nutzen (selbstsigniert oder CA).
+- `Set-AuthenticodeSignature -FilePath .\Script.ps1 -Certificate $cert`.
+- Execution Policy "AllSigned" oder "RemoteSigned" für signierte Skripte.
+
+**Pester (Testing):**
+- PowerShell-Testing-Framework.
+- `Install-Module Pester -Force`.
+- Tests: `Describe`, `It`, `Should`.
+
+**DSC (Desired State Configuration):**
+- Deklarative Konfiguration (Zustand definieren, nicht Schritte).
+- Für Server-Konfiguration und Compliance.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Ein strukturiertes PowerShell-Skript erstellen.
+
+Schritte:
+1. Skript erstellen: `C:\Lab\SystemReport.ps1`.
+2. Struktur: Comment-Based Help, param(), try/catch, Funktionen, Logging.
+3. Funktion: `Get-SystemInfo` (Computername, OS, RAM, Disk).
+4. Funktion: `Get-DiskSpace` (freier Speicher pro Laufwerk).
+5. Funktion: `Export-Report` (CSV + HTML).
+6. Ausführen und Ergebnis prüfen.
+7. Testen mit `-WhatIf` (falls destruktiv).
+
+**Erwartetes Ergebnis:** Strukturiertes Skript erstellt; Report generiert.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Skript nicht signiert – Execution Policy blockiert"**
+- Symptom: "Skript kann nicht geladen werden, da die Ausführung von Skripts deaktiviert ist."
+- Ursache: Execution Policy "AllSigned" und Skript nicht signiert.
+- Diagnose: `Get-ExecutionPolicy`; Signatur prüfen (`Get-AuthenticodeSignature`).
+- Lösung: Skript signieren oder Execution Policy auf "RemoteSigned" setzen.
+- Prävention: Signierung für Produktions-Skripte; Execution Policy dokumentieren.
+
+**Fehler 2: "Hardcodierte Pfade – Skript funktioniert nur auf einem PC"**
+- Symptom: Skript läuft auf PC A, aber nicht auf PC B.
+- Ursache: Hardcodierte Pfade (C:\Users\Max\...).
+- Diagnose: Skript-Code prüfen.
+- Lösung: `$PSScriptRoot` oder Umgebungsvariablen nutzen.
+- Prävention: Relative Pfade; Konfigurationsdatei.
+
+**Fehler 3: "Keine Fehlerbehandlung – Skript bricht still ab"**
+- Symptom: Skript beendet ohne Fehlermeldung, aber Ergebnis fehlt.
+- Ursache: Kein try/catch; Fehler werden verschluckt.
+- Diagnose: `$ErrorActionPreference` prüfen; try/catch hinzufügen.
+- Lösung: Fehlerbehandlung implementieren; Logging hinzufügen.
+- Prävention: Skript-Template mit Fehlerbehandlung.
+
+**Fehler 4: "Passwort im Klartext im Skript"**
+- Symptom: Sicherheitsvorfall; Passwort im Skript-Code.
+- Ursache: Hardcodiertes Passwort.
+- Diagnose: Skript-Code prüfen.
+- Lösung: Passwort entfernen; `Get-Credential` nutzen; Secret Vault.
+- Prävention: Keine Secrets im Code; Secret Management.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist Comment-Based Help?
+   a) Kommentare im Code
+   b) Strukturierte Dokumentation (.SYNOPSIS, .DESCRIPTION, etc.) ✓
+   c) Ein Debugging-Tool
+   d) Ein Test-Framework
+
+2. Was macht `$PSScriptRoot`?
+   a) Zeigt den aktuellen User
+   b) Gibt den Pfad des Skript-Verzeichnisses zurück ✓
+   c) Zeigt die PowerShell-Version
+   d) Zeigt den Computername
+
+3. Was ist Pester?
+   a) Ein Antivirus
+   b) Ein PowerShell-Testing-Framework ✓
+   c) Ein Backup-Tool
+   d) Ein Netzwerk-Tool
+
+4. Was ist DSC?
+   a) Desired State Configuration – deklarative Konfiguration ✓
+   b) Dynamic System Configuration
+   c) Data Security Center
+   d) Direct System Control
+
+5. Wie signiert man ein PowerShell-Skript?
+   a) `Sign-Script`
+   b) `Set-AuthenticodeSignature -FilePath .\Script.ps1 -Certificate $cert` ✓
+   c) `Protect-Script`
+   d) `Encrypt-Script`
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #14004:** "Admin: 'Unser PowerShell-Skript funktioniert auf meinem PC, aber nicht auf dem Server. Fehler: Ausführung von Skripts deaktiviert.'"
+
+**Lösung (aufklappbar):**
+1. `Get-ExecutionPolicy` auf dem Server prüfen.
+2. Wenn Restricted: `Set-ExecutionPolicy RemoteSigned -Scope LocalMachine` (als Admin).
+3. Skript erneut ausführen.
+4. Wenn immer noch Fehler: Skript-Signatur prüfen; Modul-Verfügbarkeit prüfen.
+5. Dokumentieren; Execution Policy standardisieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100) + PowerShell 5.1/7
+- Quellen: Microsoft Learn Windows 11 Overview; CompTIA A+ V15 Exam Objectives (Core 2)
+- UNGEPRÜFT: PowerShell-Best-Practices – aus allgemeiner Praxis
+- UNGEPRÜFT: Pester/DSC-Details – in Microsoft-Docs verifizieren
+- UNGEPRÜFT: Code Signing Certificate – in Microsoft-Docs verifizieren
+- UNGEPRÜFT: Secret Vault – in Microsoft-Docs verifizieren

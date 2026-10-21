@@ -1,0 +1,167 @@
+---
+title: "Modul 13 – Lektion 3: PowerShell und Active Directory"
+level: 2
+module: 13
+slug: "modul-13-powershell-03-active-directory"
+last_verified: "2026-10-19"
+windows_version: "Windows Server 2022 (Evaluation) + Windows 11 24H2 (Client)"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "https://assets.ctfassets.net/82ripq7fjls2/6I8WL66IBa1AUovioDGrnM/f74a7eca336fd4e4c8e723a1f893086d/CompTIA-A-220-1202-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 13 – Lektion 3: PowerShell und Active Directory
+
+## 1. Lernziele
+- Du kannst AD-Objekte (User, Gruppen, Computer, OUs) mit PowerShell verwalten.
+- Du kannst Bulk-Operationen durchführen (CSV-Import).
+- Du kannst AD-Abfragen und Reports erstellen.
+- Du kannst GPOs mit PowerShell verwalten.
+
+## 2. Theorie kompakt
+
+**AD PowerShell-Modul:**
+- `Import-Module ActiveDirectory` (auf DC oder RSAT installiert).
+- Cmdlets: `Get-ADUser`, `New-ADUser`, `Set-ADUser`, `Remove-ADUser`, `Get-ADGroup`, `New-ADGroup`, `Add-ADGroupMember`, etc.
+
+**Wichtige AD-Cmdlets:**
+
+| Cmdlet | Funktion |
+|---|---|
+| `Get-ADUser -Filter *` | Alle User auflisten |
+| `Get-ADUser -Identity "max" -Properties *` | User-Details |
+| `New-ADUser -Name "Max" -SamAccountName "max" -AccountPassword (ConvertTo-SecureString "Pw123!" -AsPlainText -Force) -Enabled $true` | User erstellen |
+| `Set-ADUser -Identity "max" -Department "IT"` | User bearbeiten |
+| `Disable-ADAccount -Identity "max"` | Konto deaktivieren |
+| `Enable-ADAccount -Identity "max"` | Konto aktivieren |
+| `Remove-ADUser -Identity "max"` | User löschen |
+| `Set-ADAccountPassword -Identity "max" -Reset -NewPassword (ConvertTo-SecureString "NewPw!" -AsPlainText -Force)` | Passwort zurücksetzen |
+| `Search-ADAccount -LockedOut` | Gesperrte Konten finden |
+| `Get-ADGroup -Filter *` | Gruppen auflisten |
+| `New-ADGroup -Name "IT-Team" -GroupScope Global -GroupCategory Security` | Gruppe erstellen |
+| `Add-ADGroupMember -Identity "IT-Team" -Members "max"` | Mitglied hinzufügen |
+| `Get-ADComputer -Filter *` | Computer auflisten |
+| `Get-ADOrganizationalUnit -Filter *` | OUs auflisten |
+| `New-ADOrganizationalUnit -Name "Lab-Users"` | OU erstellen |
+
+**Bulk-Operationen (CSV-Import):**
+```powershell
+$users = Import-Csv C:\Lab\users.csv
+foreach ($u in $users) {
+    New-ADUser -Name $u.Name -SamAccountName $u.SamAccountName `
+        -AccountPassword (ConvertTo-SecureString $u.Password -AsPlainText -Force) `
+        -Enabled $true -Path "OU=Lab-Users,DC=lab,DC=local"
+}
+```
+
+**AD-Abfragen (Filter):**
+- `-Filter {Department -eq "IT"}` – Filter nach Abteilung.
+- `-Filter {Enabled -eq $false}` – Deaktivierte Konten.
+- `-Filter {PasswordLastSet -lt (Get-Date).AddDays(-90)}` – Passwort älter als 90 Tage.
+- `-LDAPFilter "(objectClass=user)"` – LDAP-Filter.
+
+**GPO-Management (PowerShell):**
+- `Get-GPO -All` – Alle GPOs.
+- `New-GPO -Name "Lab-Policy"` – GPO erstellen.
+- `New-GPLink -Name "Lab-Policy" -Target "dc=lab,dc=local"` – GPO verknüpfen.
+- `Get-GPResultantSetOfPolicy -ReportType Html -Path C:\gpreport.html` – Bericht.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: AD-Objekte mit PowerShell verwalten.
+
+Schritte:
+1. DC-VM: PowerShell (Admin) öffnen.
+2. `Import-Module ActiveDirectory`.
+3. `Get-ADUser -Filter * | Select-Object Name, SamAccountName, Enabled`.
+4. Neuen User erstellen: `New-ADUser -Name "Test User" -SamAccountName "testuser" -AccountPassword (ConvertTo-SecureString "TestPw123!" -AsPlainText -Force) -Enabled $true -Path "CN=Users,DC=lab,DC=local"`.
+5. User deaktivieren: `Disable-ADAccount -Identity "testuser"`.
+6. Gesperrte Konten finden: `Search-ADAccount -LockedOut`.
+7. Gruppe erstellen und Mitglied hinzufügen.
+8. CSV-Import testen (3 User aus CSV).
+
+**Erwartetes Ergebnis:** AD-Objekte mit PowerShell verwaltet; Bulk-Import funktioniert.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "AD-Modul nicht geladen"**
+- Symptom: "Der Begriff 'Get-ADUser' ist kein Cmdlet..."
+- Ursache: AD-Modul nicht installiert (RSAT fehlt) oder nicht importiert.
+- Diagnose: `Get-Module -ListAvailable ActiveDirectory`.
+- Lösung: RSAT installieren (`Add-WindowsCapability -Online -Name Rsat.ActiveDirectory.DS-LDS.Tools~~~~0.0.1.0`); `Import-Module ActiveDirectory`.
+- Prävention: RSAT vorab installieren; Modul-Verfügbarkeit prüfen.
+
+**Fehler 2: "Bulk-Import schlägt fehl – ungültige CSV"**
+- Symptom: Fehler beim Importieren von Usern.
+- Ursache: CSV-Format falsch; fehlende Spalten; Sonderzeichen.
+- Diagnose: CSV in Editor prüfen; `Import-Csv` testen.
+- Lösung: CSV korrigieren; Spalten prüfen; Test mit einem User.
+- Prävention: CSV-Template nutzen; Validierung.
+
+**Fehler 3: "Passwort-Richtlinie verletzt – User-Erstellung fehlschlägt"**
+- Symptom: "Das Kennwort entspricht nicht den Anforderungen der Kennwortrichtlinie."
+- Ursache: Passwort zu kurz/schwach.
+- Diagnose: Passwort prüfen; GPO-Richtlinie.
+- Lösung: Stärkeres Passwort verwenden.
+- Prävention: Passwort-Anforderungen dokumentieren; bei Bulk-Import starke Passwörter nutzen.
+
+**Fehler 4: "AD-Abfrage zu langsam – Timeout"**
+- Symptom: `Get-ADUser -Filter *` dauert sehr lange.
+- Ursache: Zu viele Objekte; keine Filter; Netzwerk-Latenz.
+- Diagnose: Anzahl Objekte prüfen; Filter nutzen.
+- Lösung: Filter anwenden; `-ResultPageSize` setzen; spezifische OU angeben (`-SearchBase`).
+- Prävention: Effiziente Abfragen; Indizes.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Welches Cmdlet erstellt einen neuen AD-User?
+   a) `New-ADUser` ✓
+   b) `Add-ADUser`
+   c) `Create-ADUser`
+   d) `Set-ADUser`
+
+2. Wie importiert man das AD-Modul in PowerShell?
+   a) `Load-Module ActiveDirectory`
+   b) `Import-Module ActiveDirectory` ✓
+   c) `Get-Module ActiveDirectory`
+   d) `Enable-Module ActiveDirectory`
+
+3. Welches Cmdlet deaktiviert ein AD-Konto?
+   a) `Disable-ADAccount` ✓
+   b) `Set-ADUser -Enabled $false`
+   c) Beide (a und b) ✓
+   d) `Remove-ADAccount`
+
+4. Wie findet man gesperrte Konten?
+   a) `Get-ADUser -Filter {LockedOut -eq $true}`
+   b) `Search-ADAccount -LockedOut` ✓
+   c) Beide (a und b) ✓
+   d) `Find-ADAccount -Locked`
+
+5. Was macht `-SearchBase` bei AD-Cmdlets?
+   a) Sucht in allen OUs
+   b) Begrenzt die Suche auf eine bestimmte OU ✓
+   c) Sucht nach Basis-Attributen
+   d) Erstellt eine neue OU
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #14003:** "Admin: 'Ich muss 50 neue User für die neue Abteilung anlegen. Kann ich das automatisieren?'"
+
+**Lösung (aufklappbar):**
+1. CSV-Template erstellen: Name, SamAccountName, Password, Department, OU.
+2. CSV mit 50 Usern füllen.
+3. PowerShell-Skript schreiben: CSV importieren → foreach → New-ADUser.
+4. Testen mit 1-2 Usern (Test-OU).
+5. Bulk-Erstellung durchführen.
+6. Verifikation: `Get-ADUser -Filter * -SearchBase "OU=NeueAbteilung,DC=lab,DC=local"`.
+7. Dokumentieren; ggf. Passwort-Richtlinie anpassen.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows Server 2022 (Evaluation) + Windows 11 24H2 (Client)
+- Quellen: Microsoft Learn Windows 11 Overview; CompTIA A+ V15 Exam Objectives (Core 2)
+- UNGEPRÜFT: AD-Cmdlet-Syntax – in Lab verifizieren
+- UNGEPRÜFT: RSAT-Installation (Add-WindowsCapability) – in Lab verifizieren
+- UNGEPRÜFT: Bulk-Import-Beispiele – aus allgemeiner Praxis
+- UNGEPRÜFT: GPO-PowerShell-Cmdlets – in Lab verifizieren

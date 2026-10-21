@@ -1,0 +1,214 @@
+---
+title: "Modul 0 – Lektion 10: Typische Fehler erzeugen – Lab-Rezepte"
+level: 1
+module: 0
+slug: "modul-0-homelab-10-fehler-erzeugen"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100) – Gast (VM)"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "research/quellen.md Abschnitt C"
+---
+
+# Modul 0 – Lektion 10: Typische Fehler erzeugen – Lab-Rezepte
+
+## 1. Lernziele
+- Du kannst typische Support-Fehler reproduzierbar in einer VM erzeugen.
+- Du kannst nach jedem Rezept den Fehler beobachten und dann reparieren.
+- Du kennst die "Zurücksetzen"-Methode (Snapshot Revert).
+- Du kannst eigene Fehler-Rezepte erstellen und dokumentieren.
+
+## 2. Theorie kompakt
+
+**Reproduzierbare Fehler** sind das Herz des Homelabs. Statt auf echte Fehler zu warten, erzeugst du sie gezielt, beobachtest Symptome, diagnostizierst und reparierst. Jedes Rezept folgt dem Schema:
+
+1. **Voraussetzung:** Snapshot "Pre-Recipe" erstellen.
+2. **Fehler erzeugen:** Befehl/Änderung ausführen.
+3. **Symptom beobachten:** Was sieht der User/Supporter?
+4. **Diagnose:** Welche Tools/Befehle zeigen die Ursache?
+5. **Reparatur:** Fehler beheben.
+6. **Verifikation:** Funktion wiederhergestellt?
+7. **Reset:** Revert auf "Pre-Recipe" (oder manuell zurück).
+
+**Sicherheitsregel:** Nur in VMs, nie auf Host. Immer Snapshot vorher. Nur harmlose Fehler (keine Datenzerstörung, keine Malware).
+
+## 3. Praxis-Übung im Homelab
+
+### Rezept 1 – DNS falsch konfiguriert
+**Fehler erzeugen:**
+1. VM (Windows 11) → Einstellungen → Netzwerk → Adapter → DNS-Server manuell setzen auf `192.168.99.99` (nicht existierend).
+2. Oder CMD (Admin): `netsh interface ip set dns "Ethernet" static 192.168.99.99`
+
+**Symptom:** Webseiten laden nicht ("DNS_PROBE_FINISHED_NXDOMAIN" im Browser); `ping google.com` → "Ping request could not find host".
+
+**Diagnose:** `ipconfig /all` → DNS-Server prüfen; `nslookup google.com` → Timeout/Fehler; `ping 8.8.8.8` → funktioniert (IP ok, DNS kaputt).
+
+**Reparatur:** DNS zurück auf "Automatisch" oder korrekten Server (z. B. 8.8.8.8 oder Router-IP): `netsh interface ip set dns "Ethernet" dhcp` oder GUI.
+
+**Verifikation:** `nslookup google.com` → IP zurück; Browser lädt Seite.
+
+---
+
+### Rezept 2 – Dienst gestoppt (Print Spooler)
+**Fehler erzeugen:**
+1. `services.msc` → "Druckwarteschlange" (Print Spooler) → Beenden.
+2. Starttyp auf "Deaktiviert" setzen.
+
+**Symptom:** Drucken nicht möglich; "Druckwarteschlange-Dienst läuft nicht".
+
+**Diagnose:** `sc query spooler` → STATE: STOPPED; `services.msc`.
+
+**Reparatur:** `sc config spooler start= auto` + `sc start spooler` (oder GUI).
+
+**Verifikation:** `sc query spooler` → RUNNING; Drucktest.
+
+---
+
+### Rezept 3 – Treiber deaktiviert (Netzwerkadapter)
+**Fehler erzeugen:**
+1. Geräte-Manager → Netzwerkadapter → Rechtsklick → "Deaktivieren".
+
+**Symptom:** Kein Netzwerk; "Nicht verbunden"; Adapter im Geräte-Manager mit Pfeil (deaktiviert).
+
+**Diagnose:** `ipconfig` → kein Adapter; Geräte-Manager → gelber Pfeil.
+
+**Reparatur:** Geräte-Manager → "Aktivieren"; oder `devcon enable` (UNGEPRÜFT: devcon nicht standardmäßig installiert).
+
+**Verifikation:** `ipconfig` → IP zugewiesen; Ping funktioniert.
+
+---
+
+### Rezept 4 – Windows Update blockiert (Dienst)
+**Fehler erzeugen:**
+1. `services.msc` → "Windows Update" (wuauserv) → Beenden + Deaktiviert.
+2. Optional: Registry `HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU` → `NoAutoUpdate` = 1 (UNGEPRÜFT: genauer Pfad).
+
+**Symptom:** "Einstellungen → Windows Update" → Fehler 0x80070422 ("Der Dienst kann nicht gestartet werden").
+
+**Diagnose:** `sc query wuauserv` → STOPPED; Event Viewer → System-Log.
+
+**Reparatur:** Dienst wieder auf "Automatisch" + Starten; Registry-Wert entfernen.
+
+**Verifikation:** Windows Update prüft auf Updates.
+
+---
+
+### Rezept 5 – Falsche IP (statisch, falsches Subnetz)
+**Fehler erzeugen:**
+1. Einstellungen → Netzwerk → IP-Einstellungen → Manuell → IP `10.0.0.5`, Subnetz `255.255.255.0`, Gateway `192.168.1.1` (absichtlich falsch).
+
+**Symptom:** Kein Internet; "Kein Internetzugriff"; Ping zum Gateway schlägt fehl.
+
+**Diagnose:** `ipconfig` → IP/Subnetz/Gateway prüfen; `ping 192.168.1.1` → Timeout.
+
+**Reparatur:** IP zurück auf DHCP oder korrektes Subnetz.
+
+**Verifikation:** `ipconfig` → korrekte IP; Ping zum Gateway erfolgreich.
+
+---
+
+### Rezept 6 – BitLocker-Recovery (VM, isoliert!)
+**Fehler erzeugen (nur in VM!):**
+1. BitLocker aktivieren (Win11 Pro/Enterprise VM): Systemsteuerung → BitLocker → "BitLocker aktivieren" → Recovery-Key speichern (in Datei, NICHT verlieren!).
+2. VM herunterfahren.
+3. In VMware: VM Settings → Hardware → "Trusted Platform Module" entfernen (simuliert TPM-Änderung/Board-Wechsel).
+4. VM starten → BitLocker-Recovery-Bildschirm (blauer Screen, Recovery-Key-Eingabe).
+
+**Symptom:** Boot stoppt bei "BitLocker Drive Encryption Recovery"; Eingabe des 48-stelligen Recovery-Keys nötig.
+
+**Diagnose:** TPM-Status in Firmware; `manage-bde -status` (nach Entsperrung).
+
+**Reparatur:** Recovery-Key eingeben → Windows startet → BitLocker neu konfigurieren (TPM wieder hinzufügen, `manage-bde -protectors -add C: -tpm`).
+
+**Verifikation:** Normaler Boot ohne Recovery-Prompt; `manage-bde -status` → "Protection On".
+
+**Wichtig:** Nur in VM! Recovery-Key sicher aufbewahren (Lab-Notiz). Ohne Key = Datenverlust.
+
+---
+
+**Erwartetes Ergebnis (alle Rezepte):** Jeder Fehler reproduzierbar erzeugt, Symptom beobachtet, repariert, VM zurückgesetzt.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Rezept hat VM wirklich beschädigt – Revert nötig"**
+- Symptom: Nach Rezept startet Windows nicht mehr.
+- Ursache: Zu aggressives "Kaputt machen" (Systemdateien gelöscht, Registry beschädigt).
+- Diagnose: Boot-Fehler, BSOD.
+- Lösung: Revert auf "Pre-Recipe" Snapshot. Falls kein Snapshot: WinRE-Reparatur (SFC/DISM) oder Neuinstallation.
+- Prävention: Immer Snapshot vor Rezept; nur harmlose Fehler (Dienste, DNS, IP, Treiber) – keine Systemdateien löschen.
+
+**Fehler 2: "Rezept funktioniert nicht – kein Symptom sichtbar"**
+- Symptom: Alles funktioniert trotz "Fehler".
+- Ursache: Änderung nicht wirksam (Dienst läuft noch, Cache, Admin-Rechte fehlen).
+- Diagnose: `sc query`, `ipconfig`, Geräte-Manager prüfen.
+- Lösung: Befehl als Admin ausführen; Dienst wirklich stoppen; Cache leeren; Neustart.
+- Prävention: Schritte genau befolgen; mit Admin-Rechten arbeiten.
+
+**Fehler 3: "Snapshot Revert hat Rezept-Änderungen nicht zurückgesetzt"**
+- Symptom: Nach Revert ist Fehler noch da.
+- Ursache: Revert nicht durchgeführt oder falscher Snapshot; oder Änderungen außerhalb der VM (Host-Netzwerk).
+- Diagnose: Snapshot-Manager → welcher Snapshot aktiv? VM-Status.
+- Lösung: Korrekten Snapshot wählen; VM herunterfahren → Revert → Starten. Host-Netzwerkänderungen manuell zurücksetzen.
+- Prävention: Snapshot-Namen klar (Pre-Recipe-XXX); Revert immer bei ausgeschalteter VM.
+
+**Fehler 4: "BitLocker-Recovery-Key verloren"**
+- Symptom: VM startet nicht, Key unbekannt.
+- Ursache: Recovery-Key nicht gespeichert oder verloren.
+- Diagnose: Keine Entsperrung möglich.
+- Lösung: VM aus Snapshot "Pre-BitLocker" wiederherstellen (Datenverlust der BitLocker-Phase). Falls kein Snapshot: Daten verloren (Lab-Daten, kein echter Schaden).
+- Prävention: Recovery-Key IMMER speichern (Datei + Notiz); Snapshot vor BitLocker-Aktivierung.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Was ist der erste Schritt vor jedem "Fehler erzeugen"-Rezept?
+   a) Dienst stoppen
+   b) Snapshot "Pre-Recipe" erstellen ✓
+   c) Registry bearbeiten
+   d) Neustart
+
+2. Welcher Befehl setzt DNS auf DHCP zurück?
+   a) `ipconfig /renew`
+   b) `netsh interface ip set dns "Ethernet" dhcp` ✓
+   c) `netsh winsock reset`
+   d) `ipconfig /flushdns`
+
+3. Wie simuliert man einen TPM-Wechsel bei BitLocker?
+   a) BitLocker deaktivieren
+   b) Virtuelles TPM-Modul in VM entfernen ✓
+   c) Passwort ändern
+   d) Windows neu installieren
+
+4. Was zeigt `sc query spooler` bei gestopptem Spooler?
+   a) RUNNING
+   b) STOPPED ✓
+   c) PAUSED
+   d) PENDING
+
+5. Warum sollte man "Kaputt machen" nur in VMs durchführen?
+   a) Weil es schneller ist
+   b) Weil Fehler den echten PC/Produktivsystem beschädigen können ✓
+   c) Weil VMs mehr RAM haben
+   d) Weil Snapshots auf dem Host nicht funktionieren
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #1010:** "Ein User meldet: 'Mein Drucker druckt nicht mehr. Ich habe nichts geändert.' Du hast Zugriff auf seine VM (Lab)."
+
+**Lösung (aufklappbar):**
+1. Symptom verifizieren: Druckauftrag senden → Fehler?
+2. Dienst prüfen: `sc query spooler` → falls STOPPED: Dienst starten + Starttyp prüfen.
+3. Spooler-Queue prüfen: `C:\Windows\System32\spool\PRINTERS` → Dateien löschen (falls hängen).
+4. Druckertreiber prüfen: Geräte-Manager → Drucker → Treiber neu installieren.
+5. Drucker-Verbindung prüfen (USB/Netzwerk): `ping` Drucker-IP.
+6. Event Viewer → System/Application-Log → Fehler filtern.
+7. Reparatur dokumentieren; falls wiederkehrend: Ursache (z. B. Treiber) beheben.
+8. User informieren + Ticket schließen.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100) – Gast (VM)
+- Quellen: Microsoft Learn (Windows Commands, Services); research/quellen.md Abschnitt C
+- UNGEPRÜFT: Exakte Registry-Pfade (Windows Update Policy) – vor Veröffentlichung verifizieren
+- UNGEPRÜFT: devcon Verfügbarkeit (nicht standardmäßig in Windows)
+- UNGEPRÜFT: manage-bde Befehle für BitLocker – in Microsoft-Docs verifizieren
+- UNGEPRÜFT: BitLocker in Win11 Enterprise Eval verfügbar (Pro/Enterprise-Feature) – bestätigt durch Edition, Details verifizieren

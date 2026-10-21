@@ -1,0 +1,139 @@
+---
+title: "Modul 8 – Lektion 2: Remote-Support-Tools im Vergleich"
+level: 1
+module: 8
+slug: "modul-8-remote-02-tools-vergleich"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100)"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "https://assets.ctfassets.net/82ripq7fjls2/6I8WL66IBa1AUovioDGrnM/f74a7eca336fd4e4c8e723a1f893086d/CompTIA-A-220-1202-Exam-Objectives-3.0.pdf (Abruf 2026-10-19)"
+---
+
+# Modul 8 – Lektion 2: Remote-Support-Tools im Vergleich
+
+## 1. Lernziele
+- Du kannst Remote-Support-Tools vergleichen und begründet auswählen.
+- Du kennst die Vor-/Nachteile von RDP, Quick Assist, TeamViewer, AnyDesk, Intune Remote Help.
+- Du kannst für ein Szenario das passende Tool wählen.
+- Du kennst die Sicherheitsaspekte der Tools.
+
+## 2. Theorie kompakt
+
+**Tool-Vergleich (Überblick):**
+
+| Tool | Installation | Plattform | Sicherheit | Kosten | Einsatz |
+|---|---|---|---|---|---|
+| **RDP** | Eingebaut (Host: Pro/Enterprise) | Windows only | NLA, TLS, Gateway | Kostenlos | Interner Admin-Zugriff |
+| **Quick Assist** | Eingebaut (Win10/11) | Windows only | Verschlüsselt, Code-basiert | Kostenlos | Ad-hoc Support |
+| **TeamViewer** | Download (beide Seiten) | Cross-Platform | Ende-zu-Ende verschlüsselt | Kommerziell kostenpflichtig | Externer Support |
+| **AnyDesk** | Download (beide Seiten) | Cross-Platform | TLS 1.2, RSA 2048 | Kommerziell kostenpflichtig | Externer Support |
+| **Chrome Remote Desktop** | Browser-Extension | Cross-Platform | Google-Konto, verschlüsselt | Kostenlos | Ad-hoc Support |
+| **Intune Remote Help** | Intune-Client | Windows | Entra ID, auditierbar | Intune-Lizenz | Enterprise |
+| **Windows 365 Cloud PC** | Cloud | Browser/Client | Entra ID, MFA | Lizenz | Cloud-Desktop |
+
+**Auswahlkriterien:**
+1. **Plattform:** Nur Windows? → RDP/Quick Assist. Cross-Platform? → TeamViewer/AnyDesk.
+2. **Installation:** Keine Installation gewünscht? → Quick Assist/Chrome RD. Installation OK? → TeamViewer.
+3. **Sicherheit:** Höchste Sicherheit? → Intune Remote Help (auditierbar, MFA).
+4. **Kosten:** Kostenlos? → Quick Assist, Chrome RD, RDP. Budget? → TeamViewer/AnyDesk.
+5. **Skalierung:** Einzelsupport? → Quick Assist. Enterprise? → Intune Remote Help.
+
+**Tool-Empfehlungen nach Szenario:**
+- **Ad-hoc Support (intern, Windows):** Quick Assist.
+- **Admin-Zugriff auf Server:** RDP (über VPN/Gateway).
+- **Externer Support (Kunde, verschiedene OS):** TeamViewer/AnyDesk.
+- **Enterprise (Intune-verwaltet):** Intune Remote Help.
+- **Cloud-Desktop:** Windows 365 Cloud PC.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Tools vergleichen und auswählen.
+
+Schritte:
+1. Quick Assist testen (2 VMs oder PC + VM).
+2. RDP testen (VM zu VM, Pro/Enterprise).
+3. (Optional) TeamViewer/AnyDesk installieren und testen.
+4. Für 3 Szenarien das passende Tool wählen und begründen.
+
+**Erwartetes Ergebnis:** Tool-Auswahl begründet; Remote-Support durchgeführt.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "Falsches Tool gewählt – nicht kompatibel"**
+- Symptom: Tool funktioniert nicht (z. B. RDP auf Home).
+- Ursache: Edition/Plattform nicht kompatibel.
+- Diagnose: Windows-Edition prüfen; Plattform prüfen.
+- Lösung: Passendes Tool wählen.
+- Prävention: Tool-Auswahl vor Session; Checkliste.
+
+**Fehler 2: "TeamViewer 'Kommerzielle Nutzung' erkannt"**
+- Symptom: TeamViewer bricht ab mit "Kommerzielle Nutzung erkannt".
+- Ursache: TeamViewer erkennt kommerzielle Nutzung (Lizenz erforderlich).
+- Diagnose: Nutzungsmuster.
+- Lösung: Lizenz erwerben oder Alternative nutzen (AnyDesk, Quick Assist).
+- Prävention: Lizenzbedingungen prüfen; für kommerziell Intune Remote Help.
+
+**Fehler 3: "Quick Assist nicht verfügbar (ältere Windows-Version)"**
+- Symptom: Quick Assist nicht installiert.
+- Ursache: Windows 7/8 oder ältere Win10.
+- Diagnose: Windows-Version prüfen.
+- Lösung: Alternative (TeamViewer, Chrome RD) oder Quick Assist aus Store installieren.
+- Prävention: Tool-Verfügbarkeit vor Session prüfen.
+
+**Fehler 4: "RDP über Internet ohne VPN – Sicherheitsrisiko"**
+- Symptom: RDP-Port 3389 ins Internet exponiert.
+- Ursache: Falsche Netzwerkkonfiguration.
+- Diagnose: Port-Scan (extern).
+- Lösung: RDP hinter VPN oder Gateway; Port schließen.
+- Prävention: Netzwerk-Sicherheitsrichtlinie; regelmäßige Audits.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Welches Tool ist für Cross-Platform-Support geeignet?
+   a) RDP
+   b) Quick Assist
+   c) TeamViewer/AnyDesk ✓
+   d) Intune Remote Help
+
+2. Welches Tool ist kostenlos und eingebaut (Windows 10/11)?
+   a) TeamViewer
+   b) Quick Assist ✓
+   c) AnyDesk
+   d) Intune Remote Help
+
+3. Für welches Szenario ist RDP am besten geeignet?
+   a) Ad-hoc Support auf Home-PC
+   b) Interner Admin-Zugriff auf Server (Pro/Enterprise) ✓
+   c) Cross-Platform Support
+   d) Externer Kundensupport
+
+4. Warum sollte RDP nicht ins Internet exponiert werden?
+   a) Weil es langsam ist
+   b) Weil Port 3389 ein häufiges Angriffsziel ist ✓
+   c) Weil es teuer ist
+   d) Weil es nicht funktioniert
+
+5. Welches Tool ist für Enterprise (Intune-verwaltet) am besten?
+   a) Quick Assist
+   b) TeamViewer
+   c) Intune Remote Help ✓
+   d) Chrome Remote Desktop
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #9002:** "User (Mac): 'Ich brauche Support für mein MacBook. Können Sie sich verbinden?'"
+
+**Lösung (aufklappbar):**
+1. Prüfen: User hat Mac → RDP/Quick Assist nicht kompatibel.
+2. Tool auswählen: TeamViewer, AnyDesk oder Chrome Remote Desktop (Cross-Platform).
+3. User installiert Tool (oder Browser-Version).
+4. Session durchführen (Workflow aus L08-01).
+5. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100)
+- Quellen: Microsoft Learn Windows 11 Overview; CompTIA A+ V15 Exam Objectives (Core 2)
+- UNGEPRÜFT: Tool-Vergleich (Kosten, Features) – aus allgemeinem Wissen; Preise können sich ändern
+- UNGEPRÜFT: Intune Remote Help Details – in Microsoft-Docs verifizieren

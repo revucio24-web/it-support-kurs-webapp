@@ -1,0 +1,147 @@
+---
+title: "Modul 3 – Lektion 1: Windows 11 Einstellungen und Konten"
+level: 1
+module: 3
+slug: "modul-3-windows11-01-einstellungen-konten"
+last_verified: "2026-10-19"
+windows_version: "Windows 11 24H2 (Build 26100)"
+sources:
+  - "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview (Abruf 2026-10-19)"
+  - "https://learn.microsoft.com/en-us/windows/client-management/client-tools/administrative-tools-in-windows (Abruf 2026-10-19)"
+---
+
+# Modul 3 – Lektion 1: Windows 11 Einstellungen und Konten
+
+## 1. Lernziele
+- Du kannst die Windows 11 Einstellungen-App navigieren.
+- Du kannst lokale Konten und Microsoft-Konten unterscheiden.
+- Du kannst Benutzerkonten erstellen/verwalten (lokal).
+- Du kennst die Unterschiede zwischen Administrator und Standardbenutzer.
+
+## 2. Theorie kompakt
+
+**Windows 11 Einstellungen (Settings App):**
+- `Win + I` öffnet Einstellungen.
+- Hauptkategorien: System, Bluetooth & Geräte, Netzwerk & Internet, Personalisierung, Apps, Konten, Zeit & Sprache, Gaming, Barrierefreiheit, Datenschutz & Sicherheit, Windows Update.
+
+**Kontotypen:**
+
+| Typ | Beschreibung | Rechte |
+|---|---|---|
+| **Microsoft-Konto** | Cloud-basiert (Outlook/Hotmail), Sync von Einstellungen, OneDrive, Store | Je nach zugewiesener Rolle (Admin/Standard) |
+| **Lokales Konto** | Nur auf diesem PC, keine Cloud-Sync | Je nach zugewiesener Rolle |
+| **Arbeits-/Schulkonto (Entra ID)** | Organisationskonto (Azure AD/Entra) | Per Policy gesteuert |
+| **Gastkonto** | Eingeschränkter Zugriff (deprecated in Win11) | Sehr eingeschränkt |
+
+**Benutzerrollen:**
+- **Administrator:** Vollzugriff, kann Software installieren, System ändern, andere User verwalten.
+- **Standardbenutzer:** Eigene Daten/Einstellungen; keine Systemänderungen ohne UAC-Erhöhung.
+
+**Kontenverwaltung:**
+- Einstellungen → Konten → Familie & andere Benutzer → "Konto hinzufügen".
+- `lusrmgr.msc` (nur Pro/Enterprise) → Lokale Benutzer und Gruppen.
+- `net user` (CMD, alle Editionen) → Benutzer auflisten/verwalten.
+- `net localgroup administrators` → Administratoren-Gruppe anzeigen.
+
+**UAC (User Account Control):** Schützt vor unbefugten Änderungen. Standardbenutzer werden bei Admin-Aktionen nach Admin-Credentials gefragt. Admins bekommen Consent-Prompt (Ja/Nein).
+
+**Profilordner:** `C:\Users\<Benutzername>` (Desktop, Documents, Downloads, AppData).
+
+**Schnellzugriff:**
+- `Win + R` → `control userpasswords2` → Benutzerkonten (klassisch).
+- `netplwiz` → gleiches Fenster.
+
+## 3. Praxis-Übung im Homelab
+
+Ziel: Konten verwalten.
+
+Schritte:
+1. Einstellungen → Konten → "Familie & andere Benutzer" → "Konto hinzufügen" → "Ich habe die Anmeldeinformationen nicht" → "Benutzer ohne Microsoft-Konto hinzufügen" → Name "TestUser", Passwort setzen → Typ "Standardbenutzer".
+2. Als TestUser anmelden (Abmelden/Anmelden oder Schnellbenutzerwechsel).
+3. Als TestUser: Versuche, Software zu installieren → UAC-Prompt (Admin-Credentials nötig).
+4. Zurück als Admin: TestUser zu Administrator machen (Einstellungen → Konten → Benutzer ändern → Kontotyp ändern).
+5. CMD (Admin): `net user` → User auflisten; `net user TestUser` → Details.
+6. `net localgroup administrators` → Admin-Gruppe prüfen.
+
+**Erwartetes Ergebnis:** Standardbenutzer und Administrator erstellt; Rollenwechsel funktioniert; UAC schützt.
+
+## 4. Berühmte Fehler + Lösungen
+
+**Fehler 1: "User arbeitet als Administrator – Sicherheitsrisiko"**
+- Symptom: User kann alles ändern; Malware kann System beschädigen.
+- Ursache: Konto als Administrator eingerichtet; kein Standardbenutzer.
+- Diagnose: `net localgroup administrators` → User in der Liste?
+- Lösung: Neues Standardbenutzer-Konto erstellen; Admin-Konto nur für Admin-Aufgaben.
+- Prävention: Standardbenutzer als Default; UAC aktiv lassen.
+
+**Fehler 2: "Microsoft-Konto-Passwort vergessen – kein Zugriff"**
+- Symptom: User kann sich nicht anmelden; "Passwort falsch".
+- Ursache: Microsoft-Konto-Passwort vergessen; kein lokales Konto als Fallback.
+- Diagnose: Anmeldebildschirm → "Passwort vergessen" → Microsoft-Reset.
+- Lösung: Microsoft-Konto-Passwort online zurücksetzen (account.live.com); oder lokales Konto nutzen (falls vorhanden).
+- Prävention: Lokales Admin-Konto als Backup; Recovery-E-Mail/Telefon hinterlegen.
+
+**Fehler 3: "Profil beschädigt – User kann sich nicht anmelden"**
+- Symptom: "Benutzerprofil kann nicht geladen werden" oder temporäres Profil.
+- Ursache: Profilordner beschädigt; Registry-Eintrag (ProfileList) fehlerhaft.
+- Diagnose: Ereignisanzeige → "User Profile Service" Fehler; `C:\Users\<User>` prüfen.
+- Lösung: Profil neu erstellen (Ordner umbenennen, neu anmelden); oder Registry reparieren (ProfileList → .bak entfernen).
+- Prävention: Regelmäßige Backups; Profil nicht manuell verschieben.
+
+**Fehler 4: "UAC-Prompt erscheint nicht – Admin-Rechte ohne Prompt"**
+- Symptom: Änderungen ohne UAC-Bestätigung möglich.
+- Ursache: UAC auf "Nie benachrichtigen" gesetzt (unsicher) oder User ist Admin und Policy deaktiviert UAC.
+- Diagnose: `Win + R` → `UserAccountControlSettings` → Slider prüfen.
+- Lösung: UAC auf Standard (oder höher) setzen; Neustart.
+- Prävention: UAC nicht deaktivieren; GPO/Registry prüfen.
+
+## 5. Mini-Quiz (5 Fragen)
+
+1. Welche Tastenkombination öffnet die Einstellungen?
+   a) Win + R
+   b) Win + I ✓
+   c) Ctrl + Alt + Del
+   d) Win + E
+
+2. Was ist ein Microsoft-Konto?
+   a) Ein lokales Konto
+   b) Ein Cloud-basiertes Konto (Outlook/Hotmail) mit Sync ✓
+   c) Ein Gastkonto
+   d) Ein Administratorkonto
+
+3. Welches Tool verwaltet lokale Benutzer (nur Pro/Enterprise)?
+   a) net user
+   b) lusrmgr.msc ✓
+   c) control userpasswords2
+   d) msconfig
+
+4. Was macht UAC?
+   a) Verhindert alle Änderungen
+   b) Schützt vor unbefugten Systemänderungen (Consent-Prompt) ✓
+   c) Verschlüsselt Daten
+   d) Erstellt Backups
+
+5. Wo liegt der Profilordner eines Users?
+   a) C:\Windows\Users
+   b) C:\Users\<Benutzername> ✓
+   c) C:\Program Files\Users
+   d) C:\Profiles
+
+## Ticket-Szenario zum Selbstlösen
+
+**Ticket #4001:** "User: 'Ich kann keine Software installieren. Es kommt immer eine Meldung, dass ich Administratorrechte brauche. Ich bin aber der einzige User auf diesem PC.'"
+
+**Lösung (aufklappbar):**
+1. Prüfen: Ist das Konto Administrator? Einstellungen → Konten → "Ihr Info" → Kontotyp.
+2. Falls Standardbenutzer: Konto zu Administrator ändern (mit Admin-Credentials, falls vorhanden).
+3. Falls kein Admin-Zugriff: CMD als Admin (falls möglich) → `net localgroup administrators <User> /add`.
+4. Falls gar kein Admin: Offline-Reparatur (WinRE → CMD → `net user administrator /active:yes`) oder Neuinstallation.
+5. Prävention: Immer ein Admin-Konto + Standardbenutzer-Konto; Admin-Passwort sicher aufbewahren.
+6. Dokumentieren.
+
+## 6. Quellen + last_verified
+- last_verified: 2026-10-19
+- windows_version: Windows 11 24H2 (Build 26100)
+- Quellen: Microsoft Learn Windows 11 Overview; Windows Client Management (Administrative Tools)
+- UNGEPRÜFT: Exakte UI-Pfade (können sich ändern)
+- UNGEPRÜFT: Gastkonto in Windows 11 (deprecated?) – zu verifizieren
