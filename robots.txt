@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://revucio24-web.github.io/it-support-kurs-webapp/sitemap.xml
